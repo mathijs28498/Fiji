@@ -1,39 +1,20 @@
-use bytemuck::{Pod, Zeroable};
-use std::sync::Arc;
-use vulkano::{
-    buffer::{BufferUsage, CpuAccessibleBuffer, TypedBufferAccess},
-    command_buffer::{
-        AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
-    },
-    device::Queue,
-    format::Format,
-    image::{view::ImageView, ImageAccess, SwapchainImage},
-    impl_vertex,
-    pipeline::{
-        graphics::{
-            input_assembly::InputAssemblyState,
-            vertex_input::BuffersDefinition,
-            viewport::{Viewport, ViewportState},
-        },
-        GraphicsPipeline,
-    },
-    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
-    swapchain::{acquire_next_image, AcquireError, SwapchainCreateInfo, SwapchainCreationError},
-    sync::{self, FlushError, GpuFuture},
-};
+use vulkano::buffer::{BufferUsage, CpuAccessibleBuffer};
+
 use winit::{
     event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
-    window::Window,
+    event_loop::ControlFlow,
 };
 
-mod rendering;
-use crate::rendering::{common::*, data_types::*, render_passes::*};
+use nalgebra_glm as glm;
 
+mod draw_objects;
+mod rendering;
+
+use crate::draw_objects::*;
+use crate::rendering::{common::*, data_types::*};
 
 fn main() {
-    let event_loop = EventLoop::new();
-    let mut context = Context::new(&event_loop);
+    let mut context = Context::new();
 
     let vertices = [
         Vertex {
@@ -73,18 +54,27 @@ fn main() {
     )
     .unwrap();
 
-    event_loop.run(move |event, _, control_flow| match event {
-        Event::WindowEvent {
-            event: WindowEvent::CloseRequested,
-            ..
-        } => {
-            *control_flow = ControlFlow::Exit;
-        }
-        Event::RedrawEventsCleared => {
-            context.draw_vertex_buffer(&vertex_buffer);
-            context.draw_vertex_buffer(&vertex_buffer_2);
-            context.render();
-        }
-        _ => (),
-    });
+    context
+        .event_loop
+        .take()
+        .unwrap()
+        .run(move |event, _, control_flow| match event {
+            Event::WindowEvent {
+                event: WindowEvent::CloseRequested,
+                ..
+            } => {
+                *control_flow = ControlFlow::Exit;
+            }
+            Event::RedrawEventsCleared => {
+                // context.draw_vertex_buffer(&vertex_buffer);
+                // context.draw_vertex_buffer(&vertex_buffer_2);
+                context.draw(Box::new(Square::new(
+                    glm::Vec2::new(0., 0.),
+                    glm::Vec2::new(0., 0.),
+                    glm::Vec3::new(0., 0., 0.),
+                )));
+                context.render();
+            }
+            _ => (),
+        });
 }

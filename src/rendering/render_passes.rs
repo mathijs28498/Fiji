@@ -1,14 +1,10 @@
-use bytemuck::{Pod, Zeroable};
 use std::sync::Arc;
 use vulkano::{
-    buffer::{BufferUsage, CpuAccessibleBuffer, TypedBufferAccess},
+    buffer::{TypedBufferAccess, ImmutableBuffer},
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
     },
-    device::{Device, Queue},
-    format::Format,
-    image::{view::ImageView, ImageAccess, SwapchainImage},
-    impl_vertex,
+    image::{view::ImageView, ImageAccess},
     pipeline::{
         graphics::{
             input_assembly::InputAssemblyState,
@@ -18,13 +14,7 @@ use vulkano::{
         GraphicsPipeline,
     },
     render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
-    swapchain::{acquire_next_image, AcquireError, SwapchainCreateInfo, SwapchainCreationError},
-    sync::{self, FlushError, GpuFuture},
-};
-use winit::{
-    event::{Event, WindowEvent},
-    event_loop::{ControlFlow, EventLoop},
-    window::Window,
+    sync::GpuFuture,
 };
 
 use crate::{rendering::common::*, rendering::data_types::*};
@@ -44,26 +34,14 @@ impl PolyRenderPass {
         mod vs {
             vulkano_shaders::shader! {
                 ty: "vertex",
-                src: "
-				#version 450
-				layout(location = 0) in vec2 position;
-				void main() {
-					gl_Position = vec4(position, 0.0, 1.0);
-				}
-			"
+                path: "src/shaders/poly_renderpass.vert"
             }
         }
 
         mod fs {
             vulkano_shaders::shader! {
                 ty: "fragment",
-                src: "
-				#version 450
-				layout(location = 0) out vec4 f_color;
-				void main() {
-					f_color = vec4(1.0, 0.0, 0.0, 1.0);
-				}
-			"
+                path: "src/shaders/poly_renderpass.frag"
             }
         }
 
@@ -133,7 +111,8 @@ impl PolyRenderPass {
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
-        vertex_buffer: Arc<CpuAccessibleBuffer<[Vertex]>>,
+        vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
+        index_buffer: Arc<ImmutableBuffer<[u32]>>,
     ) {
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.device().clone(),
@@ -157,7 +136,8 @@ impl PolyRenderPass {
             .set_viewport(0, [self.viewport.clone()])
             .bind_pipeline_graphics(self.pipeline.clone())
             .bind_vertex_buffers(0, vertex_buffer.clone())
-            .draw(vertex_buffer.len() as u32, 1, 0, 0)
+            .bind_index_buffer(index_buffer.clone())
+            .draw_indexed(index_buffer.len() as u32, 1, 0, 0, 0)
             .unwrap()
             .end_render_pass()
             .unwrap();

@@ -1,16 +1,13 @@
 use std::sync::Arc;
 use vulkano::{
-    buffer::CpuAccessibleBuffer,
     device::{
         physical::{PhysicalDevice, PhysicalDeviceType},
         Device, DeviceCreateInfo, DeviceExtensions, Queue, QueueCreateInfo,
     },
     format::Format,
-    image::{self, ImageUsage, SwapchainImage},
+    image::{ImageUsage, SwapchainImage},
     instance::{Instance, InstanceCreateInfo},
-    swapchain::{
-        acquire_next_image, Surface, Swapchain, SwapchainAcquireFuture, SwapchainCreateInfo,
-    },
+    swapchain::{acquire_next_image, Surface, Swapchain, SwapchainCreateInfo},
     sync,
     sync::GpuFuture,
 };
@@ -20,7 +17,9 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
-use super::{data_types::Vertex, render_passes::PolyRenderPass};
+use crate::draw_objects::{DrawObject, RenderPassType};
+
+use super::render_passes::PolyRenderPass;
 
 pub(crate) struct DeviceContainer {
     queue: Arc<Queue>,
@@ -184,36 +183,44 @@ impl DeviceContainer {
     }
 }
 
-pub(crate) struct Context {
+pub struct Context {
+    pub event_loop: Option<EventLoop<()>>,
     device_container: DeviceContainer,
     poly_render_pass: PolyRenderPass,
-    vertex_buffers: Vec<Arc<CpuAccessibleBuffer<[Vertex]>>>,
+    draw_objects: Vec<Box<dyn DrawObject>>,
 }
 
 impl Context {
-    pub(crate) fn new(event_loop: &EventLoop<()>) -> Self {
-        let device_container = DeviceContainer::new(event_loop);
+    pub fn new() -> Self {
+        let event_loop = EventLoop::new();
+        let device_container = DeviceContainer::new(&event_loop);
         let poly_render_pass = PolyRenderPass::new(&device_container);
 
         Self {
+            event_loop: Some(event_loop),
             device_container,
             poly_render_pass,
-            vertex_buffers: Vec::new(),
+            draw_objects: Vec::new(),
         }
     }
 
-    pub(crate) fn draw_vertex_buffer(
-        &mut self,
-        vertex_buffer: &Arc<CpuAccessibleBuffer<[Vertex]>>,
-    ) {
-        self.vertex_buffers.push(vertex_buffer.clone());
+    pub fn draw(&mut self, draw_object: Box<dyn DrawObject>) {
+        self.draw_objects.push(draw_object);
     }
 
-    pub(crate) fn render(&mut self) {
+    pub fn render(&mut self) {
         self.device_container.begin_draw();
-        for vb in &self.vertex_buffers {
-            self.poly_render_pass
-                .draw(&mut self.device_container, vb.clone());
+
+        for object in self.draw_objects.iter_mut() {
+            match object.render_pass_type() {
+                RenderPassType::Poly => {
+                    // TODO: Change this so that the drawing is done in the object function 
+                    // TODO: Possibly by creating another enum that holds different renderpasses
+                    let (vb, ib) = object.get_buffers(self.device_container.queue());
+                    self.poly_render_pass
+                        .draw(&mut self.device_container, vb.clone(), ib.clone());
+                }
+            }
         }
         self.device_container.end_draw();
 
@@ -221,10 +228,14 @@ impl Context {
     }
 
     fn clear_objects(&mut self) {
-        self.vertex_buffers = Vec::new();
+        self.draw_objects = Vec::new();
     }
 
     pub(crate) fn device(&self) -> &Arc<Device> {
         self.device_container.device()
+    }
+
+    pub(crate) fn queue(&self) -> &Arc<Queue> {
+        self.device_container.queue()
     }
 }
