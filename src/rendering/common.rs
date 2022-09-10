@@ -1,6 +1,11 @@
-use winit::event_loop::EventLoop;
+// use vulkano::sync::Event;
+use winit::event_loop::{EventLoop, EventLoopWindowTarget};
+use winit::{
+    event::{Event, WindowEvent},
+    event_loop::ControlFlow,
+};
 
-use crate::draw_objects::{DrawObject, square::Square, background::Background};
+use crate::draw_objects::{background::Background, square::Square, DrawObject};
 
 use super::{
     device_container::DeviceContainer,
@@ -9,8 +14,27 @@ use super::{
     },
 };
 
+use nalgebra_glm as glm;
+
+pub struct EventLoopContainer {
+    event_loop: EventLoop<()>,
+}
+
+impl EventLoopContainer {
+    fn new(event_loop: EventLoop<()>) -> EventLoopContainer {
+        EventLoopContainer { event_loop }
+    }
+    
+    pub fn run<F>(self, event_handler: F)
+    where
+        F: 'static + FnMut(Event<'_, ()>, &EventLoopWindowTarget<()>, &mut ControlFlow),
+    {
+        self.event_loop.run(event_handler);
+    }
+}
+
 pub struct Context {
-    pub event_loop: Option<EventLoop<()>>,
+    event_loop_container: Option<EventLoopContainer>,
     device_container: DeviceContainer,
     poly_render_pass: PolyRenderPass,
     background_render_pass: BackgroundRenderPass,
@@ -19,13 +43,13 @@ pub struct Context {
 
 impl Context {
     pub fn new() -> Self {
-        let event_loop = EventLoop::new();
-        let device_container = DeviceContainer::new(&event_loop);
+        let event_loop_container = EventLoopContainer::new(EventLoop::new());
+        let device_container = DeviceContainer::new(&event_loop_container.event_loop);
         let poly_render_pass = PolyRenderPass::new(&device_container);
         let background_render_pass = BackgroundRenderPass::new();
 
         Self {
-            event_loop: Some(event_loop),
+            event_loop_container: Some(event_loop_container),
             device_container,
             poly_render_pass,
             background_render_pass,
@@ -45,6 +69,10 @@ impl Context {
         self.draw(DrawObject::BackgroundObject(bg));
     }
 
+    pub fn event_loop(&mut self) -> EventLoopContainer {
+        self.event_loop_container.take().unwrap()
+    }
+
     pub fn render(&mut self) {
         self.device_container.begin_draw();
 
@@ -57,15 +85,6 @@ impl Context {
                     bg.draw(&self.background_render_pass, &mut self.device_container);
                 }
             }
-            // match object.render_pass_type() {
-            //     RenderPassType::Poly => {
-            //         // TODO: Change this so that the drawing is done in the object function
-            //         // TODO: Possibly by creating another enum that holds different renderpasses
-            //         let (vb, ib) = object.get_buffers(self.device_container.queue());
-            //         self.poly_render_pass
-            //             .draw(&mut self.device_container, vb.clone(), ib.clone());
-            //     }
-            // }
         }
         self.device_container.end_draw();
 
