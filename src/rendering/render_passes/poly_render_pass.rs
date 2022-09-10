@@ -1,11 +1,12 @@
 use std::sync::Arc;
 use vulkano::{
-    buffer::{TypedBufferAccess, ImmutableBuffer},
+    buffer::{ImmutableBuffer, TypedBufferAccess},
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
     },
     image::{view::ImageView, ImageAccess},
     pipeline::{
+        Pipeline,
         graphics::{
             input_assembly::InputAssemblyState,
             vertex_input::BuffersDefinition,
@@ -13,18 +14,28 @@ use vulkano::{
         },
         GraphicsPipeline,
     },
-    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
+    render_pass::{Framebuffer, FramebufferCreateInfo, Subpass},
     sync::GpuFuture,
 };
 
-use crate::{rendering::common::*, rendering::data_types::*};
+use crate::{rendering::{data_types::*, device_container::DeviceContainer}};
+
+use nalgebra_glm as glm;
+
+struct PushConstants {
+    position: glm::Vec2,
+    size: glm::Vec2,
+    color: glm::Vec3,
+    padding: f32,
+    resolution: [u32; 2],
+}
+
 // TODO: Create circle render pass
 // TODO: Create clear colour render pass
 // TODO: Use shader files
 // TODO: Use pushconstants for shit like colours/ maybe borders
 pub(crate) struct PolyRenderPass {
     pipeline: Arc<GraphicsPipeline>,
-    render_pass: Arc<RenderPass>,
     viewport: Viewport,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
@@ -67,8 +78,8 @@ impl PolyRenderPass {
 
         let pipeline = GraphicsPipeline::start()
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
-            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
             .input_assembly_state(InputAssemblyState::new())
+            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
             .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
             .fragment_shader(fs.entry_point("main").unwrap(), ())
@@ -84,7 +95,7 @@ impl PolyRenderPass {
         let dimensions = device_container.images()[0].dimensions().width_height();
         viewport.dimensions = [dimensions[0] as f32, dimensions[1] as f32];
 
-        let mut framebuffers = device_container
+        let framebuffers = device_container
             .images()
             .iter()
             .map(|image| {
@@ -102,7 +113,6 @@ impl PolyRenderPass {
 
         Self {
             pipeline,
-            render_pass,
             viewport,
             framebuffers,
         }
@@ -113,6 +123,9 @@ impl PolyRenderPass {
         device_container: &mut DeviceContainer,
         vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
         index_buffer: Arc<ImmutableBuffer<[u32]>>,
+        position: &glm::Vec2,
+        size: &glm::Vec2,
+        color: &glm::Vec3,
     ) {
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.device().clone(),
@@ -122,10 +135,9 @@ impl PolyRenderPass {
         .unwrap();
 
         builder
-            // Before we can draw, we have to *enter a render pass*.
             .begin_render_pass(
                 RenderPassBeginInfo {
-                    clear_values: vec![Some([0.0, 0.0, 1.0, 1.0].into())],
+                    clear_values: vec![None],
                     ..RenderPassBeginInfo::framebuffer(
                         self.framebuffers[device_container.image_num()].clone(),
                     )
@@ -137,6 +149,13 @@ impl PolyRenderPass {
             .bind_pipeline_graphics(self.pipeline.clone())
             .bind_vertex_buffers(0, vertex_buffer.clone())
             .bind_index_buffer(index_buffer.clone())
+            .push_constants(self.pipeline.layout().clone(), 0, PushConstants {
+                position: position.clone(),
+                size: size.clone(),
+                color: color.clone(),
+                padding: 0.,
+                resolution: device_container.resolution(),
+            })
             .draw_indexed(index_buffer.len() as u32, 1, 0, 0, 0)
             .unwrap()
             .end_render_pass()
