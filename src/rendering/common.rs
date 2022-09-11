@@ -1,4 +1,5 @@
-use winit::event_loop::{EventLoop, EventLoopWindowTarget};
+use winit::event::WindowEvent;
+use winit::event_loop::EventLoop;
 use winit::{event::Event, event_loop::ControlFlow};
 
 use crate::draw_objects::circle::Circle;
@@ -21,11 +22,24 @@ impl EventLoopContainer {
         EventLoopContainer { event_loop }
     }
 
-    pub fn run<F>(self, event_handler: F)
+    pub fn run<F>(self, mut event_handler: F)
     where
-        F: 'static + FnMut(Event<'_, ()>, &EventLoopWindowTarget<()>, &mut ControlFlow),
+        F: 'static + FnMut(),
     {
-        self.event_loop.run(event_handler);
+        self.event_loop.run(
+            move |event, _, control_flow: &mut ControlFlow| match event {
+                Event::WindowEvent {
+                    event: WindowEvent::CloseRequested,
+                    ..
+                } => {
+                    *control_flow = ControlFlow::Exit;
+                }
+                Event::RedrawEventsCleared => {
+                    event_handler();
+                }
+                _ => (),
+            },
+        );
     }
 }
 
