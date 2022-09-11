@@ -1,24 +1,31 @@
+use queues::{IsQueue, Queue};
 use winit::{
-    event::{DeviceEvent, Event, WindowEvent},
+    event::{DeviceEvent, Event, KeyboardInput, WindowEvent},
     event_loop::{ControlFlow, EventLoop},
 };
 
 use nalgebra_glm as glm;
 
+use crate::input::{Input, InteractionEvent};
+
 pub struct EventLoopContainer {
     pub(super) event_loop: EventLoop<()>,
+    events: Queue<InteractionEvent>,
+    input: Input,
 }
 
 impl EventLoopContainer {
     pub(super) fn new() -> EventLoopContainer {
         EventLoopContainer {
             event_loop: EventLoop::new(),
+            events: Queue::new(),
+            input: Input::new(),
         }
     }
 
-    pub fn run<F>(self, mut event_handler: F)
+    pub fn run<F>(mut self, mut event_handler: F)
     where
-        F: 'static + FnMut(),
+        F: 'static + FnMut(&Input),
     {
         self.event_loop.run(
             move |event, _, control_flow: &mut ControlFlow| match event {
@@ -27,18 +34,33 @@ impl EventLoopContainer {
                         *control_flow = ControlFlow::Exit;
                     }
                     WindowEvent::MouseInput { state, button, .. } => {
-                        println!("{state:?} - {button:?}")
+                        self.events
+                            .add(InteractionEvent::MouseEvent(state, button))
+                            .unwrap();
                     }
                     WindowEvent::CursorMoved { position, .. } => {
-                        let _position = glm::Vec2::new(position.x as f32, position.y as f32);
+                        let position = glm::Vec2::new(position.x as f32, position.y as f32);
+                        self.events
+                            .add(InteractionEvent::MouseMovedEvent(position))
+                            .unwrap();
                     }
                     WindowEvent::ModifiersChanged(state) => {
-                        println!("{state:?}");
+                        self.events
+                            .add(InteractionEvent::ModifiersEvent(state))
+                            .unwrap();
                     }
-                    WindowEvent::KeyboardInput { input, .. } => {
-                        let state = input.state;
-                        let key = input.virtual_keycode.unwrap();
-                        println!("{state:?} - {key:?}")
+                    WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                state,
+                                virtual_keycode,
+                                ..
+                            },
+                        ..
+                    } => {
+                        self.events
+                            .add(InteractionEvent::KeyEvent(state, virtual_keycode))
+                            .unwrap();
                     }
                     _ => (),
                 },
@@ -46,25 +68,18 @@ impl EventLoopContainer {
                     event: DeviceEvent::MouseMotion { delta },
                     ..
                 } => {
-                    let _mouse_delta = glm::Vec2::new(delta.0 as f32, delta.1 as f32);
+                    let mouse_delta = glm::Vec2::new(delta.0 as f32, delta.1 as f32);
+                    self.events
+                        .add(InteractionEvent::MouseDeltaEvent(mouse_delta))
+                        .unwrap();
                 }
-                // Event::MouseInput {
-                //     state,
-                //     button,
-                //     ..
-                // } => {
-
-                //     // let mut mouse_button_input_events = world
-                //     //     .get_resource_mut::<Events<MouseButtonInput>>()
-                //     //     .unwrap();
-                //     // mouse_button_input_events.send(MouseButtonInput {
-                //     //     button: converters::convert_mouse_button(button),
-                //     //     state: converters::convert_element_state(state),
-                //     });
-                // },
-                // Event::WindowEvent {
                 Event::RedrawEventsCleared => {
-                    event_handler();
+                    self.input.reset_single_iteration_values();
+                    while let Ok(event) = self.events.remove() {
+                        self.input.handle_interaction_event(event);
+                    }
+
+                    event_handler(&self.input);
                 }
                 _ => (),
             },
