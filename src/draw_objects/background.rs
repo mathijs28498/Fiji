@@ -4,6 +4,7 @@ use crate::rendering::{
     device_container::DeviceContainer, render_passes::background_render_pass::BackgroundRenderPass,
 };
 
+#[derive(Clone)]
 pub struct Background {
     pub color: glm::Vec3,
 }
