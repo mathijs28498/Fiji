@@ -39,7 +39,7 @@ fn main() {
         }
 
         if input.mouse_button_held(&MouseButton::Left) {
-            context.draw_background(Background::new(glm::Vec3::new(1., 1., 1.)));
+            context.draw_background(Background::new(glm::Vec3::new(0.5, 0., 0.)));
         } else {
             context.draw_background(Background::new(glm::Vec3::new(0., 0., 0.)));
         }
