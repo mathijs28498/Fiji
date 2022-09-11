@@ -1,57 +1,37 @@
-// use vulkano::sync::Event;
-use winit::event_loop::{EventLoop, EventLoopWindowTarget};
-use winit::{
-    event::{Event, WindowEvent},
-    event_loop::ControlFlow,
-};
-
+use crate::draw_objects::circle::Circle;
 use crate::draw_objects::{background::Background, square::Square, DrawObject};
 
+use super::render_passes::circle_render_pass::CircleRenderPass;
 use super::{
     device_container::DeviceContainer,
+    event_loop_container::EventLoopContainer,
     render_passes::{
         background_render_pass::BackgroundRenderPass, poly_render_pass::PolyRenderPass,
     },
 };
 
-use nalgebra_glm as glm;
-
-pub struct EventLoopContainer {
-    event_loop: EventLoop<()>,
-}
-
-impl EventLoopContainer {
-    fn new(event_loop: EventLoop<()>) -> EventLoopContainer {
-        EventLoopContainer { event_loop }
-    }
-    
-    pub fn run<F>(self, event_handler: F)
-    where
-        F: 'static + FnMut(Event<'_, ()>, &EventLoopWindowTarget<()>, &mut ControlFlow),
-    {
-        self.event_loop.run(event_handler);
-    }
-}
-
 pub struct Context {
     event_loop_container: Option<EventLoopContainer>,
     device_container: DeviceContainer,
     poly_render_pass: PolyRenderPass,
+    circle_render_pass: CircleRenderPass,
     background_render_pass: BackgroundRenderPass,
     draw_objects: Vec<DrawObject>,
 }
 
 impl Context {
     pub fn new() -> Self {
-        let event_loop_container = EventLoopContainer::new(EventLoop::new());
+        let event_loop_container = EventLoopContainer::new();
         let device_container = DeviceContainer::new(&event_loop_container.event_loop);
         let poly_render_pass = PolyRenderPass::new(&device_container);
+        let circle_render_pass = CircleRenderPass::new(&device_container);
         let background_render_pass = BackgroundRenderPass::new();
 
         Self {
             event_loop_container: Some(event_loop_container),
             device_container,
             poly_render_pass,
+            circle_render_pass,
             background_render_pass,
             draw_objects: Vec::new(),
         }
@@ -59,6 +39,10 @@ impl Context {
 
     pub fn draw(&mut self, draw_object: DrawObject) {
         self.draw_objects.push(draw_object);
+    }
+
+    pub fn draw_circle(&mut self, circle: Circle) {
+        self.draw(DrawObject::CircleObject(circle));
     }
 
     pub fn draw_square(&mut self, square: Square) {
@@ -80,6 +64,9 @@ impl Context {
             match object {
                 DrawObject::SquareObject(square) => {
                     square.draw(&mut self.poly_render_pass, &mut self.device_container);
+                }
+                DrawObject::CircleObject(circle) => {
+                    circle.draw(&mut self.circle_render_pass, &mut self.device_container);
                 }
                 DrawObject::BackgroundObject(bg) => {
                     bg.draw(&self.background_render_pass, &mut self.device_container);

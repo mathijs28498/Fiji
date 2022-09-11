@@ -7,25 +7,26 @@ use vulkano::{
 };
 
 use crate::rendering::{
-    data_types::Vertex, device_container::DeviceContainer,
-    render_passes::poly_render_pass::{PolyRenderPass, PolyPushConstants},
+    data_types::Vertex,
+    device_container::DeviceContainer,
+    render_passes::circle_render_pass::{CirclePushConstants, CircleRenderPass},
 };
 
 #[derive(Clone)]
-pub struct Square {
-    pub position: glm::Vec2,
-    pub size: glm::Vec2,
+pub struct Circle {
     pub color: glm::Vec4,
+    pub position: glm::Vec2,
+    pub radius: f32,
     pub vertex_buffer: Option<Arc<ImmutableBuffer<[Vertex]>>>,
     pub index_buffer: Option<Arc<ImmutableBuffer<[u32]>>>,
 }
 
-impl Square {
-    pub fn new(color: glm::Vec4, position: glm::Vec2, size: glm::Vec2) -> Self {
+impl Circle {
+    pub fn new(color: glm::Vec4, position: glm::Vec2, radius: f32) -> Self {
         Self {
             color,
             position,
-            size,
+            radius,
             vertex_buffer: None,
             index_buffer: None,
         }
@@ -33,7 +34,7 @@ impl Square {
 
     pub(crate) fn draw(
         &mut self,
-        render_pass: &mut PolyRenderPass,
+        render_pass: &mut CircleRenderPass,
         device_container: &mut DeviceContainer,
     ) {
         let (vertex_buffer, index_buffer) = self.get_buffers(device_container.queue());
@@ -41,7 +42,11 @@ impl Square {
             device_container,
             vertex_buffer,
             index_buffer,
-            PolyPushConstants::new(self.color.clone(), self.position.clone(), self.size.clone()),
+            CirclePushConstants::new(
+                self.color.clone(),
+                self.position.clone(),
+                self.radius.clone(),
+            ),
         );
     }
 
@@ -54,10 +59,16 @@ impl Square {
             None => {
                 let (vertex_buffer, _) = ImmutableBuffer::from_iter(
                     [
-                        Vertex { position: [-0.5, -0.5] },
-                        Vertex { position: [0.5, -0.5] },
-                        Vertex { position: [-0.5, 0.5] },
-                        Vertex { position: [0.5, 0.5] },
+                        Vertex {
+                            position: [-1., -1.],
+                        },
+                        Vertex {
+                            position: [1., -1.],
+                        },
+                        Vertex {
+                            position: [-1., 1.],
+                        },
+                        Vertex { position: [1., 1.] },
                     ],
                     BufferUsage::vertex_buffer(),
                     queue.clone(),

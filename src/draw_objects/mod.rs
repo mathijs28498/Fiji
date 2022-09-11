@@ -1,11 +1,13 @@
 pub mod square;
 pub mod background;
+pub mod circle;
 
-use self::{square::Square, background::Background};
+use self::{square::Square, background::Background, circle::Circle};
 
 pub enum DrawObject {
     SquareObject(Square),
     BackgroundObject(Background),
+    CircleObject(Circle),
 }
 
 // pub trait DrawObject {

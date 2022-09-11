@@ -16,6 +16,7 @@ bytemuck = { version = "1.7", features = ["derive", "extern_crate_std", "min_con
 rand = "0.8.5"
 nalgebra = "*"
 nalgebra-glm = "0.17.0"
+queues = "1.0.2"
 
 # Enable a small amount of optimization in debug mode
 [profile.dev]

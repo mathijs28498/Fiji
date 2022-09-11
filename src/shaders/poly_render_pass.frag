@@ -1,14 +1,14 @@
 #version 450
 
 layout(push_constant) uniform constants {
-    vec2 position;
-    vec2 size;
-    vec3 color;
     uvec2 resolution;
+    vec2 position;
+    vec4 color;
+    vec2 size;
 } pc;
 
 layout(location = 0) out vec4 f_color;
 
 void main() {
-    f_color = vec4(pc.color, 1.);
+    f_color = pc.color;
 }

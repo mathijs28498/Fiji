@@ -184,4 +184,8 @@ impl DeviceContainer {
     pub(crate) fn resolution(&self) -> [u32; 2] {
         self.current_image().dimensions().width_height()
     }
+
+    pub(crate) fn resolution_f32(&self) -> [f32; 2] {
+        self.resolution().map(|num|num as f32)
+    }
 }
