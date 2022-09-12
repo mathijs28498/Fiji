@@ -13,12 +13,11 @@ use crate::rendering::common::*;
 // [X] - Add mouse input (look at bevy_vulkano)
 // [X] - Add keyboard input (look at bevy_vulkano)
 // [ ] - Add initial width/height (look at bevy_vulkano)
-// [ ] - Allow resizing (look at bevy_vulkano)
 // [ ] - Make project a cargo crate
 // [ ] - Add Polygon draw object
 
 fn main() {
-    let mut context = Context::new();
+    let mut context = Context::new(1280, 720);
 
     let mut pos = Vec2::new(100., 100.);
 
@@ -52,7 +51,7 @@ fn main() {
 
         context.draw_circle(Circle::new(
             Vec4::new(1., 0., 1., 0.2),
-            Vec2::new(500., 300.),
+            Vec2::new(620., 340.),
             300.,
         ));
 

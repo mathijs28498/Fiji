@@ -1,18 +1,20 @@
 use std::sync::Arc;
 
 use vulkano::{
-    sync,
     device::{
         physical::{PhysicalDevice, PhysicalDeviceType},
         Device, DeviceCreateInfo, DeviceExtensions, Queue, QueueCreateInfo,
     },
     format::Format,
-    image::{ImageUsage, SwapchainImage, ImageAccess},
-    swapchain::{Swapchain, SwapchainCreateInfo, acquire_next_image},
-    sync::GpuFuture, instance::{Instance, InstanceCreateInfo},
+    image::{ImageAccess, ImageUsage, SwapchainImage},
+    instance::{Instance, InstanceCreateInfo},
+    swapchain::{acquire_next_image, Swapchain, SwapchainCreateInfo},
+    sync,
+    sync::GpuFuture,
 };
 use vulkano_win::VkSurfaceBuild;
 use winit::{
+    dpi::PhysicalSize,
     event_loop::EventLoop,
     window::{Window, WindowBuilder},
 };
@@ -26,7 +28,7 @@ pub(crate) struct DeviceContainer {
 }
 
 impl DeviceContainer {
-    pub(crate) fn new(event_loop: &EventLoop<()>) -> Self {
+    pub(crate) fn new(event_loop: &EventLoop<()>, width: u32, height: u32) -> Self {
         let required_extensions = vulkano_win::required_extensions();
 
         let instance = Instance::new(InstanceCreateInfo {
@@ -39,6 +41,11 @@ impl DeviceContainer {
         let surface = WindowBuilder::new()
             .build_vk_surface(&event_loop, instance.clone())
             .unwrap();
+
+        surface
+            .window()
+            .set_inner_size(PhysicalSize::new(width, height));
+
         let device_extensions = DeviceExtensions {
             khr_swapchain: true,
             ..DeviceExtensions::none()
@@ -98,6 +105,7 @@ impl DeviceContainer {
                 SwapchainCreateInfo {
                     min_image_count: surface_capabilities.min_image_count,
                     image_format,
+                    // image_extent: surface.window().inner_size().into(),
                     image_extent: surface.window().inner_size().into(),
                     image_usage: ImageUsage {
                         transfer_dst: true,
@@ -186,6 +194,6 @@ impl DeviceContainer {
     }
 
     pub(crate) fn resolution_f32(&self) -> [f32; 2] {
-        self.resolution().map(|num|num as f32)
+        self.resolution().map(|num| num as f32)
     }
 }

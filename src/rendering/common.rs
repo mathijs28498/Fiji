@@ -20,9 +20,9 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new() -> Self {
+    pub fn new(width: u32, height: u32) -> Self {
         let event_loop_container = EventLoopContainer::new();
-        let device_container = DeviceContainer::new(&event_loop_container.event_loop);
+        let device_container = DeviceContainer::new(&event_loop_container.event_loop, width, height);
         let poly_render_pass = PolyRenderPass::new(&device_container);
         let circle_render_pass = CircleRenderPass::new(&device_container);
         let background_render_pass = BackgroundRenderPass::new();
