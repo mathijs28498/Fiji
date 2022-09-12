@@ -20,17 +20,17 @@ use vulkano::{
 
 use crate::rendering::{data_types::*, device_container::DeviceContainer};
 
-use nalgebra_glm as glm;
+use nalgebra_glm::{Vec2, Vec4};
 
 pub(crate) struct PolyPushConstants {
     _resolution: [u32; 2],
-    _position: glm::Vec2,
-    _color: glm::Vec4,
-    _size: glm::Vec2,
+    _position: Vec2,
+    _color: Vec4,
+    _size: Vec2,
 }
 
 impl PolyPushConstants {
-    pub(crate) fn new(color: glm::Vec4, position: glm::Vec2, size: glm::Vec2) -> Self {
+    pub(crate) fn new(color: Vec4, position: Vec2, size: Vec2) -> Self {
         PolyPushConstants {
             _resolution: [0, 0],
             _position: position,

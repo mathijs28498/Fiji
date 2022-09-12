@@ -3,7 +3,7 @@ use vulkano::{
     sync::GpuFuture,
 };
 
-use nalgebra_glm as glm;
+use nalgebra_glm::Vec3;
 
 use crate::rendering::device_container::DeviceContainer;
 // TODO: Create circle render pass
@@ -17,7 +17,7 @@ impl BackgroundRenderPass {
         Self {}
     }
 
-    pub(crate) fn draw(&self, device_container: &mut DeviceContainer, color: &glm::Vec3) {
+    pub(crate) fn draw(&self, device_container: &mut DeviceContainer, color: &Vec3) {
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.device().clone(),
             device_container.queue().family(),
