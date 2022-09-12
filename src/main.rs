@@ -12,7 +12,7 @@ use crate::rendering::common::*;
 // TODO:
 // [X] - Add mouse input (look at bevy_vulkano)
 // [X] - Add keyboard input (look at bevy_vulkano)
-// [ ] - Add initial width/height (look at bevy_vulkano)
+// [X] - Add initial width/height (look at bevy_vulkano)
 // [ ] - Make project a cargo crate
 // [ ] - Add Polygon draw object
 
