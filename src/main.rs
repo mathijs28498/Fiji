@@ -15,6 +15,7 @@ use crate::rendering::common::*;
 // [X] - Add initial width/height (look at bevy_vulkano)
 // [ ] - Make project a cargo crate
 // [ ] - Add Polygon draw object
+// [ ] - Draw borders
 // [ ] - Add support for saving/streaming to video
 
 fn main() {
