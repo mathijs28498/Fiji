@@ -5,6 +5,8 @@
 [ ] - Make window not resizable
 [ ] - Make project a cargo crate
 [ ] - Add Polygon draw object
+[ ] - Add line draw object
+[ ] - Add triangle draw object
 [ ] - Draw borders
 [ ] - Add support for saving/streaming to video
 [ ] - Separate the buffers/graphics implementations from the draw objects

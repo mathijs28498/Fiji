@@ -18,7 +18,10 @@ use vulkano::{
     sync::GpuFuture,
 };
 
-use crate::{rendering::{data_types::*, device_container::DeviceContainer}, draw_objects::Border};
+use crate::{
+    draw_objects::Border,
+    rendering::{data_types::*, device_container::DeviceContainer},
+};
 
 use nalgebra_glm::{Vec2, Vec4};
 
@@ -35,9 +38,9 @@ impl PolyPushConstants {
     pub(crate) fn new(color: Vec4, position: Vec2, size: Vec2, border: Option<Border>) -> Self {
         let (border_color, border_width) = match border {
             Some(border) => (border.color, border.width),
-            None => (Vec4::new(0., 0., 0., 0.), 0)
+            None => (Vec4::new(0., 0., 0., 0.), 0),
         };
-        PolyPushConstants {
+        Self {
             _resolution: [0, 0],
             _position: position,
             _color: color,
@@ -48,11 +51,6 @@ impl PolyPushConstants {
     }
 }
 
-// TODO: 
-// [ ] - Create circle render pass
-// [X] - Create clear colour render pass
-// [X] - Use shader files
-// [X] - Use pushconstants for shit like colours/ maybe borders
 pub(crate) struct PolyRenderPass {
     pipeline: Arc<GraphicsPipeline>,
     viewport: Viewport,

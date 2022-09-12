@@ -1,4 +1,4 @@
-use draw_objects::{background::Background, circle::Circle, square::Square, Border};
+use draw_objects::{background::Background, circle::Circle, rect::Rect, Border};
 
 use input::{
     input_enums::{KeyCode, MouseButton},
@@ -10,7 +10,7 @@ mod draw_objects;
 mod input;
 mod rendering;
 
-use crate::rendering::common::*;
+use crate::rendering::context::*;
 
 fn main() {
     let mut context = Context::new(1280, 720);
@@ -47,7 +47,7 @@ fn main() {
             context.draw_background(Background::new(Vec3::new(0., 0., 0.)));
         }
 
-        context.draw_square(Square::new(
+        context.draw_rect(Rect::new(
             Vec4::new(0., 1., 1., 1.),
             input.mouse_position().clone(),
             Vec2::new(20., 50.),
@@ -61,14 +61,14 @@ fn main() {
             Some(Border::new(Vec4::new(1., 1., 1., 1.), border_width)),
         ));
 
-        context.draw_square(Square::new(
+        context.draw_rect(Rect::new(
             Vec4::new(1., 0.5, 1., 1.),
             Vec2::new(430., 325.),
             Vec2::new(20., 50.),
             None,
         ));
 
-        context.draw_square(Square::new(
+        context.draw_rect(Rect::new(
             Vec4::new(1., 1., 0., 1.),
             pos.clone(),
             Vec2::new(20., 50.),

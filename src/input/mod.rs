@@ -97,7 +97,6 @@ impl Input {
         match event {
             InteractionEvent::MouseEvent(state, button) => match state {
                 ElementState::Pressed => {
-                    println!("{state:?}");
                     self.mouse_button_pressed
                         .insert(convert_mouse_button(button));
                     self.mouse_button_held.insert(convert_mouse_button(button));
@@ -121,7 +120,7 @@ impl Input {
                             if self.key_held(&convert_virtual_key_code(key)) {
                                 return;
                             }
-                            
+
                             self.key_pressed.insert(convert_virtual_key_code(key));
                             self.key_held.insert(convert_virtual_key_code(key));
                         }

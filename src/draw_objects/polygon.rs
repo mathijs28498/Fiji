@@ -1,45 +1,44 @@
 use std::sync::Arc;
 
 use nalgebra_glm::{Vec2, Vec4};
-use vulkano::{
-    buffer::{BufferUsage, ImmutableBuffer},
-    device::Queue,
-};
+use vulkano::{buffer::{BufferUsage, ImmutableBuffer}, device::Queue};
 
-use crate::rendering::{
-    data_types::Vertex,
-    device_container::DeviceContainer,
-    render_passes::circle_render_pass::{CirclePushConstants, CircleRenderPass},
-};
+use crate::rendering::{device_container::DeviceContainer, render_passes::{circle_render_pass::CircleRenderPass, poly_render_pass::{PolyRenderPass, PolyPushConstants}}, data_types::Vertex};
 
 use super::Border;
 
-static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex]>>> = None;
-static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
-
 #[derive(Clone)]
-pub struct Circle {
+pub struct Polygon {
     pub color: Vec4,
-    pub position: Vec2,
-    pub radius: f32,
+    pub points: Vec<Vec2>,
     pub border: Option<Border>,
 }
 
-impl Circle {
-    pub fn new(color: Vec4, position: Vec2, radius: f32, border: Option<Border>) -> Self {
+impl Polygon {
+    pub fn new(color: Vec4, points: Vec<Vec2>, border: Option<Border>) -> Self {
         Self {
             color,
-            position,
-            radius,
+            points,
+            border,
+        }
+    }
+
+    pub fn new_triangle(color: Vec4, points: [Vec2; 3], border: Option<Border>) -> Self {
+        Self {
+            color,
+            points: points.into(),
             border,
         }
     }
 
     pub(crate) fn draw(
         &mut self,
-        render_pass: &mut CircleRenderPass,
+        render_pass: &mut PolyRenderPass,
         device_container: &mut DeviceContainer,
     ) {
+        static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex]>>> = None;
+        static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
+
         // Unsafe is used to change these static values.
         // This is definitely safe, even thought the compiler can't verify.
         unsafe {
@@ -56,29 +55,32 @@ impl Circle {
                 device_container,
                 VERTEX_BUFFER.as_ref().unwrap().clone(),
                 INDEX_BUFFER.as_ref().unwrap().clone(),
-                CirclePushConstants::new(
+                PolyPushConstants::new(
                     self.color.clone(),
-                    self.position.clone(),
-                    self.radius.clone(),
+                    Vec2::new(0., 0.),
+                    Vec2::new(1., 1.),
                     self.border.clone(),
                 ),
             );
         }
     }
 
+    // TODO: Implement proper vertex buffer shit
     fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex]>> {
         ImmutableBuffer::from_iter(
             [
                 Vertex {
-                    position: [-1., -1.],
+                    position: [-0.5, -0.5],
                 },
                 Vertex {
-                    position: [1., -1.],
+                    position: [0.5, -0.5],
                 },
                 Vertex {
-                    position: [-1., 1.],
+                    position: [-0.5, 0.5],
                 },
-                Vertex { position: [1., 1.] },
+                Vertex {
+                    position: [0.5, 0.5],
+                },
             ],
             BufferUsage::vertex_buffer(),
             queue,

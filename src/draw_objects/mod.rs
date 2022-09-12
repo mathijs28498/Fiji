@@ -1,10 +1,12 @@
 pub mod background;
 pub mod circle;
-pub mod square;
+pub mod rect;
+pub mod polygon;
+pub mod line;
 
 use nalgebra_glm::Vec4;
 
-use self::{background::Background, circle::Circle, square::Square};
+use self::{background::Background, circle::Circle, rect::Rect, polygon::Polygon, line::Line};
 
 #[derive(Clone)]
 pub struct Border {
@@ -19,7 +21,9 @@ impl Border {
 }
 
 pub enum DrawObject {
-    SquareObject(Square),
-    BackgroundObject(Background),
+    RectObject(Rect),
     CircleObject(Circle),
+    LineObject(Line),
+    PolyObject(Polygon),
+    BackgroundObject(Background),
 }

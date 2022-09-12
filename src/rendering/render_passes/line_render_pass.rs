@@ -1,11 +1,10 @@
 use std::sync::Arc;
-
 use vulkano::{
     buffer::{ImmutableBuffer, TypedBufferAccess},
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
     },
-    image::view::ImageView,
+    image::{view::ImageView, ImageAccess},
     pipeline::{
         graphics::{
             color_blend::ColorBlendState,
@@ -19,64 +18,43 @@ use vulkano::{
     sync::GpuFuture,
 };
 
-use nalgebra_glm::{Vec2, Vec4};
-
 use crate::{
     draw_objects::Border,
-    rendering::{data_types::Vertex, device_container::DeviceContainer},
+    rendering::{data_types::*, device_container::DeviceContainer},
 };
 
-#[derive(Debug)]
-pub(crate) struct CirclePushConstants {
-    _resolution: [u32; 2],
-    _position: Vec2,
+use nalgebra_glm::{Vec2, Vec4};
+
+pub(crate) struct LinePushConstants {
     _color: Vec4,
-    _border_color: Vec4,
-    _border_width: u32,
-    _radius: f32,
 }
 
-impl CirclePushConstants {
-    pub(crate) fn new(
-        color: Vec4,
-        position: Vec2,
-        radius: f32,
-        border: Option<Border>,
-    ) -> CirclePushConstants {
-        let (border_color, border_width) = match border {
-            Some(border) => (border.color, border.width),
-            None => (Vec4::new(0., 0., 0., 0.), 0),
-        };
-        Self {
-            _resolution: [0, 0],
-            _color: color,
-            _position: position,
-            _border_color: border_color,
-            _border_width: border_width,
-            _radius: radius,
-        }
+impl LinePushConstants {
+    pub(crate) fn new(color: Vec4) -> Self {
+        Self { _color: color }
     }
 }
 
-pub(crate) struct CircleRenderPass {
+pub(crate) struct LineRenderPass {
     pipeline: Arc<GraphicsPipeline>,
     viewport: Viewport,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
 
-impl CircleRenderPass {
-    pub(crate) fn new(device_container: &DeviceContainer) -> CircleRenderPass {
+impl LineRenderPass {
+    pub(crate) fn new(device_container: &DeviceContainer) -> Self {
         mod vs {
-            vulkano_shaders::shader!(
+            vulkano_shaders::shader! {
                 ty: "vertex",
-                path: "src/shaders/circle_render_pass.vert"
-            );
+                path: "src/shaders/line_render_pass.vert"
+            }
         }
+
         mod fs {
-            vulkano_shaders::shader!(
+            vulkano_shaders::shader! {
                 ty: "fragment",
-                path: "src/shaders/circle_render_pass.frag"
-            );
+                path: "src/shaders/line_render_pass.frag"
+            }
         }
 
         let vs = vs::load(device_container.device().clone()).unwrap();
@@ -101,8 +79,8 @@ impl CircleRenderPass {
 
         let pipeline = GraphicsPipeline::start()
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
-            .input_assembly_state(InputAssemblyState::new())
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
+            .input_assembly_state(InputAssemblyState::new())
             .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
             .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
@@ -110,11 +88,14 @@ impl CircleRenderPass {
             .build(device_container.device().clone())
             .unwrap();
 
-        let viewport = Viewport {
-            origin: [0., 0.],
-            dimensions: device_container.resolution_f32(),
+        let mut viewport = Viewport {
+            origin: [0.0, 0.0],
+            dimensions: [0.0, 0.0],
             depth_range: 0.0..1.0,
         };
+
+        let dimensions = device_container.images()[0].dimensions().width_height();
+        viewport.dimensions = [dimensions[0] as f32, dimensions[1] as f32];
 
         let framebuffers = device_container
             .images()
@@ -144,10 +125,8 @@ impl CircleRenderPass {
         device_container: &mut DeviceContainer,
         vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
         index_buffer: Arc<ImmutableBuffer<[u32]>>,
-        mut push_constants: CirclePushConstants,
+        mut push_constants: LinePushConstants,
     ) {
-        push_constants._resolution = device_container.resolution();
-
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.device().clone(),
             device_container.queue().family(),
