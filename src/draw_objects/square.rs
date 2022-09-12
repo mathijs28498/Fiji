@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use nalgebra_glm as glm;
+use nalgebra_glm::{Vec2, Vec4};
 use vulkano::{
     buffer::{BufferUsage, ImmutableBuffer},
     device::Queue,
@@ -13,15 +13,15 @@ use crate::rendering::{
 
 #[derive(Clone)]
 pub struct Square {
-    pub position: glm::Vec2,
-    pub size: glm::Vec2,
-    pub color: glm::Vec4,
+    pub position: Vec2,
+    pub size: Vec2,
+    pub color: Vec4,
     pub vertex_buffer: Option<Arc<ImmutableBuffer<[Vertex]>>>,
     pub index_buffer: Option<Arc<ImmutableBuffer<[u32]>>>,
 }
 
 impl Square {
-    pub fn new(color: glm::Vec4, position: glm::Vec2, size: glm::Vec2) -> Self {
+    pub fn new(color: Vec4, position: Vec2, size: Vec2) -> Self {
         Self {
             color,
             position,

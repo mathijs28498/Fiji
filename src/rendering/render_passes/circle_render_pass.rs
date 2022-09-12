@@ -19,20 +19,20 @@ use vulkano::{
     sync::GpuFuture,
 };
 
-use nalgebra_glm as glm;
+use nalgebra_glm::{Vec2, Vec4};
 
 use crate::rendering::{data_types::Vertex, device_container::DeviceContainer};
 
 #[derive(Debug)]
 pub(crate) struct CirclePushConstants {
     _resolution: [u32; 2],
-    _position: glm::Vec2,
-    _color: glm::Vec4,
+    _position: Vec2,
+    _color: Vec4,
     _radius: f32,
 }
 
 impl CirclePushConstants {
-    pub(crate) fn new(color: glm::Vec4, position: glm::Vec2, radius: f32) -> CirclePushConstants {
+    pub(crate) fn new(color: Vec4, position: Vec2, radius: f32) -> CirclePushConstants {
         CirclePushConstants {
             _resolution: [0, 0],
             _color: color,

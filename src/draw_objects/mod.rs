@@ -21,7 +21,7 @@ pub enum DrawObject {
 
 
 // impl Square {
-//     pub fn new(position: glm::Vec2, size: glm::Vec2, color: glm::Vec3) -> Self {
+//     pub fn new(position: Vec2, size: Vec2, color: Vec3) -> Self {
 //         Self {
 //             position,
 //             size,

@@ -4,7 +4,7 @@ use winit::{
     event_loop::{ControlFlow, EventLoop},
 };
 
-use nalgebra_glm as glm;
+use nalgebra_glm::Vec2;
 
 use crate::input::{Input, InteractionEvent};
 
@@ -39,7 +39,7 @@ impl EventLoopContainer {
                             .unwrap();
                     }
                     WindowEvent::CursorMoved { position, .. } => {
-                        let position = glm::Vec2::new(position.x as f32, position.y as f32);
+                        let position = Vec2::new(position.x as f32, position.y as f32);
                         self.events
                             .add(InteractionEvent::MouseMovedEvent(position))
                             .unwrap();
@@ -68,7 +68,7 @@ impl EventLoopContainer {
                     event: DeviceEvent::MouseMotion { delta },
                     ..
                 } => {
-                    let mouse_delta = glm::Vec2::new(delta.0 as f32, delta.1 as f32);
+                    let mouse_delta = Vec2::new(delta.0 as f32, delta.1 as f32);
                     self.events
                         .add(InteractionEvent::MouseDeltaEvent(mouse_delta))
                         .unwrap();

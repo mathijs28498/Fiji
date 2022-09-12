@@ -1,4 +1,4 @@
-use nalgebra_glm as glm;
+use nalgebra_glm::Vec3;
 
 use crate::rendering::{
     device_container::DeviceContainer, render_passes::background_render_pass::BackgroundRenderPass,
@@ -6,11 +6,11 @@ use crate::rendering::{
 
 #[derive(Clone)]
 pub struct Background {
-    pub color: glm::Vec3,
+    pub color: Vec3,
 }
 
 impl Background {
-    pub fn new(color: glm::Vec3) -> Self {
+    pub fn new(color: Vec3) -> Self {
         Self { color }
     }
 
