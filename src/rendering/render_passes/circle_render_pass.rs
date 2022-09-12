@@ -21,22 +21,30 @@ use vulkano::{
 
 use nalgebra_glm::{Vec2, Vec4};
 
-use crate::rendering::{data_types::Vertex, device_container::DeviceContainer};
+use crate::{rendering::{data_types::Vertex, device_container::DeviceContainer}, draw_objects::Border};
 
 #[derive(Debug)]
 pub(crate) struct CirclePushConstants {
     _resolution: [u32; 2],
     _position: Vec2,
     _color: Vec4,
+    _border_color: Vec4,
+    _border_width: u32,
     _radius: f32,
 }
 
 impl CirclePushConstants {
-    pub(crate) fn new(color: Vec4, position: Vec2, radius: f32) -> CirclePushConstants {
+    pub(crate) fn new(color: Vec4, position: Vec2, radius: f32, border: Option<Border>) -> CirclePushConstants {
+        let (border_color, border_width) = match border {
+            Some(border) => (border.color, border.width),
+            None => (Vec4::new(0., 0., 0., 0.), 0)
+        };
         CirclePushConstants {
             _resolution: [0, 0],
             _color: color,
             _position: position,
+            _border_color: border_color,
+            _border_width: border_width,
             _radius: radius,
         }
     }

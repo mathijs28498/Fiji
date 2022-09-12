@@ -7,25 +7,30 @@ use vulkano::{
 };
 
 use crate::rendering::{
-    data_types::Vertex, device_container::DeviceContainer,
-    render_passes::poly_render_pass::{PolyRenderPass, PolyPushConstants},
+    data_types::Vertex,
+    device_container::DeviceContainer,
+    render_passes::poly_render_pass::{PolyPushConstants, PolyRenderPass},
 };
+
+use super::Border;
 
 #[derive(Clone)]
 pub struct Square {
     pub position: Vec2,
     pub size: Vec2,
     pub color: Vec4,
+    pub border: Option<Border>,
     pub vertex_buffer: Option<Arc<ImmutableBuffer<[Vertex]>>>,
     pub index_buffer: Option<Arc<ImmutableBuffer<[u32]>>>,
 }
 
 impl Square {
-    pub fn new(color: Vec4, position: Vec2, size: Vec2) -> Self {
+    pub fn new(color: Vec4, position: Vec2, size: Vec2, border: Option<Border>) -> Self {
         Self {
             color,
             position,
             size,
+            border,
             vertex_buffer: None,
             index_buffer: None,
         }
@@ -41,7 +46,12 @@ impl Square {
             device_container,
             vertex_buffer,
             index_buffer,
-            PolyPushConstants::new(self.color.clone(), self.position.clone(), self.size.clone()),
+            PolyPushConstants::new(
+                self.color.clone(),
+                self.position.clone(),
+                self.size.clone(),
+                self.border.clone(),
+            ),
         );
     }
 
@@ -54,10 +64,18 @@ impl Square {
             None => {
                 let (vertex_buffer, _) = ImmutableBuffer::from_iter(
                     [
-                        Vertex { position: [-0.5, -0.5] },
-                        Vertex { position: [0.5, -0.5] },
-                        Vertex { position: [-0.5, 0.5] },
-                        Vertex { position: [0.5, 0.5] },
+                        Vertex {
+                            position: [-0.5, -0.5],
+                        },
+                        Vertex {
+                            position: [0.5, -0.5],
+                        },
+                        Vertex {
+                            position: [-0.5, 0.5],
+                        },
+                        Vertex {
+                            position: [0.5, 0.5],
+                        },
                     ],
                     BufferUsage::vertex_buffer(),
                     queue.clone(),

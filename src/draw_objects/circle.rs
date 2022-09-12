@@ -12,21 +12,25 @@ use crate::rendering::{
     render_passes::circle_render_pass::{CirclePushConstants, CircleRenderPass},
 };
 
+use super::Border;
+
 #[derive(Clone)]
 pub struct Circle {
     pub color: Vec4,
     pub position: Vec2,
     pub radius: f32,
+    pub border: Option<Border>,
     pub vertex_buffer: Option<Arc<ImmutableBuffer<[Vertex]>>>,
     pub index_buffer: Option<Arc<ImmutableBuffer<[u32]>>>,
 }
 
 impl Circle {
-    pub fn new(color: Vec4, position: Vec2, radius: f32) -> Self {
+    pub fn new(color: Vec4, position: Vec2, radius: f32, border: Option<Border>) -> Self {
         Self {
             color,
             position,
             radius,
+            border,
             vertex_buffer: None,
             index_buffer: None,
         }
@@ -46,6 +50,7 @@ impl Circle {
                 self.color.clone(),
                 self.position.clone(),
                 self.radius.clone(),
+                self.border.clone(),
             ),
         );
     }
