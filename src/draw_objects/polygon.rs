@@ -1,9 +1,19 @@
 use std::sync::Arc;
 
 use nalgebra_glm::{Vec2, Vec4};
-use vulkano::{buffer::{BufferUsage, ImmutableBuffer}, device::Queue};
+use vulkano::{
+    buffer::{BufferUsage, ImmutableBuffer},
+    device::Queue,
+};
 
-use crate::rendering::{device_container::DeviceContainer, render_passes::{circle_render_pass::CircleRenderPass, poly_render_pass::{PolyRenderPass, PolyPushConstants}}, data_types::Vertex};
+use crate::rendering::{
+    data_types::{BufferContainer, Vertex},
+    device_container::DeviceContainer,
+    render_passes::{
+        circle_render_pass::CircleRenderPass,
+        poly_render_pass::{PolyPushConstants, PolyRenderPass},
+    },
+};
 
 use super::Border;
 
@@ -12,6 +22,7 @@ pub struct Polygon {
     pub color: Vec4,
     pub points: Vec<Vec2>,
     pub border: Option<Border>,
+    buffers: Option<BufferContainer>,
 }
 
 impl Polygon {
@@ -20,6 +31,7 @@ impl Polygon {
             color,
             points,
             border,
+            buffers: None,
         }
     }
 
@@ -28,6 +40,7 @@ impl Polygon {
             color,
             points: points.into(),
             border,
+            buffers: None,
         }
     }
 
@@ -36,60 +49,49 @@ impl Polygon {
         render_pass: &mut PolyRenderPass,
         device_container: &mut DeviceContainer,
     ) {
-        static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex]>>> = None;
-        static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
-
-        // Unsafe is used to change these static values.
-        // This is definitely safe, even thought the compiler can't verify.
-        unsafe {
-            if let None = VERTEX_BUFFER {
-                VERTEX_BUFFER = Some(Self::get_vertex_buffer(device_container.queue().clone()));
-                INDEX_BUFFER = Some(Self::get_index_buffer(device_container.queue().clone()));
-            }
+        if let None = self.buffers {
+            self.buffers = Some(BufferContainer {
+                vertex_buffer: self.get_vertex_buffer(device_container.queue().clone()),
+                index_buffer: self.get_index_buffer(device_container.queue().clone()),
+            })
         }
 
-        // Unsafe is used to change these static values.
-        // This is definitely safe, even thought the compiler can't verify.
-        unsafe {
-            render_pass.draw(
-                device_container,
-                VERTEX_BUFFER.as_ref().unwrap().clone(),
-                INDEX_BUFFER.as_ref().unwrap().clone(),
-                PolyPushConstants::new(
-                    self.color.clone(),
-                    Vec2::new(0., 0.),
-                    Vec2::new(1., 1.),
-                    self.border.clone(),
-                ),
-            );
-        }
+        render_pass.draw(
+            device_container,
+            self.buffers.as_ref().unwrap(),
+            PolyPushConstants::new(
+                self.color.clone(),
+                Vec2::new(0., 0.),
+                Vec2::new(1., 1.),
+                self.border.clone(),
+            ),
+        );
     }
 
     // TODO: Implement proper vertex buffer shit
-    fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex]>> {
-        ImmutableBuffer::from_iter(
-            [
-                Vertex {
-                    position: [-0.5, -0.5],
-                },
-                Vertex {
-                    position: [0.5, -0.5],
-                },
-                Vertex {
-                    position: [-0.5, 0.5],
-                },
-                Vertex {
-                    position: [0.5, 0.5],
-                },
-            ],
-            BufferUsage::vertex_buffer(),
-            queue,
-        )
-        .unwrap()
-        .0
+    fn get_vertex_buffer(&self, queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex]>> {
+        let mut vertices = Vec::new();
+        for p in &self.points {
+            vertices.push(Vertex {
+                position: [p.x, p.y],
+            })
+        }
+
+        return ImmutableBuffer::from_iter(vertices, BufferUsage::vertex_buffer(), queue)
+            .unwrap()
+            .0;
     }
 
-    fn get_index_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[u32]>> {
+    fn get_index_buffer(&self, queue: Arc<Queue>) -> Arc<ImmutableBuffer<[u32]>> {
+        if self.points.len() == 3 {
+            return ImmutableBuffer::from_iter(
+                [0, 1, 2],
+                BufferUsage::index_buffer(),
+                queue.clone(),
+            )
+            .unwrap()
+            .0;
+        }
         ImmutableBuffer::from_iter(
             [0, 1, 2, 2, 1, 3],
             BufferUsage::index_buffer(),

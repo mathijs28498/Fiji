@@ -7,15 +7,14 @@ use vulkano::{
 };
 
 use crate::rendering::{
-    data_types::Vertex,
+    data_types::{BufferContainer, Vertex},
     device_container::DeviceContainer,
     render_passes::poly_render_pass::{PolyPushConstants, PolyRenderPass},
 };
 
 use super::Border;
 
-static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex]>>> = None;
-static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
+static mut BUFFERS: Option<BufferContainer> = None;
 
 #[derive(Clone)]
 pub struct Rect {
@@ -43,9 +42,11 @@ impl Rect {
         // Unsafe is used to change these static values.
         // This is definitely safe, even thought the compiler can't verify.
         unsafe {
-            if let None = VERTEX_BUFFER {
-                VERTEX_BUFFER = Some(Self::get_vertex_buffer(device_container.queue().clone()));
-                INDEX_BUFFER = Some(Self::get_index_buffer(device_container.queue().clone()));
+            if let None = BUFFERS {
+                BUFFERS = Some(BufferContainer {
+                    vertex_buffer: Self::get_vertex_buffer(device_container.queue().clone()),
+                    index_buffer: Self::get_index_buffer(device_container.queue().clone()),
+                })
             }
         }
 
@@ -54,8 +55,7 @@ impl Rect {
         unsafe {
             render_pass.draw(
                 device_container,
-                VERTEX_BUFFER.as_ref().unwrap().clone(),
-                INDEX_BUFFER.as_ref().unwrap().clone(),
+                BUFFERS.as_ref().unwrap(),
                 PolyPushConstants::new(
                     self.color.clone(),
                     self.position.clone(),

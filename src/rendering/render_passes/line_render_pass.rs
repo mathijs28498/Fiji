@@ -125,7 +125,7 @@ impl LineRenderPass {
         device_container: &mut DeviceContainer,
         vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
         index_buffer: Arc<ImmutableBuffer<[u32]>>,
-        mut push_constants: LinePushConstants,
+         push_constants: LinePushConstants,
     ) {
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.device().clone(),

@@ -1,4 +1,6 @@
 use crate::draw_objects::circle::Circle;
+use crate::draw_objects::line::Line;
+use crate::draw_objects::polygon::Polygon;
 use crate::draw_objects::{background::Background, rect::Rect, DrawObject};
 
 use super::render_passes::circle_render_pass::CircleRenderPass;
@@ -51,6 +53,14 @@ impl Context {
 
     pub fn draw_rect(&mut self, rect: Rect) {
         self.draw(DrawObject::RectObject(rect));
+    }
+
+    pub fn draw_polygon(&mut self, polygon: Polygon) {
+        self.draw(DrawObject::PolyObject(polygon));
+    }
+
+    pub fn draw_line(&mut self, line: Line) {
+        self.draw(DrawObject::LineObject(line));
     }
 
     pub fn draw_background(&mut self, bg: Background) {
