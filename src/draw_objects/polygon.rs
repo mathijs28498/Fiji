@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use nalgebra_glm::{Vec2, Vec4};
+use nalgebra_glm::{dot, Vec2, Vec4};
 use vulkano::{
     buffer::{BufferUsage, ImmutableBuffer},
     device::Queue,
@@ -83,21 +83,53 @@ impl Polygon {
     }
 
     fn get_index_buffer(&self, queue: Arc<Queue>) -> Arc<ImmutableBuffer<[u32]>> {
-        if self.points.len() == 3 {
-            return ImmutableBuffer::from_iter(
-                [0, 1, 2],
-                BufferUsage::index_buffer(),
-                queue.clone(),
-            )
-            .unwrap()
-            .0;
+        let mut indices = vec![0, 1, 2];
+
+        for (i, p) in self.points.iter().enumerate().skip(3) {
+            let index_0;
+            let index_1;
+            {
+                let last_triangle = &indices[indices.len() - 3..indices.len()];
+                let p0 = self.points[last_triangle[0] as usize].clone();
+                let p1 = self.points[last_triangle[1] as usize].clone();
+                let p2 = self.points[last_triangle[2] as usize].clone();
+
+                let mut lines = Vec::new();
+                if i == 3 {
+                    lines.push((
+                        (last_triangle[0], last_triangle[1]),
+                        dist_to_line(&p0, &p1, &p),
+                    ));
+                }
+                lines.push((
+                    (last_triangle[0], last_triangle[2]),
+                    dist_to_line(&p0, &p2, &p),
+                ));
+                lines.push((
+                    (last_triangle[1], last_triangle[2]),
+                    dist_to_line(&p1, &p2, &p),
+                ));
+                lines.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+                (index_0, index_1) = lines[0].0;
+            }
+            indices.push(index_0);
+            indices.push(index_1);
+            indices.push(i as u32);
         }
-        ImmutableBuffer::from_iter(
-            [0, 1, 2, 2, 1, 3],
-            BufferUsage::index_buffer(),
-            queue.clone(),
-        )
-        .unwrap()
-        .0
+
+        ImmutableBuffer::from_iter(indices, BufferUsage::index_buffer(), queue.clone())
+            .unwrap()
+            .0
     }
+}
+
+fn dist_to_line(a: &Vec2, b: &Vec2, p: &Vec2) -> f32 {
+    let l2 = (a - b).norm_squared();
+    if l2 == 0. {
+        return (p - a).norm_squared();
+    }
+
+    let t = 0.0_f32.max(1.0_f32.min(dot(&(p - a), &(b - a)) / l2));
+    let proj = a + t * (b - a);
+    (p - proj).norm_squared()
 }

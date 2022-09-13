@@ -19,7 +19,6 @@ fn main() {
     let mut border_width = 0;
 
     let mut polygon_points = Vec::new();
-    let mut draw_polygon = false;
 
     context.event_loop().run(move |input: &Input| {
         if input.key_pressed(&KeyCode::Q) {
@@ -42,10 +41,6 @@ fn main() {
         }
         if input.key_held(&KeyCode::S) {
             pos += Vec2::new(0., 1.);
-        }
-
-        if input.key_pressed(&KeyCode::Z) {
-            draw_polygon = !draw_polygon;
         }
 
         if input.mouse_button_pressed(&MouseButton::Left) {
@@ -90,7 +85,7 @@ fn main() {
             Some(Border::new(Vec4::new(1., 1., 1., 1.), border_width)),
         ));
 
-        if draw_polygon && polygon_points.len() > 0 {
+        if polygon_points.len() >= 3 {
             context.draw_polygon(Polygon::new(
                 Vec4::new(0.9, 0.3, 0.5, 1.),
                 polygon_points.clone(),
@@ -98,9 +93,9 @@ fn main() {
             ));
         }
 
-        for p in &polygon_points {
-            context.draw_circle(Circle::new(Vec4::new(1., 1., 1., 1.), p.clone(), 10., None))
-        }
+        // for p in &polygon_points {
+        //     context.draw_circle(Circle::new(Vec4::new(1., 1., 1., 1.), p.clone(), 10., None))
+        // }
 
         context.render();
     });
