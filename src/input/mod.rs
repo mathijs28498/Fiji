@@ -1,5 +1,6 @@
 pub mod converter;
 pub mod input_enums;
+pub mod fiji_events;
 
 use std::collections::HashSet;
 
@@ -117,6 +118,10 @@ impl Input {
                 if let Some(key) = key {
                     match state {
                         ElementState::Pressed => {
+                            if self.key_held(&convert_virtual_key_code(key)) {
+                                return;
+                            }
+
                             self.key_pressed.insert(convert_virtual_key_code(key));
                             self.key_held.insert(convert_virtual_key_code(key));
                         }

@@ -6,10 +6,6 @@ use vulkano::{
 use nalgebra_glm::Vec3;
 
 use crate::rendering::device_container::DeviceContainer;
-// TODO: Create circle render pass
-// TODO: Create clear colour render pass
-// TODO: Use shader files
-// TODO: Use pushconstants for shit like colours/ maybe borders
 pub(crate) struct BackgroundRenderPass {}
 
 impl BackgroundRenderPass {

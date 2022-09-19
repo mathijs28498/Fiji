@@ -1,49 +1,29 @@
-pub mod square;
 pub mod background;
 pub mod circle;
+pub mod rect;
+pub mod polygon;
+pub mod line;
 
-use self::{square::Square, background::Background, circle::Circle};
+use nalgebra_glm::Vec4;
 
-pub enum DrawObject {
-    SquareObject(Square),
-    BackgroundObject(Background),
-    CircleObject(Circle),
+use self::{background::Background, circle::Circle, rect::Rect, polygon::Polygon, line::Line};
+
+#[derive(Clone)]
+pub struct Border {
+    pub color: Vec4,
+    pub width: u32,
 }
 
-// pub trait DrawObject {
-//     fn get_buffers(
-//         &mut self,
-//         queue: &Arc<Queue>,
-//     ) -> (Arc<ImmutableBuffer<[Vertex]>>, Arc<ImmutableBuffer<[u32]>>);
+impl Border {
+    pub fn new(color: Vec4, width: u32) -> Self {
+        Border { color, width }
+    }
+}
 
-//     fn render_pass_type(&self) -> RenderPassType;
-// }
-
-
-// impl Square {
-//     pub fn new(position: Vec2, size: Vec2, color: Vec3) -> Self {
-//         Self {
-//             position,
-//             size,
-//             color,
-//             vertex_buffer: None,
-//             index_buffer: None,
-//             render_pass_type: RenderPassType::Poly,
-//         }
-//     }
-// }
-
-// impl DrawObject for Square {
-
-//     fn render_pass_type(&self) -> RenderPassType {
-//         self.render_pass_type.clone()
-//     }
-// }
-
-// pub struct ClearBackground {
-
-// }
-
-// impl DrawObject for ClearBackground {
-
-// }
+pub enum DrawObject {
+    RectObject(Rect),
+    CircleObject(Circle),
+    LineObject(Line),
+    PolyObject(Polygon),
+    BackgroundObject(Background),
+}

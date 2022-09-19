@@ -4,6 +4,8 @@ layout(push_constant) uniform constants {
     uvec2 resolution;
     vec2 position;
     vec4 color;
+    vec4 borderColor;
+    uint borderWidth;
     float radius;
 } pc;
 
@@ -16,5 +18,5 @@ void main() {
 }
 
 vec2 worldToScreen(vec2 worldPos) {
-    return (pc.position + position * pc.radius) / pc.resolution * 2. - 1.;
+    return (pc.position + position * (pc.radius + pc.borderWidth)) / pc.resolution * 2. - 1.;
 }

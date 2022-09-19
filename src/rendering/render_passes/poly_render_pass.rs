@@ -18,7 +18,10 @@ use vulkano::{
     sync::GpuFuture,
 };
 
-use crate::rendering::{data_types::*, device_container::DeviceContainer};
+use crate::{
+    draw_objects::Border,
+    rendering::{data_types::*, device_container::DeviceContainer},
+};
 
 use nalgebra_glm::{Vec2, Vec4};
 
@@ -26,25 +29,28 @@ pub(crate) struct PolyPushConstants {
     _resolution: [u32; 2],
     _position: Vec2,
     _color: Vec4,
+    _border_color: Vec4,
     _size: Vec2,
+    _border_width: u32,
 }
 
 impl PolyPushConstants {
-    pub(crate) fn new(color: Vec4, position: Vec2, size: Vec2) -> Self {
-        PolyPushConstants {
+    pub(crate) fn new(color: Vec4, position: Vec2, size: Vec2, border: Option<Border>) -> Self {
+        let (border_color, border_width) = match border {
+            Some(border) => (border.color, border.width),
+            None => (Vec4::new(0., 0., 0., 0.), 0),
+        };
+        Self {
             _resolution: [0, 0],
             _position: position,
             _color: color,
+            _border_color: border_color,
             _size: size,
+            _border_width: border_width,
         }
     }
 }
 
-// TODO: 
-// [ ] - Create circle render pass
-// [X] - Create clear colour render pass
-// [X] - Use shader files
-// [X] - Use pushconstants for shit like colours/ maybe borders
 pub(crate) struct PolyRenderPass {
     pipeline: Arc<GraphicsPipeline>,
     viewport: Viewport,
@@ -133,8 +139,7 @@ impl PolyRenderPass {
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
-        vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
-        index_buffer: Arc<ImmutableBuffer<[u32]>>,
+        buffers: &BufferContainer,
         mut push_constants: PolyPushConstants,
     ) {
         push_constants._resolution = device_container.resolution();
@@ -159,10 +164,10 @@ impl PolyRenderPass {
             .unwrap()
             .set_viewport(0, [self.viewport.clone()])
             .bind_pipeline_graphics(self.pipeline.clone())
-            .bind_vertex_buffers(0, vertex_buffer.clone())
-            .bind_index_buffer(index_buffer.clone())
+            .bind_vertex_buffers(0, buffers.vertex_buffer.clone())
+            .bind_index_buffer(buffers.index_buffer.clone())
             .push_constants(self.pipeline.layout().clone(), 0, push_constants)
-            .draw_indexed(index_buffer.len() as u32, 1, 0, 0, 0)
+            .draw_indexed(buffers.index_buffer.len() as u32, 1, 0, 0, 0)
             .unwrap()
             .end_render_pass()
             .unwrap();
