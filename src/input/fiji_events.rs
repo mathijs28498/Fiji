@@ -6,6 +6,7 @@ enum FijiEvent {
     Exit,
 }
 
+// TODO:  Think of better name for this
 pub struct FijiEventHandler {
     events: Queue<FijiEvent>,
 }
