@@ -1,5 +1,6 @@
 pub mod converter;
 pub mod input_enums;
+pub mod fiji_events;
 
 use std::collections::HashSet;
 

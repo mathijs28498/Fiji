@@ -1,16 +1,13 @@
-use draw_objects::{background::Background, circle::Circle, polygon::Polygon, rect::Rect, Border};
-
-use input::{
-    input_enums::{KeyCode, MouseButton},
-    Input,
-};
 use nalgebra_glm::{Vec2, Vec3, Vec4};
 
-mod draw_objects;
-mod input;
-mod rendering;
-
-use crate::rendering::context::*;
+use fiji::{
+    rendering::context::Context,
+    draw_objects::{background::Background, circle::Circle, polygon::Polygon, rect::Rect, Border},
+    input::{
+        input_enums::{KeyCode, MouseButton},
+        Input,
+    }
+};
 
 fn main() {
     let mut context = Context::new(1280, 720);
@@ -20,12 +17,17 @@ fn main() {
 
     let mut polygon_points = Vec::new();
 
-    context.event_loop().run(move |input: &Input| {
+    context.event_loop().run(move |input, fiji_event_handler| {
+        if input.key_pressed(&KeyCode::Escape) {
+            fiji_event_handler.exit();
+        }
+
         if input.key_pressed(&KeyCode::Q) {
             if border_width > 0 {
                 border_width -= 1;
             }
         }
+
         if input.key_pressed(&KeyCode::E) {
             border_width += 1;
         }
@@ -93,9 +95,9 @@ fn main() {
             ));
         }
 
-        // for p in &polygon_points {
-        //     context.draw_circle(Circle::new(Vec4::new(1., 1., 1., 1.), p.clone(), 10., None))
-        // }
+        for p in &polygon_points {
+            context.draw_circle(Circle::new(Vec4::new(1., 1., 1., 1.), p.clone(), 10., None))
+        }
 
         context.render();
     });
