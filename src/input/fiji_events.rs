@@ -29,6 +29,6 @@ impl FijiEventHandler {
     }
 
     pub fn exit(&mut self) {
-        self.events.add(FijiEvent::Exit);
+        self.events.add(FijiEvent::Exit).unwrap();
     }
 }

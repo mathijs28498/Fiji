@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use vulkano::{
-    buffer::{ImmutableBuffer, TypedBufferAccess},
+    buffer::TypedBufferAccess,
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
     },

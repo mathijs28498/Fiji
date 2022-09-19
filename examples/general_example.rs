@@ -5,7 +5,6 @@ use fiji::{
     draw_objects::{background::Background, circle::Circle, polygon::Polygon, rect::Rect, Border},
     input::{
         input_enums::{KeyCode, MouseButton},
-        Input,
     }
 };
 

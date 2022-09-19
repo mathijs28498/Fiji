@@ -19,11 +19,10 @@ use vulkano::{
 };
 
 use crate::{
-    draw_objects::Border,
     rendering::{data_types::*, device_container::DeviceContainer},
 };
 
-use nalgebra_glm::{Vec2, Vec4};
+use nalgebra_glm::Vec4;
 
 pub(crate) struct LinePushConstants {
     _color: Vec4,

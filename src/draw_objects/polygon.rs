@@ -10,7 +10,6 @@ use crate::rendering::{
     data_types::{BufferContainer, Vertex},
     device_container::DeviceContainer,
     render_passes::{
-        circle_render_pass::CircleRenderPass,
         poly_render_pass::{PolyPushConstants, PolyRenderPass},
     },
 };
