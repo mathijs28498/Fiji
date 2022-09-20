@@ -16,7 +16,7 @@ winit = "0.26.1"
 bytemuck = { version = "1.7", features = ["derive", "extern_crate_std", "min_const_generics"] }
 
 rand = "0.8.5"
-nalgebra = "*"
+nalgebra = "0.31.1"
 nalgebra-glm = "0.17.0"
 queues = "1.0.2"
 
