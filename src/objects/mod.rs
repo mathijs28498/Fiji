@@ -1,12 +1,15 @@
 pub mod background;
-pub mod circle;
-pub mod rect;
-pub mod polygon;
-pub mod line;
+pub mod obj_2d;
+pub mod obj_3d;
+pub mod camera;
 
 use nalgebra_glm::Vec4;
 
-use self::{background::Background, circle::Circle, rect::Rect, polygon::Polygon, line::Line};
+use self::{
+    background::Background,
+    obj_2d::{circle::Circle, line::Line, polygon::Polygon, rect::Rect},
+    obj_3d::block::{Block},
+};
 
 #[derive(Clone)]
 pub struct Border {
@@ -25,5 +28,6 @@ pub enum DrawObject {
     CircleObject(Circle),
     LineObject(Line),
     PolyObject(Polygon),
+    BlockObject(Block),
     BackgroundObject(Background),
 }

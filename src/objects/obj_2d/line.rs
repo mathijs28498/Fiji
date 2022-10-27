@@ -3,7 +3,7 @@ use std::sync::Arc;
 use nalgebra_glm::{Vec2, Vec4};
 use vulkano::{buffer::{ImmutableBuffer, BufferUsage}, device::Queue};
 
-use crate::rendering::{render_passes::line_render_pass::{LineRenderPass, LinePushConstants}, data_types::Vertex, device_container::DeviceContainer};
+use crate::rendering::{render_passes::line_render_pass::{LineRenderPass, LinePushConstants}, data_types::Vertex2D, device_container::DeviceContainer};
 
 #[derive(Clone)]
 pub struct Line {
@@ -28,7 +28,7 @@ impl Line {
         render_pass: &mut LineRenderPass,
         device_container: &mut DeviceContainer,
     ) {
-        static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex]>>> = None;
+        static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex2D]>>> = None;
         static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
 
         // Unsafe is used to change these static values.
@@ -55,19 +55,19 @@ impl Line {
     }
 
     // TODO: Implement proper vertex buffer shit
-    fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex]>> {
+    fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex2D]>> {
         ImmutableBuffer::from_iter(
             [
-                Vertex {
+                Vertex2D {
                     position: [-0.5, -0.5],
                 },
-                Vertex {
+                Vertex2D {
                     position: [0.5, -0.5],
                 },
-                Vertex {
+                Vertex2D {
                     position: [-0.5, 0.5],
                 },
-                Vertex {
+                Vertex2D {
                     position: [0.5, 0.5],
                 },
             ],

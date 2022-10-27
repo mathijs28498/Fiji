@@ -80,7 +80,7 @@ impl LineRenderPass {
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
             .input_assembly_state(InputAssemblyState::new())
-            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
+            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2D>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
             .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
             .fragment_shader(fs.entry_point("main").unwrap(), ())
@@ -122,7 +122,7 @@ impl LineRenderPass {
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
-        vertex_buffer: Arc<ImmutableBuffer<[Vertex]>>,
+        vertex_buffer: Arc<ImmutableBuffer<[Vertex2D]>>,
         index_buffer: Arc<ImmutableBuffer<[u32]>>,
          push_constants: LinePushConstants,
     ) {

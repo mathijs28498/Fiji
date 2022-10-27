@@ -6,15 +6,14 @@ use vulkano::{
     device::Queue,
 };
 
-use crate::rendering::{
-    data_types::{BufferContainer, Vertex},
-    device_container::DeviceContainer,
-    render_passes::{
-        poly_render_pass::{PolyPushConstants, PolyRenderPass},
+use crate::{
+    objects::Border,
+    rendering::{
+        data_types::{BufferContainer, Vertex2D},
+        device_container::DeviceContainer,
+        render_passes::poly_render_pass::{PolyPushConstants, PolyRenderPass},
     },
 };
-
-use super::Border;
 
 #[derive(Clone)]
 pub struct Polygon {
@@ -68,10 +67,10 @@ impl Polygon {
     }
 
     // TODO: Implement proper vertex buffer shit
-    fn get_vertex_buffer(&self, queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex]>> {
+    fn get_vertex_buffer(&self, queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex2D]>> {
         let mut vertices = Vec::new();
         for p in &self.points {
-            vertices.push(Vertex {
+            vertices.push(Vertex2D {
                 position: [p.x, p.y],
             })
         }

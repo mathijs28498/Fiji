@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use nalgebra::Point3;
 use vulkano::{
     buffer::{ImmutableBuffer, TypedBufferAccess},
     command_buffer::{
@@ -19,63 +20,49 @@ use vulkano::{
     sync::GpuFuture,
 };
 
-use nalgebra_glm::{Vec2, Vec4};
+use nalgebra_glm::{Vec4, Mat4, Vec3};
 
-use crate::{
-    objects::Border,
-    rendering::{data_types::Vertex2D, device_container::DeviceContainer},
-};
+use crate::rendering::{data_types::Vertex3D, device_container::DeviceContainer};
 
 #[derive(Debug)]
-pub(crate) struct CirclePushConstants {
-    _resolution: [u32; 2],
-    _position: Vec2,
+pub(crate) struct BlockPushConstants {
     _color: Vec4,
-    _border_color: Vec4,
-    _border_width: u32,
-    _radius: f32,
+    _position: Vec4,
+    _size: Vec4,
+    _proj: Mat4,
+    _resolution: [u32; 2],
 }
 
-impl CirclePushConstants {
-    pub(crate) fn new(
-        color: Vec4,
-        position: Vec2,
-        radius: f32,
-        border: Option<Border>,
-    ) -> CirclePushConstants {
-        let (border_color, border_width) = match border {
-            Some(border) => (border.color, border.width),
-            None => (Vec4::new(0., 0., 0., 0.), 0),
-        };
+impl BlockPushConstants {
+    pub(crate) fn new(color: Vec4, position: Vec4, size: Vec4) -> BlockPushConstants {
         Self {
-            _resolution: [0, 0],
             _color: color,
             _position: position,
-            _border_color: border_color,
-            _border_width: border_width,
-            _radius: radius,
+            _size: size,
+            _proj: Mat4::identity(),
+            _resolution: [0, 0],
         }
     }
 }
 
-pub(crate) struct CircleRenderPass {
+pub(crate) struct BlockRenderPass {
     pipeline: Arc<GraphicsPipeline>,
     viewport: Viewport,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
 
-impl CircleRenderPass {
-    pub(crate) fn new(device_container: &DeviceContainer) -> CircleRenderPass {
+impl BlockRenderPass {
+    pub(crate) fn new(device_container: &DeviceContainer) -> BlockRenderPass {
         mod vs {
             vulkano_shaders::shader!(
                 ty: "vertex",
-                path: "src/shaders/circle_render_pass.vert"
+                path: "src/shaders/block_render_pass.vert"
             );
         }
         mod fs {
             vulkano_shaders::shader!(
                 ty: "fragment",
-                path: "src/shaders/circle_render_pass.frag"
+                path: "src/shaders/block_render_pass.frag"
             );
         }
 
@@ -103,7 +90,7 @@ impl CircleRenderPass {
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .input_assembly_state(InputAssemblyState::new())
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
-            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2D>())
+            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex3D>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
             .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
             .fragment_shader(fs.entry_point("main").unwrap(), ())
@@ -142,11 +129,12 @@ impl CircleRenderPass {
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
-        vertex_buffer: Arc<ImmutableBuffer<[Vertex2D]>>,
+        vertex_buffer: Arc<ImmutableBuffer<[Vertex3D]>>,
         index_buffer: Arc<ImmutableBuffer<[u32]>>,
-        mut push_constants: CirclePushConstants,
+        mut push_constants: BlockPushConstants,
     ) {
         push_constants._resolution = device_container.resolution();
+        push_constants._proj = Mat4::look_at_lh(&Point3::new(2., 1., -1.), &Point3::new(0., 0., 0.), &Vec3::new(0., 1., 0.));
 
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.device().clone(),

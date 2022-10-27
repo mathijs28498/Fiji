@@ -1,8 +1,10 @@
-use crate::draw_objects::circle::Circle;
-use crate::draw_objects::line::Line;
-use crate::draw_objects::polygon::Polygon;
-use crate::draw_objects::{background::Background, rect::Rect, DrawObject};
+use crate::objects::obj_2d::circle::Circle;
+use crate::objects::obj_2d::line::Line;
+use crate::objects::obj_2d::polygon::Polygon;
+use crate::objects::obj_3d::block::Block;
+use crate::objects::{background::Background, obj_2d::rect::Rect, DrawObject};
 
+use super::render_passes::block_render_pass::BlockRenderPass;
 use super::render_passes::circle_render_pass::CircleRenderPass;
 use super::render_passes::line_render_pass::LineRenderPass;
 use super::{
@@ -20,16 +22,20 @@ pub struct Context {
     circle_render_pass: CircleRenderPass,
     line_render_pass: LineRenderPass,
     background_render_pass: BackgroundRenderPass,
+    block_render_pass: BlockRenderPass,
+
     draw_objects: Vec<DrawObject>,
 }
 
 impl Context {
     pub fn new(width: u32, height: u32) -> Self {
         let event_loop_container = EventLoopContainer::new();
-        let device_container = DeviceContainer::new(&event_loop_container.event_loop, width, height);
+        let device_container =
+            DeviceContainer::new(&event_loop_container.event_loop, width, height);
         let poly_render_pass = PolyRenderPass::new(&device_container);
         let circle_render_pass = CircleRenderPass::new(&device_container);
         let line_render_pass = LineRenderPass::new(&device_container);
+        let block_render_pass = BlockRenderPass::new(&device_container);
         let background_render_pass = BackgroundRenderPass::new();
 
         Self {
@@ -39,6 +45,7 @@ impl Context {
             circle_render_pass,
             line_render_pass,
             background_render_pass,
+            block_render_pass,
             draw_objects: Vec::new(),
         }
     }
@@ -63,6 +70,10 @@ impl Context {
         self.draw(DrawObject::LineObject(line));
     }
 
+    pub fn draw_block(&mut self, block: Block) {
+        self.draw(DrawObject::BlockObject(block));
+    }
+
     pub fn draw_background(&mut self, bg: Background) {
         self.draw(DrawObject::BackgroundObject(bg));
     }
@@ -76,21 +87,12 @@ impl Context {
 
         for object in self.draw_objects.iter_mut() {
             match object {
-                DrawObject::RectObject(rect) => {
-                    rect.draw(&mut self.poly_render_pass, &mut self.device_container);
-                }
-                DrawObject::CircleObject(circle) => {
-                    circle.draw(&mut self.circle_render_pass, &mut self.device_container);
-                }
-                DrawObject::LineObject(line) => {
-                    line.draw(&mut self.line_render_pass, &mut self.device_container)
-                }
-                DrawObject::PolyObject(polygon) => {
-                    polygon.draw(&mut self.poly_render_pass, &mut self.device_container)
-                }
-                DrawObject::BackgroundObject(bg) => {
-                    bg.draw(&self.background_render_pass, &mut self.device_container);
-                }
+                DrawObject::RectObject(rect) => rect.draw(&mut self.poly_render_pass, &mut self.device_container),
+                DrawObject::CircleObject(circle) => circle.draw(&mut self.circle_render_pass, &mut self.device_container),
+                DrawObject::LineObject(line) => line.draw(&mut self.line_render_pass, &mut self.device_container),
+                DrawObject::PolyObject(polygon) => polygon.draw(&mut self.poly_render_pass, &mut self.device_container),
+                DrawObject::BlockObject(block) => block.draw(&mut self.block_render_pass, &mut self.device_container),
+                DrawObject::BackgroundObject(bg) => bg.draw(&self.background_render_pass, &mut self.device_container),
             }
         }
         self.device_container.end_draw();

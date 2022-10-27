@@ -19,7 +19,7 @@ use vulkano::{
 };
 
 use crate::{
-    draw_objects::Border,
+    objects::Border,
     rendering::{data_types::*, device_container::DeviceContainer},
 };
 
@@ -97,7 +97,7 @@ impl PolyRenderPass {
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
             .input_assembly_state(InputAssemblyState::new())
-            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex>())
+            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2D>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
             .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
             .fragment_shader(fs.entry_point("main").unwrap(), ())

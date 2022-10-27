@@ -6,13 +6,14 @@ use vulkano::{
     device::Queue,
 };
 
-use crate::rendering::{
-    data_types::{BufferContainer, Vertex},
-    device_container::DeviceContainer,
-    render_passes::poly_render_pass::{PolyPushConstants, PolyRenderPass},
+use crate::{
+    objects::Border,
+    rendering::{
+        data_types::{BufferContainer, Vertex2D},
+        device_container::DeviceContainer,
+        render_passes::poly_render_pass::{PolyPushConstants, PolyRenderPass},
+    },
 };
-
-use super::Border;
 
 static mut BUFFERS: Option<BufferContainer> = None;
 
@@ -66,19 +67,19 @@ impl Rect {
         }
     }
 
-    fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex]>> {
+    fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex2D]>> {
         ImmutableBuffer::from_iter(
             [
-                Vertex {
+                Vertex2D {
                     position: [-0.5, -0.5],
                 },
-                Vertex {
+                Vertex2D {
                     position: [0.5, -0.5],
                 },
-                Vertex {
+                Vertex2D {
                     position: [-0.5, 0.5],
                 },
-                Vertex {
+                Vertex2D {
                     position: [0.5, 0.5],
                 },
             ],

@@ -1,14 +1,22 @@
 use nalgebra_glm::{Vec2, Vec3, Vec4};
 
 use fiji::{
+    objects::{
+        background::Background,
+        obj_2d::{circle::Circle, polygon::Polygon, rect::Rect},
+        Border,
+    },
+    input::input_enums::{KeyCode, MouseButton},
     rendering::context::Context,
-    draw_objects::{background::Background, circle::Circle, polygon::Polygon, rect::Rect, Border},
-    input::{
-        input_enums::{KeyCode, MouseButton},
-    }
 };
 
 fn main() {
+    let mut v0 = Vec3::new(1., 4., 3.);
+    let mut v1 = Vec3::new(3., 5., 1.);
+
+    let v2 = v0 + v1;
+    println!("{v0:?} - {v1:?} - {v2:?}");
+
     let mut context = Context::new(1280, 720);
 
     let mut pos = Vec2::new(100., 100.);

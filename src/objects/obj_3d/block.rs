@@ -1,43 +1,45 @@
 use std::sync::Arc;
 
-use nalgebra_glm::{Vec2, Vec4};
+use nalgebra_glm::{Vec3, Vec4};
 use vulkano::{
     buffer::{BufferUsage, ImmutableBuffer},
     device::Queue,
 };
 
-use crate::rendering::{
-    data_types::Vertex,
-    device_container::DeviceContainer,
-    render_passes::circle_render_pass::{CirclePushConstants, CircleRenderPass},
+use crate::{
+    objects::Border,
+    rendering::{
+        data_types::{Vertex2D, Vertex3D},
+        device_container::DeviceContainer,
+        render_passes::{
+            block_render_pass::{BlockPushConstants, BlockRenderPass},
+            circle_render_pass::{CirclePushConstants, CircleRenderPass},
+        },
+    },
 };
 
-use super::Border;
-
-static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex]>>> = None;
+static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex3D]>>> = None;
 static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
 
 #[derive(Clone)]
-pub struct Circle {
+pub struct Block {
     pub color: Vec4,
-    pub position: Vec2,
-    pub radius: f32,
-    pub border: Option<Border>,
+    pub position: Vec3,
+    pub size: Vec3,
 }
 
-impl Circle {
-    pub fn new(color: Vec4, position: Vec2, radius: f32, border: Option<Border>) -> Self {
+impl Block {
+    pub fn new(color: Vec4, position: Vec3, size: Vec3) -> Self {
         Self {
             color,
             position,
-            radius,
-            border,
+            size,
         }
     }
 
     pub(crate) fn draw(
         &mut self,
-        render_pass: &mut CircleRenderPass,
+        render_pass: &mut BlockRenderPass,
         device_container: &mut DeviceContainer,
     ) {
         // Unsafe is used to change these static values.
@@ -56,29 +58,42 @@ impl Circle {
                 device_container,
                 VERTEX_BUFFER.as_ref().unwrap().clone(),
                 INDEX_BUFFER.as_ref().unwrap().clone(),
-                CirclePushConstants::new(
+                BlockPushConstants::new(
                     self.color.clone(),
-                    self.position.clone(),
-                    self.radius.clone(),
-                    self.border.clone(),
+                    Vec4::new(self.position.x, self.position.y, self.position.z, 1.),
+                    Vec4::new(self.size.x, self.size.y, self.size.z, 1.),
                 ),
             );
         }
     }
 
-    fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex]>> {
+    fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex3D]>> {
         ImmutableBuffer::from_iter(
             [
-                Vertex {
-                    position: [-1., -1.],
+                Vertex3D {
+                    position: [-0.5, -0.5, 0.5],
                 },
-                Vertex {
-                    position: [1., -1.],
+                Vertex3D {
+                    position: [0.5, -0.5, 0.5],
                 },
-                Vertex {
-                    position: [-1., 1.],
+                Vertex3D {
+                    position: [-0.5, 0.5, 0.5],
                 },
-                Vertex { position: [1., 1.] },
+                Vertex3D {
+                    position: [0.5, 0.5, 0.5],
+                },
+                Vertex3D {
+                    position: [-0.5, -0.5, -0.5],
+                },
+                Vertex3D {
+                    position: [0.5, -0.5, -0.5],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, -0.5],
+                },
+                Vertex3D {
+                    position: [0.5, 0.5, -0.5],
+                },
             ],
             BufferUsage::vertex_buffer(),
             queue,
