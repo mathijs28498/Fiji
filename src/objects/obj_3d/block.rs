@@ -7,14 +7,14 @@ use vulkano::{
 };
 
 use crate::{
-    objects::Border,
+    objects::{Border, camera::camera_3d::Camera3D},
     rendering::{
         data_types::{Vertex2D, Vertex3D},
         device_container::DeviceContainer,
         render_passes::{
             block_render_pass::{BlockPushConstants, BlockRenderPass},
             circle_render_pass::{CirclePushConstants, CircleRenderPass},
-        },
+        }, context::Context,
     },
 };
 
@@ -41,6 +41,7 @@ impl Block {
         &mut self,
         render_pass: &mut BlockRenderPass,
         device_container: &mut DeviceContainer,
+        camera: &Camera3D,
     ) {
         // Unsafe is used to change these static values.
         // This is definitely safe, even thought the compiler can't verify.
@@ -51,6 +52,13 @@ impl Block {
             }
         }
 
+        let pc = BlockPushConstants::new(
+            self.color.clone(),
+            Vec4::new(self.position.x, self.position.y, self.position.z, 1.),
+            &self.size,
+            camera.get_view_matrix(),
+        );
+
         // Unsafe is used to change these static values.
         // This is definitely safe, even thought the compiler can't verify.
         unsafe {
@@ -58,11 +66,7 @@ impl Block {
                 device_container,
                 VERTEX_BUFFER.as_ref().unwrap().clone(),
                 INDEX_BUFFER.as_ref().unwrap().clone(),
-                BlockPushConstants::new(
-                    self.color.clone(),
-                    Vec4::new(self.position.x, self.position.y, self.position.z, 1.),
-                    Vec4::new(self.size.x, self.size.y, self.size.z, 1.),
-                ),
+                pc,
             );
         }
     }
@@ -104,7 +108,7 @@ impl Block {
 
     fn get_index_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[u32]>> {
         ImmutableBuffer::from_iter(
-            [0, 1, 2, 2, 1, 3],
+            [0, 1, 2, 1, 2, 3],
             BufferUsage::index_buffer(),
             queue.clone(),
         )

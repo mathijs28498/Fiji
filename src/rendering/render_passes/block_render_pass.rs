@@ -1,4 +1,4 @@
-use std::sync::Arc;
+use std::{sync::Arc, f32::consts::{PI, FRAC_2_PI}};
 
 use nalgebra::Point3;
 use vulkano::{
@@ -27,19 +27,20 @@ use crate::rendering::{data_types::Vertex3D, device_container::DeviceContainer};
 #[derive(Debug)]
 pub(crate) struct BlockPushConstants {
     _color: Vec4,
-    _position: Vec4,
-    _size: Vec4,
+    _model: Mat4,
+    _view: Mat4,
     _proj: Mat4,
     _resolution: [u32; 2],
 }
 
 impl BlockPushConstants {
-    pub(crate) fn new(color: Vec4, position: Vec4, size: Vec4) -> BlockPushConstants {
+    pub(crate) fn new(color: Vec4, position: Vec4, size: &Vec3, view: Mat4) -> BlockPushConstants {
+        // TODO: Get proper aspect (not hardcoded)
         Self {
             _color: color,
-            _position: position,
-            _size: size,
-            _proj: Mat4::identity(),
+            _model: Mat4::new_nonuniform_scaling_wrt_point(size, &Point3::new(0., 0., 0.)),
+            _view: view,
+            _proj: Mat4::new_perspective(1280./720., FRAC_2_PI, 0.0001, 1000.),
             _resolution: [0, 0],
         }
     }
@@ -134,7 +135,6 @@ impl BlockRenderPass {
         mut push_constants: BlockPushConstants,
     ) {
         push_constants._resolution = device_container.resolution();
-        push_constants._proj = Mat4::look_at_lh(&Point3::new(2., 1., -1.), &Point3::new(0., 0., 0.), &Vec3::new(0., 1., 0.));
 
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.device().clone(),

@@ -10,7 +10,7 @@ fn main() {
     let mut context = Context::new(1280, 720);
 
     let mut block = Block::new(
-        Vec4::new(1., 1., 0., 1.),
+        Vec4::new(0.9, 0.57, 0.28, 1.),
         Vec3::new(0., 0., 0.),
         Vec3::new(1., 1., 1.),
     );
@@ -21,19 +21,25 @@ fn main() {
         }
 
         if input.key_held(&KeyCode::A) {
-            block.position.x += 0.01;
+            context.camera_3d.position.x -= 0.04;
         }
         if input.key_held(&KeyCode::D) {
-            block.position.x -= 0.01;
+            context.camera_3d.position.x += 0.04;
         }
         if input.key_held(&KeyCode::W) {
-            block.position.z += 0.01;
+            context.camera_3d.position.z -= 0.04;
         }
         if input.key_held(&KeyCode::S) {
-            block.position.z -= 0.01;
+            context.camera_3d.position.z += 0.04;
+        }
+        if input.key_held(&KeyCode::Z) {
+            context.camera_3d.position.y += 0.04;
+        }
+        if input.key_held(&KeyCode::X) {
+            context.camera_3d.position.y -= 0.04;
         }
 
-        context.draw_background(Background::new(Vec3::new(0., 1., 1.)));
+        context.draw_background(Background::new(Vec3::new(0.07, 0.51, 0.6)));
         context.draw_block(block.clone());
 
         context.render();

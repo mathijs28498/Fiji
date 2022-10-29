@@ -1,3 +1,5 @@
+use crate::objects::camera::camera_2d::Camera2D;
+use crate::objects::camera::camera_3d::Camera3D;
 use crate::objects::obj_2d::circle::Circle;
 use crate::objects::obj_2d::line::Line;
 use crate::objects::obj_2d::polygon::Polygon;
@@ -23,7 +25,10 @@ pub struct Context {
     line_render_pass: LineRenderPass,
     background_render_pass: BackgroundRenderPass,
     block_render_pass: BlockRenderPass,
+    pub camera_2d: Camera2D,
+    pub camera_3d: Camera3D,
 
+    // TODO: Split objects into 2d and 3d
     draw_objects: Vec<DrawObject>,
 }
 
@@ -45,7 +50,11 @@ impl Context {
             circle_render_pass,
             line_render_pass,
             background_render_pass,
-            block_render_pass,
+            block_render_pass, 
+
+            camera_2d: Camera2D {},
+            camera_3d: Camera3D::new(),
+
             draw_objects: Vec::new(),
         }
     }
@@ -91,7 +100,7 @@ impl Context {
                 DrawObject::CircleObject(circle) => circle.draw(&mut self.circle_render_pass, &mut self.device_container),
                 DrawObject::LineObject(line) => line.draw(&mut self.line_render_pass, &mut self.device_container),
                 DrawObject::PolyObject(polygon) => polygon.draw(&mut self.poly_render_pass, &mut self.device_container),
-                DrawObject::BlockObject(block) => block.draw(&mut self.block_render_pass, &mut self.device_container),
+                DrawObject::BlockObject(block) => block.draw(&mut self.block_render_pass, &mut self.device_container, &self.camera_3d),
                 DrawObject::BackgroundObject(bg) => bg.draw(&self.background_render_pass, &mut self.device_container),
             }
         }

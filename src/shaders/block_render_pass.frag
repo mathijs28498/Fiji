@@ -2,8 +2,8 @@
 
 layout(push_constant) uniform constants {
     vec4 color;
-    vec4 position;
-    vec4 size;
+    mat4 world;
+    mat4 view;
     mat4 proj;
     uvec2 resolution;
 } pc;
