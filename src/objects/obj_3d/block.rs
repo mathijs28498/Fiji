@@ -7,14 +7,15 @@ use vulkano::{
 };
 
 use crate::{
-    objects::{Border, camera::camera_3d::Camera3D},
+    objects::{camera::camera_3d::Camera3D, Border},
     rendering::{
+        context::Context,
         data_types::{Vertex2D, Vertex3D},
         device_container::DeviceContainer,
         render_passes::{
             block_render_pass::{BlockPushConstants, BlockRenderPass},
             circle_render_pass::{CirclePushConstants, CircleRenderPass},
-        }, context::Context,
+        },
     },
 };
 
@@ -106,9 +107,31 @@ impl Block {
         .0
     }
 
+    //TODO: Add backface culling
     fn get_index_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[u32]>> {
         ImmutableBuffer::from_iter(
-            [0, 1, 2, 1, 2, 3],
+            [
+                // Front
+                0, 1, 2, //
+                2, 1, 3, //
+                // Back
+                4, 5, 6, //
+                6, 5, 7, //
+                //
+                // Left
+                0, 2, 4, //
+                4, 2, 6, //
+                // Right
+                1, 5, 3, //
+                3, 5, 7, //
+                //
+                // Top
+                0, 5, 1, //
+                4, 5, 0, //
+                // Bottom
+                2, 7, 6, //
+                2, 3, 7, //
+            ],
             BufferUsage::index_buffer(),
             queue.clone(),
         )

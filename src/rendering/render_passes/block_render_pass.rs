@@ -1,4 +1,4 @@
-use std::{sync::Arc, f32::consts::{PI, FRAC_2_PI}};
+use std::{sync::Arc, f32::consts::{PI, FRAC_2_PI, FRAC_PI_2}};
 
 use nalgebra::Point3;
 use vulkano::{
@@ -38,7 +38,7 @@ impl BlockPushConstants {
         // TODO: Get proper aspect (not hardcoded)
         Self {
             _color: color,
-            _model: Mat4::new_nonuniform_scaling_wrt_point(size, &Point3::new(0., 0., 0.)),
+            _model: Mat4::new_nonuniform_scaling(size) * Mat4::new_rotation(Vec3::new(1., 0.5, -2.)),
             _view: view,
             _proj: Mat4::new_perspective(1280./720., FRAC_2_PI, 0.0001, 1000.),
             _resolution: [0, 0],
