@@ -8,6 +8,12 @@ use fiji::{
     rendering::context::Context,
 };
 
+// TODO:
+// [ ] - Add normals
+// [ ] - Add phong lighting
+// [ ] - Add depth testing
+// [ ] - OPTIONAL Add shadows
+
 fn main() {
     let mut context = Context::new(1280, 720);
 
