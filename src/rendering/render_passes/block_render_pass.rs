@@ -34,11 +34,12 @@ pub(crate) struct BlockPushConstants {
 }
 
 impl BlockPushConstants {
-    pub(crate) fn new(color: Vec4, position: Vec4, size: &Vec3, view: Mat4) -> BlockPushConstants {
+    pub(crate) fn new(color: Vec4, position: Vec3, size: &Vec3, rotation: Vec3, view: Mat4) -> BlockPushConstants {
         // TODO: Get proper aspect (not hardcoded)
+        let position = Vec3::new(position.x, -position.y, position.z);
         Self {
             _color: color,
-            _model: Mat4::new_nonuniform_scaling(size) * Mat4::new_rotation(Vec3::new(1., 0.5, -2.)),
+            _model:  Mat4::new_nonuniform_scaling(size) * Mat4::new_translation(&position) * Mat4::new_rotation(rotation),
             _view: view,
             _proj: Mat4::new_perspective(1280./720., FRAC_2_PI, 0.0001, 1000.),
             _resolution: [0, 0],

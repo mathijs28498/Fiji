@@ -11,10 +11,25 @@ use fiji::{
 fn main() {
     let mut context = Context::new(1280, 720);
 
-    let mut block = Block::new(
+    let mut block_0 = Block::new(
         Vec4::new(0.9, 0.57, 0.28, 1.),
         Vec3::new(0., 0., 0.),
+        Vec3::new(1., 1., 1.),
+        Vec3::new(0.3, 0.6, -0.2),
+    );
+
+    let mut block_3 = Block::new(
+        Vec4::new(0.28, 0.57, 0.9, 1.),
+        Vec3::new(0., 0., -3.),
+        Vec3::new(1., 1., 1.),
+        Vec3::new(0.6, -0.6, -0.2),
+    );
+
+    let mut block_5 = Block::new(
+        Vec4::new(0.57, 0.28, 0.9, 1.),
+        Vec3::new(0., 0., -5.),
         Vec3::new(1., 2., 1.),
+        Vec3::new(1., -0., 0.5),
     );
 
     let mut rotate_camera = false;
@@ -48,10 +63,10 @@ fn main() {
             move_dir -= forward;
         }
         if input.key_held(&KeyCode::Z) {
-            move_dir.y -= 1.;
+            move_dir.y += 1.;
         }
         if input.key_held(&KeyCode::X) {
-            move_dir.y += 1.;
+            move_dir.y -= 1.;
         }
         if input.key_pressed(&KeyCode::C) {
             rotate_camera = !rotate_camera;
@@ -80,7 +95,9 @@ fn main() {
         }
 
         context.draw_background(Background::new(Vec3::new(0.07, 0.51, 0.6)));
-        context.draw_block(block.clone());
+        context.draw_block(block_0.clone());
+        context.draw_block(block_5.clone());
+        context.draw_block(block_3.clone());
 
         context.render();
     })

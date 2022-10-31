@@ -27,14 +27,16 @@ pub struct Block {
     pub color: Vec4,
     pub position: Vec3,
     pub size: Vec3,
+    pub rotation: Vec3,
 }
 
 impl Block {
-    pub fn new(color: Vec4, position: Vec3, size: Vec3) -> Self {
+    pub fn new(color: Vec4, position: Vec3, size: Vec3, rotation: Vec3) -> Self {
         Self {
             color,
             position,
             size,
+            rotation
         }
     }
 
@@ -55,8 +57,9 @@ impl Block {
 
         let pc = BlockPushConstants::new(
             self.color.clone(),
-            Vec4::new(self.position.x, self.position.y, self.position.z, 1.),
+            self.position.clone(),
             &self.size,
+            self.rotation.clone(),
             camera.get_view_matrix(),
         );
 
