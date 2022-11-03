@@ -9,10 +9,17 @@ use fiji::{
 };
 
 // TODO:
-// [ ] - Add normals
-// [ ] - Add phong lighting
-// [ ] - Add depth testing
-// [ ] - OPTIONAL Add shadows
+// [ ] - Depth testing
+// [ ] - Normals
+// [ ] - Phong lighting
+// [ ] - Backface culling 
+// [ ] - Split objects into 2D and 3D and draw 2D always on top
+// [ ] - Add text possibilities
+// [ ] - Figure out rotation
+//
+// OPTIONAL TODO:
+// [ ] - Shadows
+// [ ] - Figure out a better drawing strategy
 
 fn main() {
     let mut context = Context::new(1280, 720);
