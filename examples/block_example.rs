@@ -10,7 +10,7 @@ use fiji::{
 
 // TODO:
 // [ ] - Depth testing
-// [ ] - Normals
+// [X] - Normals
 // [ ] - Phong lighting
 // [ ] - Backface culling 
 // [ ] - Split objects into 2D and 3D and draw 2D always on top
