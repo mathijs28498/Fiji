@@ -8,8 +8,18 @@ layout(push_constant) uniform constants {
     uvec2 resolution;
 } pc;
 
+layout (location = 0) in vec3 fPosition;
+layout (location = 1) in vec3 fNormal;
+
 layout (location = 0) out vec4 f_color;
 
+const vec3 lightPos = vec3(5., 5., -5);
+const float ambientStrength = 0.3;
+const float diffuseStrength = 1. - ambientStrength;
+
 void main() {
-    f_color = pc.color;
+    vec3 dir = normalize(lightPos - fPosition);
+    float lightStrength = max(dot(fNormal, dir), 0.0);
+    vec3 colorWithoutTransparency = pc.color.xyz;
+    f_color = vec4(colorWithoutTransparency * lightStrength * diffuseStrength + colorWithoutTransparency * ambientStrength, pc.color.w);
 }

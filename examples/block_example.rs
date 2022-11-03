@@ -107,6 +107,8 @@ fn main() {
             context.camera_3d.position += move_dir.normalize() * speed;
         }
 
+        block_0.rotation.x += 0.01;
+
         context.draw_background(Background::new(Vec3::new(0.07, 0.51, 0.6)));
         context.draw_block(block_0.clone());
         context.draw_block(block_5.clone());

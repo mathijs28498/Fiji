@@ -9,11 +9,14 @@ layout(push_constant) uniform constants {
 } pc;
 
 layout (location = 0) in vec3 position;
+layout (location = 1) in vec3 normal;
+
+layout (location = 0) out vec3 fPosition;
+layout (location = 1) out vec3 fNormal;
 
 void main() {
-    // gl_Position = vec4(position, 1.) * pc.model * pc.world * pc.proj;
-    // gl_Position = vec4(position, 1.) * pc.proj;
-    gl_Position = pc.proj * pc.view * pc.world * vec4(position, 1.);
-    // gl_Position = pc.proj * pc.world * pc.model * vec4(position, 1.);
-    // gl_Position = pc.proj * vec4(position, 1.);
+    vec4 worldPos = pc.world * vec4(position, 1.);
+    fPosition = worldPos.xyz;
+    fNormal = mat3(transpose(inverse(pc.world))) * normal;
+    gl_Position = pc.proj * pc.view * worldPos;
 }

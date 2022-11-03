@@ -36,7 +36,7 @@ impl Block {
             color,
             position,
             size,
-            rotation
+            rotation,
         }
     }
 
@@ -78,29 +78,109 @@ impl Block {
     fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex3D]>> {
         ImmutableBuffer::from_iter(
             [
+                // Front
                 Vertex3D {
                     position: [-0.5, -0.5, 0.5],
+                    normal: [0., 0., 1.],
                 },
                 Vertex3D {
                     position: [0.5, -0.5, 0.5],
+                    normal: [0., 0., 1.],
                 },
                 Vertex3D {
                     position: [-0.5, 0.5, 0.5],
+                    normal: [0., 0., 1.],
                 },
                 Vertex3D {
                     position: [0.5, 0.5, 0.5],
+                    normal: [0., 0., 1.],
                 },
+                // Back
                 Vertex3D {
                     position: [-0.5, -0.5, -0.5],
+                    normal: [0., 0., -1.],
                 },
                 Vertex3D {
                     position: [0.5, -0.5, -0.5],
+                    normal: [0., 0., -1.],
                 },
                 Vertex3D {
                     position: [-0.5, 0.5, -0.5],
+                    normal: [0., 0., -1.],
                 },
                 Vertex3D {
                     position: [0.5, 0.5, -0.5],
+                    normal: [0., 0., -1.],
+                },
+                //
+                // Left
+                Vertex3D {
+                    position: [0.5, -0.5, 0.5],
+                    normal: [1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, 0.5, 0.5],
+                    normal: [1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, -0.5, -0.5],
+                    normal: [1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, 0.5, -0.5],
+                    normal: [1., 0., 0.],
+                },
+                // Right
+                Vertex3D {
+                    position: [-0.5, -0.5, 0.5],
+                    normal: [-1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, 0.5],
+                    normal: [-1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, -0.5, -0.5],
+                    normal: [-1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, -0.5],
+                    normal: [-1., 0., 0.],
+                },
+                //
+                // Top
+                Vertex3D {
+                    position: [0.5, 0.5, 0.5],
+                    normal: [0., 1., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, 0.5],
+                    normal: [0., 1., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, 0.5, -0.5],
+                    normal: [0., 1., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, -0.5],
+                    normal: [0., 1., 0.],
+                },
+                // Bottom
+                Vertex3D {
+                    position: [0.5, -0.5, 0.5],
+                    normal: [0., -1., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, -0.5, 0.5],
+                    normal: [0., -1., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, -0.5, -0.5],
+                    normal: [0., -1., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, -0.5, -0.5],
+                    normal: [0., -1., 0.],
                 },
             ],
             BufferUsage::vertex_buffer(),
@@ -122,18 +202,18 @@ impl Block {
                 6, 5, 7, //
                 //
                 // Left
-                0, 2, 4, //
-                4, 2, 6, //
+                8, 9, 10, //
+                10, 9, 11, //
                 // Right
-                1, 5, 3, //
-                3, 5, 7, //
+                12, 13, 14, //
+                13, 15, 14, //
                 //
                 // Top
-                0, 5, 1, //
-                4, 5, 0, //
+                16, 17, 18, //
+                18, 17, 19, //
                 // Bottom
-                2, 7, 6, //
-                2, 3, 7, //
+                20, 21, 22, //
+                22, 21, 23, //
             ],
             BufferUsage::index_buffer(),
             queue.clone(),
