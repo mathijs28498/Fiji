@@ -109,10 +109,10 @@ fn main() {
 
         block_0.rotation.x += 0.01;
 
-        context.draw_background(Background::new(Vec3::new(0.07, 0.51, 0.6)));
-        context.draw_block(block_0.clone());
-        // context.draw_block(block_5.clone());
-        // context.draw_block(block_3.clone());
+        // context.background(Background::new(Vec3::new(0.07, 0.51, 0.6)));
+        context.block(block_0.clone());
+        // context.block(block_5.clone());
+        // context.block(block_3.clone());
 
         context.render();
     })

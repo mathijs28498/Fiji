@@ -1,6 +1,6 @@
 #version 450
 
-layout(push_constant) uniform constants {
+layout(push_constant) uniform Constants {
     vec4 color;
     mat4 world;
     mat4 view;
@@ -19,7 +19,8 @@ const float diffuseStrength = 1. - ambientStrength;
 
 void main() {
     vec3 dir = normalize(lightPos - fPosition);
-    float lightStrength = max(dot(fNormal, dir), 0.0);
+    float lightStrength = max(dot(normalize(fNormal), dir), 0.0);
     vec3 colorWithoutTransparency = pc.color.xyz;
-    f_color = vec4(colorWithoutTransparency * lightStrength * diffuseStrength + colorWithoutTransparency * ambientStrength, pc.color.w);
+
+    f_color = vec4(colorWithoutTransparency * lightStrength * diffuseStrength + colorWithoutTransparency * ambientStrength, 1);// pc.color.w);
 }

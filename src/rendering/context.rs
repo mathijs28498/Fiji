@@ -76,27 +76,27 @@ impl Context {
         self.draw_objects_3d.push(draw_object);
     }
 
-    pub fn draw_circle(&mut self, circle: Circle) {
+    pub fn circle(&mut self, circle: Circle) {
         self.draw_2d(DrawObject2D::CircleObject(circle));
     }
 
-    pub fn draw_rect(&mut self, rect: Rect) {
+    pub fn rect(&mut self, rect: Rect) {
         self.draw_2d(DrawObject2D::RectObject(rect));
     }
 
-    pub fn draw_polygon(&mut self, polygon: Polygon) {
+    pub fn polygon(&mut self, polygon: Polygon) {
         self.draw_2d(DrawObject2D::PolyObject(polygon));
     }
 
-    pub fn draw_line(&mut self, line: Line) {
+    pub fn line(&mut self, line: Line) {
         self.draw_2d(DrawObject2D::LineObject(line));
     }
 
-    pub fn draw_block(&mut self, block: Block) {
+    pub fn block(&mut self, block: Block) {
         self.draw_3d(DrawObject3D::BlockObject(block));
     }
 
-    pub fn draw_background(&mut self, bg: Background) {
+    pub fn background(&mut self, bg: Background) {
         self.background = bg;
     }
 
