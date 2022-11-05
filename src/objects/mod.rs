@@ -23,11 +23,13 @@ impl Border {
     }
 }
 
-pub enum DrawObject {
+pub enum DrawObject3D {
+    BlockObject(Block),
+}
+
+pub enum DrawObject2D {
     RectObject(Rect),
     CircleObject(Circle),
     LineObject(Line),
     PolyObject(Polygon),
-    BlockObject(Block),
-    BackgroundObject(Background),
 }

@@ -11,10 +11,10 @@ use fiji::{
 // TODO:
 // [ ] - Depth testing
 // [X] - Normals
-// [ ] - Phong lighting
+// [ ] - Phong shading
 // [ ] - Backface culling 
-// [ ] - Split objects into 2D and 3D and draw 2D always on top
-// [ ] - Add text possibilities
+// [X] - Split objects into 2D and 3D and draw 2D always on top
+// [ ] - Add text components
 // [ ] - Figure out rotation
 //
 // OPTIONAL TODO:
@@ -111,8 +111,8 @@ fn main() {
 
         context.draw_background(Background::new(Vec3::new(0.07, 0.51, 0.6)));
         context.draw_block(block_0.clone());
-        context.draw_block(block_5.clone());
-        context.draw_block(block_3.clone());
+        // context.draw_block(block_5.clone());
+        // context.draw_block(block_3.clone());
 
         context.render();
     })
