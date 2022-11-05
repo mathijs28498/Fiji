@@ -15,12 +15,13 @@ use fiji::{
 // [X] - Backface culling
 // [X] - Split objects into 2D and 3D and draw 2D always on top
 // [ ] - Add text components
-// [X] - Use builder pattern for block
+// [X] - Builder pattern for block
 //
 // LATER TODO:
 // [ ] - Configurable lights in context
 // [ ] - Figure out rotation
 // [ ] - Resizing of window
+// [ ] - Builder pattern for all objects
 //
 // OPTIONAL TODO:
 // [ ] - Shadows
@@ -132,9 +133,6 @@ fn main() {
         context.block(block_3.clone());
         context.block(wall.clone());
         context.block(ground.clone());
-
-        // TODO: Make 2d working
-        context.circle(Circle::new(Vec4::new(1., 0., 0., 1.), Vec2::new(0., 0.), 10., None));
 
         context.render();
     })
