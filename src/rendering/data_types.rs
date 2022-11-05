@@ -20,5 +20,6 @@ impl_vertex!(Vertex2D, position);
 #[derive(Clone, Copy, Debug, Default, Zeroable, Pod)]
 pub struct Vertex3D {
     pub(crate) position: [f32; 3],
+    pub(crate) normal: [f32; 3],
 }
-impl_vertex!(Vertex3D, position);
+impl_vertex!(Vertex3D, position, normal);

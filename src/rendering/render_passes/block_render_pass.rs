@@ -1,4 +1,7 @@
-use std::{sync::Arc, f32::consts::{PI, FRAC_2_PI, FRAC_PI_2}};
+use std::{
+    f32::consts::{FRAC_2_PI, FRAC_PI_2, PI},
+    sync::Arc,
+};
 
 use nalgebra::Point3;
 use vulkano::{
@@ -6,11 +9,14 @@ use vulkano::{
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
     },
-    image::view::ImageView,
+    format::Format,
+    image::{view::ImageView, AttachmentImage},
     pipeline::{
         graphics::{
             color_blend::ColorBlendState,
+            depth_stencil::DepthStencilState,
             input_assembly::InputAssemblyState,
+            rasterization::{CullMode, RasterizationState},
             vertex_input::BuffersDefinition,
             viewport::{Viewport, ViewportState},
         },
@@ -20,29 +26,42 @@ use vulkano::{
     sync::GpuFuture,
 };
 
-use nalgebra_glm::{Vec4, Mat4, Vec3};
+use nalgebra_glm::{Mat4, Vec3, Vec4};
 
 use crate::rendering::{data_types::Vertex3D, device_container::DeviceContainer};
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub(crate) struct BlockPushConstants {
-    _color: Vec4,
-    _model: Mat4,
-    _view: Mat4,
-    _proj: Mat4,
-    _resolution: [u32; 2],
+    color: Vec4,
+    model: Mat4,
+    view: Mat4,
+    proj: Mat4,
+    camera_pos: Vec3,
+    padding: f32,
+    resolution: [u32; 2],
 }
 
 impl BlockPushConstants {
-    pub(crate) fn new(color: Vec4, position: Vec3, size: &Vec3, rotation: Vec3, view: Mat4) -> BlockPushConstants {
-        // TODO: Get proper aspect (not hardcoded)
+    pub(crate) fn new(
+        color: Vec4,
+        position: Vec3,
+        size: &Vec3,
+        rotation: Vec3,
+        view: Mat4,
+        camera_pos: Vec3,
+    ) -> BlockPushConstants {
         let position = Vec3::new(position.x, -position.y, position.z);
         Self {
-            _color: color,
-            _model:  Mat4::new_nonuniform_scaling(size) * Mat4::new_translation(&position) * Mat4::new_rotation(rotation),
-            _view: view,
-            _proj: Mat4::new_perspective(1280./720., FRAC_2_PI, 0.0001, 1000.),
-            _resolution: [0, 0],
+            color,
+            model: Mat4::new_translation(&position)
+                * Mat4::new_rotation(rotation)
+                * Mat4::new_nonuniform_scaling(size),
+            view,
+            proj: Mat4::new_perspective(1280. / 720., FRAC_2_PI, 0.0001, 1000.),
+            camera_pos,
+            padding: 0.,
+            resolution: [0, 0],
         }
     }
 }
@@ -79,25 +98,20 @@ impl BlockRenderPass {
                     store: Store,
                     format: device_container.image_format(),
                     samples: 1,
+                },
+                depth: {
+                    load: Load,
+                    store: Store,
+                    format: device_container.depth_image_format(),
+                    samples: 1,
                 }
             },
             pass: {
                 color: [color],
-                depth_stencil: {}
+                depth_stencil: {depth}
             }
         )
         .unwrap();
-
-        let pipeline = GraphicsPipeline::start()
-            .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
-            .input_assembly_state(InputAssemblyState::new())
-            .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
-            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex3D>())
-            .vertex_shader(vs.entry_point("main").unwrap(), ())
-            .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
-            .fragment_shader(fs.entry_point("main").unwrap(), ())
-            .build(device_container.device().clone())
-            .unwrap();
 
         let viewport = Viewport {
             origin: [0., 0.],
@@ -105,21 +119,43 @@ impl BlockRenderPass {
             depth_range: 0.0..1.0,
         };
 
+        let depth_view = ImageView::new_default(device_container.depth_image().clone()).unwrap();
+
         let framebuffers = device_container
             .images()
             .iter()
             .map(|image| {
-                let view = ImageView::new_default(image.clone()).unwrap();
+                let image_view = ImageView::new_default(image.clone()).unwrap();
                 Framebuffer::new(
                     render_pass.clone(),
                     FramebufferCreateInfo {
-                        attachments: vec![view],
+                        attachments: vec![image_view, depth_view.clone()],
                         ..Default::default()
                     },
                 )
                 .unwrap()
             })
             .collect::<Vec<_>>();
+
+        let pipeline = GraphicsPipeline::start()
+            .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
+            .input_assembly_state(InputAssemblyState::new())
+            .rasterization_state(RasterizationState::new().cull_mode(CullMode::Back))
+            .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
+            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex3D>())
+            .vertex_shader(vs.entry_point("main").unwrap(), ())
+            .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([
+                Viewport {
+                    origin: [0.0, 0.0],
+                    dimensions: device_container.resolution_f32(),
+                    depth_range: 0.0..1.0,
+                },
+            ]))
+            .cull_mode_back()
+            .fragment_shader(fs.entry_point("main").unwrap(), ())
+            .depth_stencil_state(DepthStencilState::simple_depth_test())
+            .build(device_container.device().clone())
+            .unwrap();
 
         Self {
             pipeline,
@@ -135,7 +171,7 @@ impl BlockRenderPass {
         index_buffer: Arc<ImmutableBuffer<[u32]>>,
         mut push_constants: BlockPushConstants,
     ) {
-        push_constants._resolution = device_container.resolution();
+        push_constants.resolution = device_container.resolution();
 
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.device().clone(),
@@ -147,7 +183,7 @@ impl BlockRenderPass {
         builder
             .begin_render_pass(
                 RenderPassBeginInfo {
-                    clear_values: vec![None],
+                    clear_values: vec![None, None],
                     ..RenderPassBeginInfo::framebuffer(
                         self.framebuffers[device_container.image_num()].clone(),
                     )

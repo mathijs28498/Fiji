@@ -64,30 +64,30 @@ fn main() {
             polygon_points = Vec::new();
         }
 
-        context.draw_background(Background::new(Vec3::new(0., 0., 0.)));
+        context.background(Background::new(Vec3::new(0., 0., 0.)));
 
-        context.draw_rect(Rect::new(
+        context.rect(Rect::new(
             Vec4::new(0., 0.5, 0.5, 1.),
             input.mouse_position().clone(),
             Vec2::new(50., 50.),
             None,
         ));
 
-        context.draw_circle(Circle::new(
+        context.circle(Circle::new(
             Vec4::new(1., 0., 1., 0.2),
             Vec2::new(620., 340.),
             300.,
             Some(Border::new(Vec4::new(1., 1., 1., 1.), border_width)),
         ));
 
-        context.draw_rect(Rect::new(
+        context.rect(Rect::new(
             Vec4::new(1., 0.5, 1., 1.),
             Vec2::new(430., 325.),
             Vec2::new(20., 50.),
             None,
         ));
 
-        context.draw_rect(Rect::new(
+        context.rect(Rect::new(
             Vec4::new(1., 1., 0., 1.),
             pos.clone(),
             Vec2::new(20., 50.),
@@ -95,7 +95,7 @@ fn main() {
         ));
 
         if polygon_points.len() >= 3 {
-            context.draw_polygon(Polygon::new(
+            context.polygon(Polygon::new(
                 Vec4::new(0.9, 0.3, 0.5, 1.),
                 polygon_points.clone(),
                 None,
@@ -103,7 +103,7 @@ fn main() {
         }
 
         for p in &polygon_points {
-            context.draw_circle(Circle::new(Vec4::new(1., 1., 1., 1.), p.clone(), 10., None))
+            context.circle(Circle::new(Vec4::new(1., 1., 1., 1.), p.clone(), 10., None))
         }
 
         context.render();

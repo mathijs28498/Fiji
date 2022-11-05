@@ -1,5 +1,8 @@
 use vulkano::{
-    command_buffer::{AutoCommandBufferBuilder, ClearColorImageInfo, CommandBufferUsage},
+    command_buffer::{
+        AutoCommandBufferBuilder, ClearColorImageInfo, ClearDepthStencilImageInfo,
+        CommandBufferUsage,
+    },
     sync::GpuFuture,
 };
 
@@ -25,6 +28,13 @@ impl BackgroundRenderPass {
             .clear_color_image(ClearColorImageInfo {
                 clear_value: [color.x, color.y, color.z, 1.].into(),
                 ..ClearColorImageInfo::image(device_container.current_image().clone())
+            })
+            .unwrap();
+
+        builder
+            .clear_depth_stencil_image(ClearDepthStencilImageInfo {
+                clear_value: 1.0.into(),
+                ..ClearDepthStencilImageInfo::image(device_container.depth_image().clone())
             })
             .unwrap();
 

@@ -6,7 +6,7 @@ use vulkano::{
         Device, DeviceCreateInfo, DeviceExtensions, Queue, QueueCreateInfo,
     },
     format::Format,
-    image::{ImageAccess, ImageUsage, SwapchainImage},
+    image::{AttachmentImage, ImageAccess, ImageUsage, SwapchainImage},
     instance::{Instance, InstanceCreateInfo},
     swapchain::{acquire_next_image, Swapchain, SwapchainCreateInfo},
     sync,
@@ -23,6 +23,7 @@ pub(crate) struct DeviceContainer {
     queue: Arc<Queue>,
     swapchain: Arc<Swapchain<Window>>,
     images: Vec<Arc<SwapchainImage<Window>>>,
+    depth_image: Arc<AttachmentImage>,
     pub(crate) previous_frame_end: Option<Box<dyn GpuFuture>>,
     image_num: usize,
 }
@@ -105,7 +106,6 @@ impl DeviceContainer {
                 SwapchainCreateInfo {
                     min_image_count: surface_capabilities.min_image_count,
                     image_format,
-                    // image_extent: surface.window().inner_size().into(),
                     image_extent: surface.window().inner_size().into(),
                     image_usage: ImageUsage {
                         transfer_dst: true,
@@ -123,12 +123,36 @@ impl DeviceContainer {
             .unwrap()
         };
 
+        let depth_image = AttachmentImage::with_usage(
+            device.clone(),
+            images[0].dimensions().width_height(),
+            Format::D32_SFLOAT,
+            ImageUsage {
+                transfer_dst: true,
+                ..ImageUsage::none()
+            },
+        )
+        .unwrap();
+        // {
+        //     // image_usage: ImageUsage {
+        //     //     transient_attachment: true,
+        //     //     ..ImageUsage::none()
+        //     // },
+        //     ..AttachmentImage::transient(
+        //         device.clone(),
+        //         images[0].dimensions().width_height(),
+        //         Format::D32_SFLOAT,
+        //     )
+        // }
+        // .unwrap();
+
         let previous_frame_end = Some(sync::now(queue.device().clone()).boxed());
 
         Self {
             queue,
             swapchain,
             images,
+            depth_image,
             previous_frame_end,
             image_num: 0,
         }
@@ -183,6 +207,14 @@ impl DeviceContainer {
 
     pub(crate) fn image_num(&self) -> usize {
         self.image_num
+    }
+
+    pub(crate) fn depth_image_format(&self) -> Format {
+        self.depth_image.format()
+    }
+
+    pub(crate) fn depth_image(&self) -> &Arc<AttachmentImage> {
+        &self.depth_image
     }
 
     pub(crate) fn current_image(&self) -> &Arc<SwapchainImage<Window>> {

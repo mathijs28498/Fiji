@@ -1,10 +1,12 @@
+use nalgebra_glm::Vec3;
+
 use crate::objects::camera::camera_2d::Camera2D;
 use crate::objects::camera::camera_3d::Camera3D;
 use crate::objects::obj_2d::circle::Circle;
 use crate::objects::obj_2d::line::Line;
 use crate::objects::obj_2d::polygon::Polygon;
 use crate::objects::obj_3d::block::Block;
-use crate::objects::{background::Background, obj_2d::rect::Rect, DrawObject};
+use crate::objects::{background::Background, obj_2d::rect::Rect, DrawObject2D, DrawObject3D};
 
 use super::render_passes::block_render_pass::BlockRenderPass;
 use super::render_passes::circle_render_pass::CircleRenderPass;
@@ -29,7 +31,9 @@ pub struct Context {
     pub camera_3d: Camera3D,
 
     // TODO: Split objects into 2d and 3d
-    draw_objects: Vec<DrawObject>,
+    background: Background,
+    draw_objects_2d: Vec<DrawObject2D>,
+    draw_objects_3d: Vec<DrawObject3D>,
 }
 
 impl Context {
@@ -37,11 +41,14 @@ impl Context {
         let event_loop_container = EventLoopContainer::new();
         let device_container =
             DeviceContainer::new(&event_loop_container.event_loop, width, height);
+
+        let background = Background::new(Vec3::new(0., 0., 0.));
+        let background_render_pass = BackgroundRenderPass::new();
+
         let poly_render_pass = PolyRenderPass::new(&device_container);
         let circle_render_pass = CircleRenderPass::new(&device_container);
         let line_render_pass = LineRenderPass::new(&device_container);
         let block_render_pass = BlockRenderPass::new(&device_container);
-        let background_render_pass = BackgroundRenderPass::new();
 
         Self {
             event_loop_container: Some(event_loop_container),
@@ -50,41 +57,47 @@ impl Context {
             circle_render_pass,
             line_render_pass,
             background_render_pass,
-            block_render_pass, 
+            block_render_pass,
 
             camera_2d: Camera2D {},
             camera_3d: Camera3D::new(),
 
-            draw_objects: Vec::new(),
+            background,
+            draw_objects_2d: Vec::new(),
+            draw_objects_3d: Vec::new(),
         }
     }
 
-    pub fn draw(&mut self, draw_object: DrawObject) {
-        self.draw_objects.push(draw_object);
+    fn draw_2d(&mut self, draw_object: DrawObject2D) {
+        self.draw_objects_2d.push(draw_object);
     }
 
-    pub fn draw_circle(&mut self, circle: Circle) {
-        self.draw(DrawObject::CircleObject(circle));
+    fn draw_3d(&mut self, draw_object: DrawObject3D) {
+        self.draw_objects_3d.push(draw_object);
     }
 
-    pub fn draw_rect(&mut self, rect: Rect) {
-        self.draw(DrawObject::RectObject(rect));
+    pub fn circle(&mut self, circle: Circle) {
+        self.draw_2d(DrawObject2D::CircleObject(circle));
     }
 
-    pub fn draw_polygon(&mut self, polygon: Polygon) {
-        self.draw(DrawObject::PolyObject(polygon));
+    pub fn rect(&mut self, rect: Rect) {
+        self.draw_2d(DrawObject2D::RectObject(rect));
     }
 
-    pub fn draw_line(&mut self, line: Line) {
-        self.draw(DrawObject::LineObject(line));
+    pub fn polygon(&mut self, polygon: Polygon) {
+        self.draw_2d(DrawObject2D::PolyObject(polygon));
     }
 
-    pub fn draw_block(&mut self, block: Block) {
-        self.draw(DrawObject::BlockObject(block));
+    pub fn line(&mut self, line: Line) {
+        self.draw_2d(DrawObject2D::LineObject(line));
     }
 
-    pub fn draw_background(&mut self, bg: Background) {
-        self.draw(DrawObject::BackgroundObject(bg));
+    pub fn block(&mut self, block: Block) {
+        self.draw_3d(DrawObject3D::BlockObject(block));
+    }
+
+    pub fn background(&mut self, bg: Background) {
+        self.background = bg;
     }
 
     pub fn event_loop(&mut self) -> EventLoopContainer {
@@ -94,14 +107,33 @@ impl Context {
     pub fn render(&mut self) {
         self.device_container.begin_draw();
 
-        for object in self.draw_objects.iter_mut() {
+        self.background
+            .draw(&self.background_render_pass, &mut self.device_container);
+
+        for object in self.draw_objects_3d.iter_mut() {
             match object {
-                DrawObject::RectObject(rect) => rect.draw(&mut self.poly_render_pass, &mut self.device_container),
-                DrawObject::CircleObject(circle) => circle.draw(&mut self.circle_render_pass, &mut self.device_container),
-                DrawObject::LineObject(line) => line.draw(&mut self.line_render_pass, &mut self.device_container),
-                DrawObject::PolyObject(polygon) => polygon.draw(&mut self.poly_render_pass, &mut self.device_container),
-                DrawObject::BlockObject(block) => block.draw(&mut self.block_render_pass, &mut self.device_container, &self.camera_3d),
-                DrawObject::BackgroundObject(bg) => bg.draw(&self.background_render_pass, &mut self.device_container),
+                DrawObject3D::BlockObject(block) => block.draw(
+                    &mut self.block_render_pass,
+                    &mut self.device_container,
+                    &self.camera_3d,
+                ),
+            }
+        };
+
+        for object in self.draw_objects_2d.iter_mut() {
+            match object {
+                DrawObject2D::RectObject(rect) => {
+                    rect.draw(&mut self.poly_render_pass, &mut self.device_container)
+                }
+                DrawObject2D::CircleObject(circle) => {
+                    circle.draw(&mut self.circle_render_pass, &mut self.device_container)
+                }
+                DrawObject2D::LineObject(line) => {
+                    line.draw(&mut self.line_render_pass, &mut self.device_container)
+                }
+                DrawObject2D::PolyObject(polygon) => {
+                    polygon.draw(&mut self.poly_render_pass, &mut self.device_container)
+                }
             }
         }
         self.device_container.end_draw();
@@ -110,6 +142,7 @@ impl Context {
     }
 
     fn clear_objects(&mut self) {
-        self.draw_objects = Vec::new();
+        self.draw_objects_2d = Vec::new();
+        self.draw_objects_3d = Vec::new();
     }
 }

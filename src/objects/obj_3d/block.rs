@@ -22,7 +22,7 @@ use crate::{
 static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex3D]>>> = None;
 static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Block {
     pub color: Vec4,
     pub position: Vec3,
@@ -36,8 +36,37 @@ impl Block {
             color,
             position,
             size,
-            rotation
+            rotation,
         }
+    }
+
+    pub fn new_default() -> Self {
+        Self {
+            color: Vec4::new(1., 1., 1., 1.),
+            position: Vec3::new(0., 0., 0.),
+            size: Vec3::new(1., 1., 1.),
+            rotation: Vec3::new(0.,0., 0.),
+        }
+    }
+
+    pub fn with_color(mut self, color: Vec4) -> Self {
+        self.color = color;
+        self
+    }
+
+    pub fn with_position(mut self, position: Vec3) -> Self {
+        self.position = position;
+        self
+    }
+
+    pub fn with_size(mut self, size: Vec3) -> Self {
+        self.size = size;
+        self
+    }
+
+    pub fn with_rotation(mut self, rotation: Vec3) -> Self {
+        self.rotation = rotation;
+        self
     }
 
     pub(crate) fn draw(
@@ -61,6 +90,7 @@ impl Block {
             &self.size,
             self.rotation.clone(),
             camera.get_view_matrix(),
+            camera.position.clone(),
         );
 
         // Unsafe is used to change these static values.
@@ -78,29 +108,109 @@ impl Block {
     fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex3D]>> {
         ImmutableBuffer::from_iter(
             [
-                Vertex3D {
-                    position: [-0.5, -0.5, 0.5],
-                },
+                // Front
                 Vertex3D {
                     position: [0.5, -0.5, 0.5],
+                    normal: [0., 0., 1.],
                 },
                 Vertex3D {
-                    position: [-0.5, 0.5, 0.5],
+                    position: [-0.5, -0.5, 0.5],
+                    normal: [0., 0., 1.],
                 },
                 Vertex3D {
                     position: [0.5, 0.5, 0.5],
+                    normal: [0., 0., 1.],
                 },
                 Vertex3D {
+                    position: [-0.5, 0.5, 0.5],
+                    normal: [0., 0., 1.],
+                },
+                // Back
+                Vertex3D {
                     position: [-0.5, -0.5, -0.5],
+                    normal: [0., 0., -1.],
                 },
                 Vertex3D {
                     position: [0.5, -0.5, -0.5],
+                    normal: [0., 0., -1.],
                 },
                 Vertex3D {
                     position: [-0.5, 0.5, -0.5],
+                    normal: [0., 0., -1.],
                 },
                 Vertex3D {
                     position: [0.5, 0.5, -0.5],
+                    normal: [0., 0., -1.],
+                },
+                //
+                // Left
+                Vertex3D {
+                    position: [0.5, -0.5, 0.5],
+                    normal: [1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, 0.5, 0.5],
+                    normal: [1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, -0.5, -0.5],
+                    normal: [1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, 0.5, -0.5],
+                    normal: [1., 0., 0.],
+                },
+                // Right
+                Vertex3D {
+                    position: [-0.5, -0.5, 0.5],
+                    normal: [-1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, -0.5, -0.5],
+                    normal: [-1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, 0.5],
+                    normal: [-1., 0., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, -0.5],
+                    normal: [-1., 0., 0.],
+                },
+                //
+                // Top
+                Vertex3D {
+                    position: [0.5, 0.5, 0.5],
+                    normal: [0., 1., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, 0.5],
+                    normal: [0., 1., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, 0.5, -0.5],
+                    normal: [0., 1., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, -0.5],
+                    normal: [0., 1., 0.],
+                },
+                // Bottom
+                Vertex3D {
+                    position: [0.5, -0.5, 0.5],
+                    normal: [0., -1., 0.],
+                },
+                Vertex3D {
+                    position: [0.5, -0.5, -0.5],
+                    normal: [0., -1., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, -0.5, 0.5],
+                    normal: [0., -1., 0.],
+                },
+                Vertex3D {
+                    position: [-0.5, -0.5, -0.5],
+                    normal: [0., -1., 0.],
                 },
             ],
             BufferUsage::vertex_buffer(),
@@ -122,18 +232,18 @@ impl Block {
                 6, 5, 7, //
                 //
                 // Left
-                0, 2, 4, //
-                4, 2, 6, //
+                8, 9, 10, //
+                10, 9, 11, //
                 // Right
-                1, 5, 3, //
-                3, 5, 7, //
+                12, 13, 14, //
+                14, 13, 15, //
                 //
                 // Top
-                0, 5, 1, //
-                4, 5, 0, //
+                16, 17, 18, //
+                18, 17, 19, //
                 // Bottom
-                2, 7, 6, //
-                2, 3, 7, //
+                20, 21, 22, //
+                22, 21, 23, //
             ],
             BufferUsage::index_buffer(),
             queue.clone(),
