@@ -16,6 +16,7 @@ use vulkano::{
             color_blend::ColorBlendState,
             depth_stencil::DepthStencilState,
             input_assembly::InputAssemblyState,
+            rasterization::{CullMode, RasterizationState},
             vertex_input::BuffersDefinition,
             viewport::{Viewport, ViewportState},
         },
@@ -29,13 +30,16 @@ use nalgebra_glm::{Mat4, Vec3, Vec4};
 
 use crate::rendering::{data_types::Vertex3D, device_container::DeviceContainer};
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub(crate) struct BlockPushConstants {
-    _color: Vec4,
-    _model: Mat4,
-    _view: Mat4,
-    _proj: Mat4,
-    _resolution: [u32; 2],
+    color: Vec4,
+    model: Mat4,
+    view: Mat4,
+    proj: Mat4,
+    camera_pos: Vec3,
+    padding: f32,
+    resolution: [u32; 2],
 }
 
 impl BlockPushConstants {
@@ -45,17 +49,19 @@ impl BlockPushConstants {
         size: &Vec3,
         rotation: Vec3,
         view: Mat4,
+        camera_pos: Vec3,
     ) -> BlockPushConstants {
-        // TODO: Get proper aspect (not hardcoded)
         let position = Vec3::new(position.x, -position.y, position.z);
         Self {
-            _color: color,
-            _model: Mat4::new_nonuniform_scaling(size)
-                * Mat4::new_translation(&position)
-                * Mat4::new_rotation(rotation),
-            _view: view,
-            _proj: Mat4::new_perspective(1280. / 720., FRAC_2_PI, 0.0001, 1000.),
-            _resolution: [0, 0],
+            color,
+            model: Mat4::new_translation(&position)
+                * Mat4::new_rotation(rotation)
+                * Mat4::new_nonuniform_scaling(size),
+            view,
+            proj: Mat4::new_perspective(1280. / 720., FRAC_2_PI, 0.0001, 1000.),
+            camera_pos,
+            padding: 0.,
+            resolution: [0, 0],
         }
     }
 }
@@ -94,8 +100,8 @@ impl BlockRenderPass {
                     samples: 1,
                 },
                 depth: {
-                    load: Clear,
-                    store: DontCare,
+                    load: Load,
+                    store: Store,
                     format: device_container.depth_image_format(),
                     samples: 1,
                 }
@@ -134,6 +140,7 @@ impl BlockRenderPass {
         let pipeline = GraphicsPipeline::start()
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .input_assembly_state(InputAssemblyState::new())
+            .rasterization_state(RasterizationState::new().cull_mode(CullMode::Back))
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
             .vertex_input_state(BuffersDefinition::new().vertex::<Vertex3D>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
@@ -144,6 +151,7 @@ impl BlockRenderPass {
                     depth_range: 0.0..1.0,
                 },
             ]))
+            .cull_mode_back()
             .fragment_shader(fs.entry_point("main").unwrap(), ())
             .depth_stencil_state(DepthStencilState::simple_depth_test())
             .build(device_container.device().clone())
@@ -163,7 +171,7 @@ impl BlockRenderPass {
         index_buffer: Arc<ImmutableBuffer<[u32]>>,
         mut push_constants: BlockPushConstants,
     ) {
-        push_constants._resolution = device_container.resolution();
+        push_constants.resolution = device_container.resolution();
 
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.device().clone(),
@@ -175,8 +183,10 @@ impl BlockRenderPass {
         builder
             .begin_render_pass(
                 RenderPassBeginInfo {
-                    clear_values: vec![Some([0.0, 0.0, 1.0, 1.0].into()), Some(1f32.into())],
-                    ..RenderPassBeginInfo::framebuffer(self.framebuffers[device_container.image_num()].clone())
+                    clear_values: vec![None, None],
+                    ..RenderPassBeginInfo::framebuffer(
+                        self.framebuffers[device_container.image_num()].clone(),
+                    )
                 },
                 SubpassContents::Inline,
             )

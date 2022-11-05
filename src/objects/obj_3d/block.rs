@@ -61,6 +61,7 @@ impl Block {
             &self.size,
             self.rotation.clone(),
             camera.get_view_matrix(),
+            camera.position.clone(),
         );
 
         // Unsafe is used to change these static values.
@@ -80,19 +81,19 @@ impl Block {
             [
                 // Front
                 Vertex3D {
-                    position: [-0.5, -0.5, 0.5],
-                    normal: [0., 0., 1.],
-                },
-                Vertex3D {
                     position: [0.5, -0.5, 0.5],
                     normal: [0., 0., 1.],
                 },
                 Vertex3D {
-                    position: [-0.5, 0.5, 0.5],
+                    position: [-0.5, -0.5, 0.5],
                     normal: [0., 0., 1.],
                 },
                 Vertex3D {
                     position: [0.5, 0.5, 0.5],
+                    normal: [0., 0., 1.],
+                },
+                Vertex3D {
+                    position: [-0.5, 0.5, 0.5],
                     normal: [0., 0., 1.],
                 },
                 // Back
@@ -136,11 +137,11 @@ impl Block {
                     normal: [-1., 0., 0.],
                 },
                 Vertex3D {
-                    position: [-0.5, 0.5, 0.5],
+                    position: [-0.5, -0.5, -0.5],
                     normal: [-1., 0., 0.],
                 },
                 Vertex3D {
-                    position: [-0.5, -0.5, -0.5],
+                    position: [-0.5, 0.5, 0.5],
                     normal: [-1., 0., 0.],
                 },
                 Vertex3D {
@@ -171,11 +172,11 @@ impl Block {
                     normal: [0., -1., 0.],
                 },
                 Vertex3D {
-                    position: [-0.5, -0.5, 0.5],
+                    position: [0.5, -0.5, -0.5],
                     normal: [0., -1., 0.],
                 },
                 Vertex3D {
-                    position: [0.5, -0.5, -0.5],
+                    position: [-0.5, -0.5, 0.5],
                     normal: [0., -1., 0.],
                 },
                 Vertex3D {
@@ -206,7 +207,7 @@ impl Block {
                 10, 9, 11, //
                 // Right
                 12, 13, 14, //
-                13, 15, 14, //
+                14, 13, 15, //
                 //
                 // Top
                 16, 17, 18, //

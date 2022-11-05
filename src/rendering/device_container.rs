@@ -6,7 +6,7 @@ use vulkano::{
         Device, DeviceCreateInfo, DeviceExtensions, Queue, QueueCreateInfo,
     },
     format::Format,
-    image::{ImageAccess, ImageUsage, SwapchainImage, AttachmentImage},
+    image::{AttachmentImage, ImageAccess, ImageUsage, SwapchainImage},
     instance::{Instance, InstanceCreateInfo},
     swapchain::{acquire_next_image, Swapchain, SwapchainCreateInfo},
     sync,
@@ -123,12 +123,28 @@ impl DeviceContainer {
             .unwrap()
         };
 
-        let depth_image = AttachmentImage::transient(
+        let depth_image = AttachmentImage::with_usage(
             device.clone(),
             images[0].dimensions().width_height(),
             Format::D32_SFLOAT,
+            ImageUsage {
+                transfer_dst: true,
+                ..ImageUsage::none()
+            },
         )
         .unwrap();
+        // {
+        //     // image_usage: ImageUsage {
+        //     //     transient_attachment: true,
+        //     //     ..ImageUsage::none()
+        //     // },
+        //     ..AttachmentImage::transient(
+        //         device.clone(),
+        //         images[0].dimensions().width_height(),
+        //         Format::D32_SFLOAT,
+        //     )
+        // }
+        // .unwrap();
 
         let previous_frame_end = Some(sync::now(queue.device().clone()).boxed());
 

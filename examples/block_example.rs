@@ -9,13 +9,17 @@ use fiji::{
 };
 
 // TODO:
-// [ ] - Depth testing
+// [X] - Depth testing
 // [X] - Normals
-// [ ] - Phong shading
-// [ ] - Backface culling 
+// [X] - Phong shading
+// [X] - Backface culling 
 // [X] - Split objects into 2D and 3D and draw 2D always on top
 // [ ] - Add text components
+//
+// LATER TODO:
+// [ ] - Configurable lights in context
 // [ ] - Figure out rotation
+// [ ] - Resizing of window
 //
 // OPTIONAL TODO:
 // [ ] - Shadows
@@ -35,7 +39,7 @@ fn main() {
         Vec4::new(0.28, 0.57, 0.9, 1.),
         Vec3::new(0., 0., -3.),
         Vec3::new(1., 1., 1.),
-        Vec3::new(0.6, -0.6, -0.2),
+        Vec3::new(0., 0., -0.0),
     );
 
     let mut block_5 = Block::new(
@@ -43,6 +47,20 @@ fn main() {
         Vec3::new(0., 0., -5.),
         Vec3::new(1., 2., 1.),
         Vec3::new(1., -0., 0.5),
+    );
+
+    let mut wall = Block::new(
+        Vec4::new(0.57, 0.28, 0.9, 1.),
+        Vec3::new(0., 40., -10.),
+        Vec3::new(100., 100., 1.),
+        Vec3::new(0., 0., 0.),
+    );
+
+    let mut ground = Block::new(
+        Vec4::new(0.28, 0.9, 0.57, 1.),
+        Vec3::new(0., -9.99, 0.),
+        Vec3::new(100., 0.1, 100.),
+        Vec3::new(0., 0., 0.),
     );
 
     let mut rotate_camera = false;
@@ -91,10 +109,11 @@ fn main() {
 
             last_theta = last_theta + sensitivity * md.y;
             if last_theta < -FRAC_PI_2 {
-                last_theta = -FRAC_PI_2;
+                last_theta = -FRAC_PI_2 + 0.00001;
             } else if last_theta > FRAC_PI_2 {
-                last_theta = FRAC_PI_2;
+                last_theta = FRAC_PI_2 - 0.00001;
             }
+            println!("{last_theta}");
 
             context.camera_3d.dir = Vec3::new(
                 last_theta.cos() * last_phi.cos(), 
@@ -111,8 +130,10 @@ fn main() {
 
         // context.background(Background::new(Vec3::new(0.07, 0.51, 0.6)));
         context.block(block_0.clone());
-        // context.block(block_5.clone());
-        // context.block(block_3.clone());
+        context.block(block_5.clone());
+        context.block(block_3.clone());
+        context.block(wall.clone());
+        context.block(ground.clone());
 
         context.render();
     })

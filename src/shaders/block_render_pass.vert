@@ -5,6 +5,7 @@ layout(push_constant) uniform Constants {
     mat4 world;
     mat4 view;
     mat4 proj;
+    vec3 cameraPos;
     uvec2 resolution;
 } pc;
 
@@ -17,7 +18,8 @@ layout (location = 1) out vec3 fNormal;
 void main() {
     vec4 worldPos = pc.world * vec4(position, 1.0);
     fPosition = worldPos.xyz;
-    fNormal = mat3(transpose(inverse(pc.world))) * normal;
-    
+    fNormal = normalize(mat3(transpose(inverse(pc.world))) * normal);
+    // fNormal = (mat3(transpose(inverse(pc.world))) * normal);
+
     gl_Position = pc.proj * pc.view * worldPos;
 }
