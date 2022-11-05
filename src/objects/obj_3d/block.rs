@@ -22,7 +22,7 @@ use crate::{
 static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex3D]>>> = None;
 static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Block {
     pub color: Vec4,
     pub position: Vec3,
@@ -38,6 +38,35 @@ impl Block {
             size,
             rotation,
         }
+    }
+
+    pub fn new_default() -> Self {
+        Self {
+            color: Vec4::new(1., 1., 1., 1.),
+            position: Vec3::new(0., 0., 0.),
+            size: Vec3::new(1., 1., 1.),
+            rotation: Vec3::new(0.,0., 0.),
+        }
+    }
+
+    pub fn with_color(mut self, color: Vec4) -> Self {
+        self.color = color;
+        self
+    }
+
+    pub fn with_position(mut self, position: Vec3) -> Self {
+        self.position = position;
+        self
+    }
+
+    pub fn with_size(mut self, size: Vec3) -> Self {
+        self.size = size;
+        self
+    }
+
+    pub fn with_rotation(mut self, rotation: Vec3) -> Self {
+        self.rotation = rotation;
+        self
     }
 
     pub(crate) fn draw(
