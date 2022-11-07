@@ -10,8 +10,10 @@ pub struct Background {
 }
 
 impl Background {
-    pub fn new(color: Vec3) -> Self {
-        Self { color }
+    pub fn new_with_color(color: Vec3) -> Self {
+        Self {
+            color,
+        }
     }
 
     pub(crate) fn draw(

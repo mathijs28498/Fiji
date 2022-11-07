@@ -42,7 +42,7 @@ impl Context {
         let device_container =
             DeviceContainer::new(&event_loop_container.event_loop, width, height);
 
-        let background = Background::new(Vec3::new(0., 0., 0.));
+        let background = Background::new_with_color(Vec3::new(0., 0., 0.));
         let background_render_pass = BackgroundRenderPass::new();
 
         let poly_render_pass = PolyRenderPass::new(&device_container);

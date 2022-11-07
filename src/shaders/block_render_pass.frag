@@ -14,7 +14,7 @@ layout (location = 1) in vec3 fNormal;
 
 layout (location = 0) out vec4 f_color;
 
-const vec3 lightPos = vec3(5., -5., 5);
+const vec3 lightPos = vec3(5., -5., -5.);
 const vec3 lightColor = vec3(1., 1., 1.);
 
 const float ambientStrength = 0.2;

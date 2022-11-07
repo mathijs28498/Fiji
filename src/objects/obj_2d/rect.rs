@@ -1,13 +1,15 @@
 use nalgebra_glm::{Vec2, Vec4};
 
 use crate::{
-    objects::{help_functions::create_buffers_2d, Border},
+    objects::{help_functions::create_buffers_2d, Border, DEFAULT_COLOR},
     rendering::{
         data_types::{BufferContainer2D, Vertex2D},
         device_container::DeviceContainer,
         render_passes::poly_render_pass::PolyRenderPass,
     },
 };
+
+use super::{DEFAULT_POSITION_2D, DEFAULT_SIZE_2D};
 
 #[derive(Clone)]
 pub struct Rect {
@@ -18,13 +20,33 @@ pub struct Rect {
 }
 
 impl Rect {
-    pub fn new(color: Vec4, position: Vec2, size: Vec2, border: Option<Border>) -> Self {
+    pub fn new_default() -> Self {
         Self {
-            color,
-            position,
-            size,
-            border,
+            color: DEFAULT_COLOR,
+            position: DEFAULT_POSITION_2D,
+            size: DEFAULT_SIZE_2D,
+            border: None,
         }
+    }
+
+    pub fn with_color(mut self, color: Vec4) -> Self {
+        self.color = color;
+        self
+    }
+
+    pub fn with_position(mut self, position: Vec2) -> Self {
+        self.position = position;
+        self
+    }
+
+    pub fn with_size(mut self, size: Vec2) -> Self {
+        self.size = size;
+        self
+    }
+
+    pub fn with_border(mut self, border: Border) -> Self {
+        self.border = Some(border);
+        self
     }
 
     pub(crate) fn draw(

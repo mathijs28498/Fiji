@@ -1,7 +1,7 @@
 use nalgebra_glm::{Vec2, Vec4};
 
 use crate::{
-    objects::help_functions::create_buffers_2d,
+    objects::{help_functions::create_buffers_2d, DEFAULT_COLOR},
     rendering::{
         data_types::{BufferContainer2D, Vertex2D},
         device_container::DeviceContainer,
@@ -18,13 +18,23 @@ pub struct Line {
 }
 
 impl Line {
-    pub fn new(color: Vec4, p0: Vec2, p1: Vec2, thickness: u32) -> Self {
+    pub fn new_with_points(p0: Vec2, p1: Vec2) -> Self {
         Self {
-            color,
+            color: DEFAULT_COLOR,
             p0,
             p1,
-            thickness,
+            thickness: 1,
         }
+    }
+
+    pub fn with_color(mut self, color: Vec4) -> Self {
+        self.color = color;
+        self
+    }
+
+    pub fn with_thickness(mut self, thickness: u32) -> Self {
+        self.thickness = thickness;
+        self
     }
 
     pub(crate) fn draw(

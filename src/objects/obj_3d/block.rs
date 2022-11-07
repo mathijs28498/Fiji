@@ -1,13 +1,15 @@
 use nalgebra_glm::{Vec3, Vec4};
 
 use crate::{
-    objects::{camera::camera_3d::Camera3D, help_functions::create_buffers_3d},
+    objects::{camera::camera_3d::Camera3D, help_functions::create_buffers_3d, DEFAULT_COLOR},
     rendering::{
         data_types::{BufferContainer3D, Vertex3D},
         device_container::DeviceContainer,
         render_passes::block_render_pass::BlockRenderPass,
     },
 };
+
+use super::{DEFAULT_SIZE_3D, DEFAULT_POSITION_3D, DEFAULT_ROTATION_3D};
 
 #[derive(Clone, Debug)]
 pub struct Block {
@@ -18,21 +20,12 @@ pub struct Block {
 }
 
 impl Block {
-    pub fn new(color: Vec4, position: Vec3, size: Vec3, rotation: Vec3) -> Self {
-        Self {
-            color,
-            position,
-            size,
-            rotation,
-        }
-    }
-
     pub fn new_default() -> Self {
         Self {
-            color: Vec4::new(1., 1., 1., 1.),
-            position: Vec3::new(0., 0., 0.),
-            size: Vec3::new(1., 1., 1.),
-            rotation: Vec3::new(0., 0., 0.),
+            color: DEFAULT_COLOR,
+            position: DEFAULT_POSITION_3D,
+            size: DEFAULT_SIZE_3D,
+            rotation: DEFAULT_ROTATION_3D,
         }
     }
 

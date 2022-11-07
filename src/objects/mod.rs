@@ -11,6 +11,8 @@ use self::{
     obj_3d::block::Block,
 };
 
+const DEFAULT_COLOR: Vec4 = Vec4::new(1., 1., 1., 1.);
+
 #[derive(Clone)]
 pub struct Border {
     pub color: Vec4,

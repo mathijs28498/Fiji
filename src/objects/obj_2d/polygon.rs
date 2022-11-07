@@ -1,7 +1,7 @@
 use nalgebra_glm::{dot, Vec2, Vec4};
 
 use crate::{
-    objects::{help_functions::create_buffers_2d, Border},
+    objects::{help_functions::create_buffers_2d, Border, DEFAULT_COLOR},
     rendering::{
         data_types::{BufferContainer2D, Vertex2D},
         device_container::DeviceContainer,
@@ -18,22 +18,32 @@ pub struct Polygon {
 }
 
 impl Polygon {
-    pub fn new(color: Vec4, points: Vec<Vec2>, border: Option<Border>) -> Self {
+    pub fn new_with_points(points: Vec<Vec2>) -> Self {
         Self {
-            color,
+            color: DEFAULT_COLOR,
             points,
-            border,
+            border: None,
             buffers: None,
         }
     }
 
-    pub fn new_triangle(color: Vec4, points: [Vec2; 3], border: Option<Border>) -> Self {
+    pub fn new_triangle(points: [Vec2; 3]) -> Self {
         Self {
-            color,
+            color: DEFAULT_COLOR,
             points: points.into(),
-            border,
+            border: None,
             buffers: None,
         }
+    }
+
+    pub fn with_color(mut self, color: Vec4) -> Self {
+        self.color = color;
+        self
+    }
+
+    pub fn with_border(mut self, border: Border) -> Self {
+        self.border = Some(border);
+        self
     }
 
     pub(crate) fn draw(
