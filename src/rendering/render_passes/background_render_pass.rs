@@ -18,8 +18,8 @@ impl BackgroundRenderPass {
 
     pub(crate) fn draw(&self, device_container: &mut DeviceContainer, color: &Vec3) {
         let mut builder = AutoCommandBufferBuilder::primary(
-            device_container.device().clone(),
-            device_container.queue().family(),
+            device_container.command_buffer_allocator(),
+            device_container.queue_family_index(),
             CommandBufferUsage::OneTimeSubmit,
         )
         .unwrap();

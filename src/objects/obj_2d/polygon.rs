@@ -1,15 +1,9 @@
-use std::sync::Arc;
-
 use nalgebra_glm::{dot, Vec2, Vec4};
-use vulkano::{
-    buffer::{BufferUsage, ImmutableBuffer},
-    device::Queue,
-};
 
 use crate::{
-    objects::Border,
+    objects::{Border, help_functions::create_buffers_2d},
     rendering::{
-        data_types::{BufferContainer, Vertex2D},
+        data_types::{BufferContainer2D, Vertex2D},
         device_container::DeviceContainer,
         render_passes::poly_render_pass::{PolyPushConstants, PolyRenderPass},
     },
@@ -20,7 +14,7 @@ pub struct Polygon {
     pub color: Vec4,
     pub points: Vec<Vec2>,
     pub border: Option<Border>,
-    buffers: Option<BufferContainer>,
+    buffers: Option<BufferContainer2D>,
 }
 
 impl Polygon {
@@ -48,16 +42,13 @@ impl Polygon {
         device_container: &mut DeviceContainer,
     ) {
         if let None = self.buffers {
-            self.buffers = Some(BufferContainer {
-                vertex_buffer: self.get_vertex_buffer(device_container.queue().clone()),
-                index_buffer: self.get_index_buffer(device_container.queue().clone()),
-            })
+            self.buffers = Some(self.create_buffers(device_container));
         }
 
         render_pass.draw(
             device_container,
             self.buffers.as_ref().unwrap(),
-            PolyPushConstants::new(
+            PolyRenderPass::create_push_constants(
                 self.color.clone(),
                 Vec2::new(0., 0.),
                 Vec2::new(1., 1.),
@@ -66,21 +57,14 @@ impl Polygon {
         );
     }
 
-    // TODO: Implement proper vertex buffer shit
-    fn get_vertex_buffer(&self, queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex2D]>> {
+    fn create_buffers(&self, device_container: &mut DeviceContainer) -> BufferContainer2D {
+        // TODO: Use iter().map() on self.points
         let mut vertices = Vec::new();
         for p in &self.points {
             vertices.push(Vertex2D {
                 position: [p.x, p.y],
             })
         }
-
-        return ImmutableBuffer::from_iter(vertices, BufferUsage::vertex_buffer(), queue)
-            .unwrap()
-            .0;
-    }
-
-    fn get_index_buffer(&self, queue: Arc<Queue>) -> Arc<ImmutableBuffer<[u32]>> {
         let mut indices = vec![0, 1, 2];
 
         for (i, p) in self.points.iter().enumerate().skip(3) {
@@ -115,9 +99,7 @@ impl Polygon {
             indices.push(i as u32);
         }
 
-        ImmutableBuffer::from_iter(indices, BufferUsage::index_buffer(), queue.clone())
-            .unwrap()
-            .0
+        create_buffers_2d(device_container, vertices, indices)
     }
 }
 

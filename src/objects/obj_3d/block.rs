@@ -1,26 +1,15 @@
-use std::sync::Arc;
-
 use nalgebra_glm::{Vec3, Vec4};
-use vulkano::{
-    buffer::{BufferUsage, ImmutableBuffer},
-    device::Queue,
-};
+use vulkano::device::Queue;
 
 use crate::{
-    objects::{camera::camera_3d::Camera3D, Border},
+    objects::{camera::camera_3d::Camera3D, help_functions::create_buffers_3d},
     rendering::{
         context::Context,
-        data_types::{Vertex2D, Vertex3D},
+        data_types::{BufferContainer3D, Vertex3D},
         device_container::DeviceContainer,
-        render_passes::{
-            block_render_pass::{BlockPushConstants, BlockRenderPass},
-            circle_render_pass::{CirclePushConstants, CircleRenderPass},
-        },
+        render_passes::block_render_pass::{BlockPushConstants, BlockRenderPass},
     },
 };
-
-static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex3D]>>> = None;
-static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
 
 #[derive(Clone, Debug)]
 pub struct Block {
@@ -45,7 +34,7 @@ impl Block {
             color: Vec4::new(1., 1., 1., 1.),
             position: Vec3::new(0., 0., 0.),
             size: Vec3::new(1., 1., 1.),
-            rotation: Vec3::new(0.,0., 0.),
+            rotation: Vec3::new(0., 0., 0.),
         }
     }
 
@@ -75,180 +64,164 @@ impl Block {
         device_container: &mut DeviceContainer,
         camera: &Camera3D,
     ) {
+        static mut BUFFERS: Option<BufferContainer3D> = None;
+        let buffers;
+
         // Unsafe is used to change these static values.
         // This is definitely safe, even thought the compiler can't verify.
         unsafe {
-            if let None = VERTEX_BUFFER {
-                VERTEX_BUFFER = Some(Self::get_vertex_buffer(device_container.queue().clone()));
-                INDEX_BUFFER = Some(Self::get_index_buffer(device_container.queue().clone()));
+            if let None = BUFFERS {
+                BUFFERS = Some(Self::create_buffers(device_container));
             }
+            buffers = BUFFERS.as_ref().unwrap();
         }
 
-        let pc = BlockPushConstants::new(
-            self.color.clone(),
-            self.position.clone(),
-            &self.size,
-            self.rotation.clone(),
-            camera.get_view_matrix(),
-            camera.position.clone(),
+        render_pass.draw(
+            device_container,
+            buffers.vertex_buffer.clone(),
+            buffers.index_buffer.clone(),
+            BlockRenderPass::create_push_constants(
+                self.color.clone(),
+                self.position.clone(),
+                &self.size,
+                self.rotation.clone(),
+                camera.get_view_matrix(),
+                camera.position.clone(),
+            ),
         );
-
-        // Unsafe is used to change these static values.
-        // This is definitely safe, even thought the compiler can't verify.
-        unsafe {
-            render_pass.draw(
-                device_container,
-                VERTEX_BUFFER.as_ref().unwrap().clone(),
-                INDEX_BUFFER.as_ref().unwrap().clone(),
-                pc,
-            );
-        }
     }
 
-    fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex3D]>> {
-        ImmutableBuffer::from_iter(
-            [
-                // Front
-                Vertex3D {
-                    position: [0.5, -0.5, 0.5],
-                    normal: [0., 0., 1.],
-                },
-                Vertex3D {
-                    position: [-0.5, -0.5, 0.5],
-                    normal: [0., 0., 1.],
-                },
-                Vertex3D {
-                    position: [0.5, 0.5, 0.5],
-                    normal: [0., 0., 1.],
-                },
-                Vertex3D {
-                    position: [-0.5, 0.5, 0.5],
-                    normal: [0., 0., 1.],
-                },
-                // Back
-                Vertex3D {
-                    position: [-0.5, -0.5, -0.5],
-                    normal: [0., 0., -1.],
-                },
-                Vertex3D {
-                    position: [0.5, -0.5, -0.5],
-                    normal: [0., 0., -1.],
-                },
-                Vertex3D {
-                    position: [-0.5, 0.5, -0.5],
-                    normal: [0., 0., -1.],
-                },
-                Vertex3D {
-                    position: [0.5, 0.5, -0.5],
-                    normal: [0., 0., -1.],
-                },
-                //
-                // Left
-                Vertex3D {
-                    position: [0.5, -0.5, 0.5],
-                    normal: [1., 0., 0.],
-                },
-                Vertex3D {
-                    position: [0.5, 0.5, 0.5],
-                    normal: [1., 0., 0.],
-                },
-                Vertex3D {
-                    position: [0.5, -0.5, -0.5],
-                    normal: [1., 0., 0.],
-                },
-                Vertex3D {
-                    position: [0.5, 0.5, -0.5],
-                    normal: [1., 0., 0.],
-                },
-                // Right
-                Vertex3D {
-                    position: [-0.5, -0.5, 0.5],
-                    normal: [-1., 0., 0.],
-                },
-                Vertex3D {
-                    position: [-0.5, -0.5, -0.5],
-                    normal: [-1., 0., 0.],
-                },
-                Vertex3D {
-                    position: [-0.5, 0.5, 0.5],
-                    normal: [-1., 0., 0.],
-                },
-                Vertex3D {
-                    position: [-0.5, 0.5, -0.5],
-                    normal: [-1., 0., 0.],
-                },
-                //
-                // Top
-                Vertex3D {
-                    position: [0.5, 0.5, 0.5],
-                    normal: [0., 1., 0.],
-                },
-                Vertex3D {
-                    position: [-0.5, 0.5, 0.5],
-                    normal: [0., 1., 0.],
-                },
-                Vertex3D {
-                    position: [0.5, 0.5, -0.5],
-                    normal: [0., 1., 0.],
-                },
-                Vertex3D {
-                    position: [-0.5, 0.5, -0.5],
-                    normal: [0., 1., 0.],
-                },
-                // Bottom
-                Vertex3D {
-                    position: [0.5, -0.5, 0.5],
-                    normal: [0., -1., 0.],
-                },
-                Vertex3D {
-                    position: [0.5, -0.5, -0.5],
-                    normal: [0., -1., 0.],
-                },
-                Vertex3D {
-                    position: [-0.5, -0.5, 0.5],
-                    normal: [0., -1., 0.],
-                },
-                Vertex3D {
-                    position: [-0.5, -0.5, -0.5],
-                    normal: [0., -1., 0.],
-                },
-            ],
-            BufferUsage::vertex_buffer(),
-            queue,
-        )
-        .unwrap()
-        .0
-    }
+    fn create_buffers(device_container: &mut DeviceContainer) -> BufferContainer3D {
+        let vertices = vec![
+            // Front
+            Vertex3D {
+                position: [0.5, -0.5, 0.5],
+                normal: [0., 0., 1.],
+            },
+            Vertex3D {
+                position: [-0.5, -0.5, 0.5],
+                normal: [0., 0., 1.],
+            },
+            Vertex3D {
+                position: [0.5, 0.5, 0.5],
+                normal: [0., 0., 1.],
+            },
+            Vertex3D {
+                position: [-0.5, 0.5, 0.5],
+                normal: [0., 0., 1.],
+            },
+            // Back
+            Vertex3D {
+                position: [-0.5, -0.5, -0.5],
+                normal: [0., 0., -1.],
+            },
+            Vertex3D {
+                position: [0.5, -0.5, -0.5],
+                normal: [0., 0., -1.],
+            },
+            Vertex3D {
+                position: [-0.5, 0.5, -0.5],
+                normal: [0., 0., -1.],
+            },
+            Vertex3D {
+                position: [0.5, 0.5, -0.5],
+                normal: [0., 0., -1.],
+            },
+            //
+            // Left
+            Vertex3D {
+                position: [0.5, -0.5, 0.5],
+                normal: [1., 0., 0.],
+            },
+            Vertex3D {
+                position: [0.5, 0.5, 0.5],
+                normal: [1., 0., 0.],
+            },
+            Vertex3D {
+                position: [0.5, -0.5, -0.5],
+                normal: [1., 0., 0.],
+            },
+            Vertex3D {
+                position: [0.5, 0.5, -0.5],
+                normal: [1., 0., 0.],
+            },
+            // Right
+            Vertex3D {
+                position: [-0.5, -0.5, 0.5],
+                normal: [-1., 0., 0.],
+            },
+            Vertex3D {
+                position: [-0.5, -0.5, -0.5],
+                normal: [-1., 0., 0.],
+            },
+            Vertex3D {
+                position: [-0.5, 0.5, 0.5],
+                normal: [-1., 0., 0.],
+            },
+            Vertex3D {
+                position: [-0.5, 0.5, -0.5],
+                normal: [-1., 0., 0.],
+            },
+            //
+            // Top
+            Vertex3D {
+                position: [0.5, 0.5, 0.5],
+                normal: [0., 1., 0.],
+            },
+            Vertex3D {
+                position: [-0.5, 0.5, 0.5],
+                normal: [0., 1., 0.],
+            },
+            Vertex3D {
+                position: [0.5, 0.5, -0.5],
+                normal: [0., 1., 0.],
+            },
+            Vertex3D {
+                position: [-0.5, 0.5, -0.5],
+                normal: [0., 1., 0.],
+            },
+            // Bottom
+            Vertex3D {
+                position: [0.5, -0.5, 0.5],
+                normal: [0., -1., 0.],
+            },
+            Vertex3D {
+                position: [0.5, -0.5, -0.5],
+                normal: [0., -1., 0.],
+            },
+            Vertex3D {
+                position: [-0.5, -0.5, 0.5],
+                normal: [0., -1., 0.],
+            },
+            Vertex3D {
+                position: [-0.5, -0.5, -0.5],
+                normal: [0., -1., 0.],
+            },
+        ];
 
-    //TODO: Add backface culling
-    fn get_index_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[u32]>> {
-        ImmutableBuffer::from_iter(
-            [
-                // Front
-                0, 1, 2, //
-                2, 1, 3, //
-                // Back
-                4, 5, 6, //
-                6, 5, 7, //
-                //
-                // Left
-                8, 9, 10, //
-                10, 9, 11, //
-                // Right
-                12, 13, 14, //
-                14, 13, 15, //
-                //
-                // Top
-                16, 17, 18, //
-                18, 17, 19, //
-                // Bottom
-                20, 21, 22, //
-                22, 21, 23, //
-            ],
-            BufferUsage::index_buffer(),
-            queue.clone(),
-        )
-        .unwrap()
-        .0
+        let indices = vec![
+            // Front
+            0, 1, 2, //
+            2, 1, 3, //
+            // Back
+            4, 5, 6, //
+            6, 5, 7, //
+            //
+            // Left
+            8, 9, 10, //
+            10, 9, 11, //
+            // Right
+            12, 13, 14, //
+            14, 13, 15, //
+            //
+            // Top
+            16, 17, 18, //
+            18, 17, 19, //
+            // Bottom
+            20, 21, 22, //
+            22, 21, 23, //
+        ];
+
+        create_buffers_3d(device_container, vertices, indices)
     }
 }

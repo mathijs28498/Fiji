@@ -1,6 +1,6 @@
 #version 450
 
-layout(push_constant) uniform constants {
+layout(push_constant) uniform Constants {
     uvec2 resolution;
     vec2 position;
     vec4 color;
