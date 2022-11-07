@@ -1,12 +1,18 @@
 use std::sync::Arc;
 
 use bytemuck::{Pod, Zeroable};
-use vulkano::{impl_vertex, buffer::ImmutableBuffer};
+use vulkano::{impl_vertex, buffer::DeviceLocalBuffer};
 
 #[derive(Clone)]
-pub(crate) struct BufferContainer {
-    pub(crate) vertex_buffer: Arc<ImmutableBuffer<[Vertex2D]>>,
-    pub(crate) index_buffer: Arc<ImmutableBuffer<[u32]>>,
+pub(crate) struct BufferContainer2D {
+    pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[Vertex2D]>>,
+    pub(crate) index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
+}
+
+#[derive(Clone)]
+pub(crate) struct BufferContainer3D {
+    pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[Vertex3D]>>,
+    pub(crate) index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
 }
 
 #[repr(C)]

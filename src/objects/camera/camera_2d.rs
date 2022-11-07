@@ -1,5 +1,4 @@
-use nalgebra_glm::{Vec2};
+#[allow(unused_imports)]
+use nalgebra_glm::Vec2;
 
-pub struct Camera2D {
-
-}
+pub struct Camera2D {}

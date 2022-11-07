@@ -8,11 +8,11 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-vulkano-shaders = "0.30.0"
-vulkano = "0.30.0"
-vulkano-win = "0.30.0"
-vulkano-util = "0.30.0"
-winit = "0.26.1"
+vulkano-shaders = "0.32.0"
+vulkano = "0.32.0"
+vulkano-win = "0.32.0"
+vulkano-util = "0.32.0"
+winit = "0.27.5"
 bytemuck = { version = "1.7", features = ["derive", "extern_crate_std", "min_const_generics"] }
 
 rand = "0.8.5"

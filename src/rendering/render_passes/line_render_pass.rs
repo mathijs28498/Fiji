@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use vulkano::{
-    buffer::{ImmutableBuffer, TypedBufferAccess},
+    buffer::{DeviceLocalBuffer, TypedBufferAccess},
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
     },
@@ -24,13 +24,27 @@ use crate::{
 
 use nalgebra_glm::Vec4;
 
-pub(crate) struct LinePushConstants {
-    _color: Vec4,
+mod vs {
+    vulkano_shaders::shader! {
+        ty: "vertex",
+        path: "src/shaders/line_render_pass.vert",
+        types_meta: {
+            use bytemuck::{Pod, Zeroable};
+
+            #[derive(Clone, Copy, Zeroable, Pod)]
+        }
+    }
 }
 
-impl LinePushConstants {
-    pub(crate) fn new(color: Vec4) -> Self {
-        Self { _color: color }
+mod fs {
+    vulkano_shaders::shader! {
+        ty: "fragment",
+        path: "src/shaders/line_render_pass.frag",
+        types_meta: {
+            use bytemuck::{Pod, Zeroable};
+
+            #[derive(Clone, Copy, Zeroable, Pod)]
+        }
     }
 }
 
@@ -42,20 +56,6 @@ pub(crate) struct LineRenderPass {
 
 impl LineRenderPass {
     pub(crate) fn new(device_container: &DeviceContainer) -> Self {
-        mod vs {
-            vulkano_shaders::shader! {
-                ty: "vertex",
-                path: "src/shaders/line_render_pass.vert"
-            }
-        }
-
-        mod fs {
-            vulkano_shaders::shader! {
-                ty: "fragment",
-                path: "src/shaders/line_render_pass.frag"
-            }
-        }
-
         let vs = vs::load(device_container.device().clone()).unwrap();
         let fs = fs::load(device_container.device().clone()).unwrap();
 
@@ -122,13 +122,13 @@ impl LineRenderPass {
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
-        vertex_buffer: Arc<ImmutableBuffer<[Vertex2D]>>,
-        index_buffer: Arc<ImmutableBuffer<[u32]>>,
-         push_constants: LinePushConstants,
+        vertex_buffer: Arc<DeviceLocalBuffer<[Vertex2D]>>,
+        index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
+         push_constants: fs::ty::Constants,
     ) {
         let mut builder = AutoCommandBufferBuilder::primary(
-            device_container.device().clone(),
-            device_container.queue().family(),
+            device_container.command_buffer_allocator(),
+            device_container.queue_family_index(),
             CommandBufferUsage::OneTimeSubmit,
         )
         .unwrap();
@@ -165,5 +165,11 @@ impl LineRenderPass {
                 .unwrap()
                 .boxed(),
         );
+    }
+
+    pub(crate) fn create_push_constants(color: Vec4) -> fs::ty::Constants {
+        fs::ty::Constants {
+            color: color.as_ref().clone()
+        }
     }
 }

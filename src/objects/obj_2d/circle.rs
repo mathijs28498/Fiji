@@ -1,22 +1,15 @@
-use std::sync::Arc;
-
 use nalgebra_glm::{Vec2, Vec4};
-use vulkano::{
-    buffer::{BufferUsage, ImmutableBuffer},
-    device::Queue,
-};
 
 use crate::{
-    objects::Border,
+    objects::{help_functions::create_buffers_2d, Border, DEFAULT_COLOR},
     rendering::{
-        data_types::Vertex2D,
+        data_types::{BufferContainer2D, Vertex2D},
         device_container::DeviceContainer,
-        render_passes::circle_render_pass::{CirclePushConstants, CircleRenderPass},
+        render_passes::circle_render_pass::CircleRenderPass,
     },
 };
 
-static mut VERTEX_BUFFER: Option<Arc<ImmutableBuffer<[Vertex2D]>>> = None;
-static mut INDEX_BUFFER: Option<Arc<ImmutableBuffer<[u32]>>> = None;
+use super::DEFAULT_POSITION_2D;
 
 #[derive(Clone)]
 pub struct Circle {
@@ -27,13 +20,33 @@ pub struct Circle {
 }
 
 impl Circle {
-    pub fn new(color: Vec4, position: Vec2, radius: f32, border: Option<Border>) -> Self {
+    pub fn new_default() -> Self {
         Self {
-            color,
-            position,
-            radius,
-            border,
+            color: DEFAULT_COLOR,
+            position: DEFAULT_POSITION_2D,
+            radius: 10.,
+            border: None,
         }
+    }
+
+    pub fn with_color(mut self, color: Vec4) -> Self {
+        self.color = color;
+        self
+    }
+
+    pub fn with_position(mut self, position: Vec2) -> Self {
+        self.position = position;
+        self
+    }
+
+    pub fn with_radius(mut self, radius: f32) -> Self {
+        self.radius = radius;
+        self
+    }
+
+    pub fn with_border(mut self, border: Border) -> Self {
+        self.border = Some(border);
+        self
     }
 
     pub(crate) fn draw(
@@ -41,60 +54,49 @@ impl Circle {
         render_pass: &mut CircleRenderPass,
         device_container: &mut DeviceContainer,
     ) {
+        static mut BUFFERS: Option<BufferContainer2D> = None;
+        let buffers;
+
         // Unsafe is used to change these static values.
         // This is definitely safe, even thought the compiler can't verify.
         unsafe {
-            if let None = VERTEX_BUFFER {
-                VERTEX_BUFFER = Some(Self::get_vertex_buffer(device_container.queue().clone()));
-                INDEX_BUFFER = Some(Self::get_index_buffer(device_container.queue().clone()));
+            if let None = BUFFERS {
+                BUFFERS = Some(Self::create_buffers(device_container));
             }
+            buffers = BUFFERS.as_ref().unwrap();
         }
 
         // Unsafe is used to change these static values.
         // This is definitely safe, even thought the compiler can't verify.
-        unsafe {
-            render_pass.draw(
-                device_container,
-                VERTEX_BUFFER.as_ref().unwrap().clone(),
-                INDEX_BUFFER.as_ref().unwrap().clone(),
-                CirclePushConstants::new(
-                    self.color.clone(),
-                    self.position.clone(),
-                    self.radius.clone(),
-                    self.border.clone(),
-                ),
-            );
-        }
+        render_pass.draw(
+            device_container,
+            buffers.vertex_buffer.clone(),
+            buffers.index_buffer.clone(),
+            CircleRenderPass::create_push_constants(
+                self.color.clone(),
+                self.position.clone(),
+                self.radius.clone(),
+                self.border.clone(),
+            ),
+        );
     }
 
-    fn get_vertex_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[Vertex2D]>> {
-        ImmutableBuffer::from_iter(
-            [
-                Vertex2D {
-                    position: [-1., -1.],
-                },
-                Vertex2D {
-                    position: [1., -1.],
-                },
-                Vertex2D {
-                    position: [-1., 1.],
-                },
-                Vertex2D { position: [1., 1.] },
-            ],
-            BufferUsage::vertex_buffer(),
-            queue,
-        )
-        .unwrap()
-        .0
-    }
+    fn create_buffers(device_container: &mut DeviceContainer) -> BufferContainer2D {
+        let vertices = vec![
+            Vertex2D {
+                position: [-1., -1.],
+            },
+            Vertex2D {
+                position: [1., -1.],
+            },
+            Vertex2D {
+                position: [-1., 1.],
+            },
+            Vertex2D { position: [1., 1.] },
+        ];
 
-    fn get_index_buffer(queue: Arc<Queue>) -> Arc<ImmutableBuffer<[u32]>> {
-        ImmutableBuffer::from_iter(
-            [0, 1, 2, 2, 1, 3],
-            BufferUsage::index_buffer(),
-            queue.clone(),
-        )
-        .unwrap()
-        .0
+        let indices = vec![0, 1, 2, 2, 1, 3];
+
+        create_buffers_2d(device_container, vertices, indices)
     }
 }

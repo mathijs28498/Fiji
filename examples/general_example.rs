@@ -1,22 +1,16 @@
 use nalgebra_glm::{Vec2, Vec3, Vec4};
 
 use fiji::{
+    input::input_enums::{KeyCode, MouseButton},
     objects::{
         background::Background,
         obj_2d::{circle::Circle, polygon::Polygon, rect::Rect},
         Border,
     },
-    input::input_enums::{KeyCode, MouseButton},
     rendering::context::Context,
 };
 
 fn main() {
-    let mut v0 = Vec3::new(1., 4., 3.);
-    let mut v1 = Vec3::new(3., 5., 1.);
-
-    let v2 = v0 + v1;
-    println!("{v0:?} - {v1:?} - {v2:?}");
-
     let mut context = Context::new(1280, 720);
 
     let mut pos = Vec2::new(100., 100.);
@@ -64,46 +58,51 @@ fn main() {
             polygon_points = Vec::new();
         }
 
-        context.background(Background::new(Vec3::new(0., 0., 0.)));
+        context.background(Background::new_with_color(Vec3::new(0., 0., 0.)));
 
-        context.rect(Rect::new(
-            Vec4::new(0., 0.5, 0.5, 1.),
-            input.mouse_position().clone(),
-            Vec2::new(50., 50.),
-            None,
-        ));
+        context.rect(
+            Rect::new_default()
+                .with_color(Vec4::new(0., 0.5, 0.5, 1.))
+                .with_position(input.mouse_position().clone())
+                .with_size(Vec2::new(50., 50.)),
+        );
 
-        context.circle(Circle::new(
-            Vec4::new(1., 0., 1., 0.2),
-            Vec2::new(620., 340.),
-            300.,
-            Some(Border::new(Vec4::new(1., 1., 1., 1.), border_width)),
-        ));
+        context.circle(
+            Circle::new_default()
+                .with_color(Vec4::new(1., 0., 1., 0.2))
+                .with_position(Vec2::new(620., 340.))
+                .with_radius(300.)
+                .with_border(Border::new(Vec4::new(1., 1., 1., 1.), border_width)),
+        );
 
-        context.rect(Rect::new(
-            Vec4::new(1., 0.5, 1., 1.),
-            Vec2::new(430., 325.),
-            Vec2::new(20., 50.),
-            None,
-        ));
+        context.rect(
+            Rect::new_default()
+                .with_color(Vec4::new(1., 0.5, 1., 1.))
+                .with_position(Vec2::new(430., 325.))
+                .with_size(Vec2::new(20., 50.)),
+        );
 
-        context.rect(Rect::new(
-            Vec4::new(1., 1., 0., 1.),
-            pos.clone(),
-            Vec2::new(20., 50.),
-            Some(Border::new(Vec4::new(1., 1., 1., 1.), border_width)),
-        ));
+        context.rect(
+            Rect::new_default()
+                .with_color(Vec4::new(1., 1., 0., 1.))
+                .with_position(pos.clone())
+                .with_size(Vec2::new(20., 50.))
+                .with_border(Border::new(Vec4::new(1., 1., 1., 1.), border_width)),
+        );
 
         if polygon_points.len() >= 3 {
-            context.polygon(Polygon::new(
-                Vec4::new(0.9, 0.3, 0.5, 1.),
-                polygon_points.clone(),
-                None,
-            ));
+            context.polygon(
+                Polygon::new_with_points(polygon_points.clone())
+                    .with_color(Vec4::new(0.9, 0.3, 0.5, 1.)),
+            );
         }
 
         for p in &polygon_points {
-            context.circle(Circle::new(Vec4::new(1., 1., 1., 1.), p.clone(), 10., None))
+            context.circle(
+                Circle::new_default()
+                    .with_position(p.clone())
+                    .with_radius(10.),
+            )
         }
 
         context.render();

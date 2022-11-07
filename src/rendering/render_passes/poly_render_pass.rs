@@ -24,29 +24,26 @@ use crate::{
 };
 
 use nalgebra_glm::{Vec2, Vec4};
+mod vs {
+    vulkano_shaders::shader! {
+        ty: "vertex",
+        path: "src/shaders/poly_render_pass.vert",
+        types_meta: {
+            use bytemuck::{Pod, Zeroable};
 
-pub(crate) struct PolyPushConstants {
-    _resolution: [u32; 2],
-    _position: Vec2,
-    _color: Vec4,
-    _border_color: Vec4,
-    _size: Vec2,
-    _border_width: u32,
+            #[derive(Clone, Copy, Zeroable, Pod)]
+        }
+    }
 }
 
-impl PolyPushConstants {
-    pub(crate) fn new(color: Vec4, position: Vec2, size: Vec2, border: Option<Border>) -> Self {
-        let (border_color, border_width) = match border {
-            Some(border) => (border.color, border.width),
-            None => (Vec4::new(0., 0., 0., 0.), 0),
-        };
-        Self {
-            _resolution: [0, 0],
-            _position: position,
-            _color: color,
-            _border_color: border_color,
-            _size: size,
-            _border_width: border_width,
+mod fs {
+    vulkano_shaders::shader! {
+        ty: "fragment",
+        path: "src/shaders/poly_render_pass.frag",
+        types_meta: {
+            use bytemuck::{Pod, Zeroable};
+
+            #[derive(Clone, Copy, Zeroable, Pod)]
         }
     }
 }
@@ -59,20 +56,6 @@ pub(crate) struct PolyRenderPass {
 
 impl PolyRenderPass {
     pub(crate) fn new(device_container: &DeviceContainer) -> Self {
-        mod vs {
-            vulkano_shaders::shader! {
-                ty: "vertex",
-                path: "src/shaders/poly_render_pass.vert"
-            }
-        }
-
-        mod fs {
-            vulkano_shaders::shader! {
-                ty: "fragment",
-                path: "src/shaders/poly_render_pass.frag"
-            }
-        }
-
         let vs = vs::load(device_container.device().clone()).unwrap();
         let fs = fs::load(device_container.device().clone()).unwrap();
 
@@ -139,14 +122,14 @@ impl PolyRenderPass {
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
-        buffers: &BufferContainer,
-        mut push_constants: PolyPushConstants,
+        buffers: &BufferContainer2D,
+        mut push_constants: fs::ty::Constants,
     ) {
-        push_constants._resolution = device_container.resolution();
+        push_constants.resolution = device_container.resolution();
 
         let mut builder = AutoCommandBufferBuilder::primary(
-            device_container.device().clone(),
-            device_container.queue().family(),
+            device_container.command_buffer_allocator(),
+            device_container.queue_family_index(),
             CommandBufferUsage::OneTimeSubmit,
         )
         .unwrap();
@@ -183,5 +166,20 @@ impl PolyRenderPass {
                 .unwrap()
                 .boxed(),
         );
+    }
+
+    pub(crate) fn create_push_constants(color: Vec4, position: Vec2, size: Vec2, border: Option<Border>) -> fs::ty::Constants {
+        let (border_color, border_width) = match border {
+            Some(border) => (border.color, border.width),
+            None => (Vec4::new(0., 0., 0., 0.), 0),
+        };
+        fs::ty::Constants {
+            resolution: [0, 0],
+            position: position.as_ref().clone(),
+            color: color.as_ref().clone(),
+            borderColor: border_color.as_ref().clone(),
+            size: size.as_ref().clone(),
+            borderWidth: border_width,
+        }
     }
 }
