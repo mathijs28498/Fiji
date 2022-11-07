@@ -1,13 +1,11 @@
 use nalgebra_glm::{Vec3, Vec4};
-use vulkano::device::Queue;
 
 use crate::{
     objects::{camera::camera_3d::Camera3D, help_functions::create_buffers_3d},
     rendering::{
-        context::Context,
         data_types::{BufferContainer3D, Vertex3D},
         device_container::DeviceContainer,
-        render_passes::block_render_pass::{BlockPushConstants, BlockRenderPass},
+        render_passes::block_render_pass::BlockRenderPass,
     },
 };
 

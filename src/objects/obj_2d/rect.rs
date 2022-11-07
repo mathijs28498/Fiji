@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use nalgebra_glm::{Vec2, Vec4};
 
 use crate::{
@@ -7,7 +5,7 @@ use crate::{
     rendering::{
         data_types::{BufferContainer2D, Vertex2D},
         device_container::DeviceContainer,
-        render_passes::poly_render_pass::{PolyPushConstants, PolyRenderPass},
+        render_passes::poly_render_pass::PolyRenderPass,
     },
 };
 

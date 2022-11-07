@@ -5,7 +5,7 @@ use crate::{
     rendering::{
         data_types::{BufferContainer2D, Vertex2D},
         device_container::DeviceContainer,
-        render_passes::circle_render_pass::{CirclePushConstants, CircleRenderPass},
+        render_passes::circle_render_pass::CircleRenderPass,
     },
 };
 

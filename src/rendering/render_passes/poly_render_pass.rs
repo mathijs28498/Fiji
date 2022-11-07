@@ -47,31 +47,6 @@ mod fs {
         }
     }
 }
-pub(crate) struct PolyPushConstants {
-    _resolution: [u32; 2],
-    _position: Vec2,
-    _color: Vec4,
-    _border_color: Vec4,
-    _size: Vec2,
-    _border_width: u32,
-}
-
-impl PolyPushConstants {
-    pub(crate) fn new(color: Vec4, position: Vec2, size: Vec2, border: Option<Border>) -> Self {
-        let (border_color, border_width) = match border {
-            Some(border) => (border.color, border.width),
-            None => (Vec4::new(0., 0., 0., 0.), 0),
-        };
-        Self {
-            _resolution: [0, 0],
-            _position: position,
-            _color: color,
-            _border_color: border_color,
-            _size: size,
-            _border_width: border_width,
-        }
-    }
-}
 
 pub(crate) struct PolyRenderPass {
     pipeline: Arc<GraphicsPipeline>,

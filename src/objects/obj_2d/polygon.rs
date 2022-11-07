@@ -1,11 +1,11 @@
 use nalgebra_glm::{dot, Vec2, Vec4};
 
 use crate::{
-    objects::{Border, help_functions::create_buffers_2d},
+    objects::{help_functions::create_buffers_2d, Border},
     rendering::{
         data_types::{BufferContainer2D, Vertex2D},
         device_container::DeviceContainer,
-        render_passes::poly_render_pass::{PolyPushConstants, PolyRenderPass},
+        render_passes::poly_render_pass::PolyRenderPass,
     },
 };
 

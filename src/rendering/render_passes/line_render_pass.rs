@@ -24,15 +24,6 @@ use crate::{
 
 use nalgebra_glm::Vec4;
 
-pub(crate) struct LinePushConstants {
-    _color: Vec4,
-}
-
-impl LinePushConstants {
-    pub(crate) fn new(color: Vec4) -> Self {
-        Self { _color: color }
-    }
-}
 mod vs {
     vulkano_shaders::shader! {
         ty: "vertex",

@@ -25,42 +25,6 @@ use nalgebra_glm::{Mat4, Vec3, Vec4};
 
 use crate::rendering::{data_types::Vertex3D, device_container::DeviceContainer};
 
-#[allow(dead_code)]
-#[derive(Debug)]
-pub(crate) struct BlockPushConstants {
-    color: Vec4,
-    model: Mat4,
-    view: Mat4,
-    proj: Mat4,
-    camera_pos: Vec3,
-    padding: f32,
-    resolution: [u32; 2],
-}
-
-impl BlockPushConstants {
-    pub(crate) fn new(
-        color: Vec4,
-        position: Vec3,
-        size: &Vec3,
-        rotation: Vec3,
-        view: Mat4,
-        camera_pos: Vec3,
-    ) -> BlockPushConstants {
-        let position = Vec3::new(position.x, -position.y, position.z);
-        Self {
-            color,
-            model: Mat4::new_translation(&position)
-                * Mat4::new_rotation(rotation)
-                * Mat4::new_nonuniform_scaling(size),
-            view,
-            proj: Mat4::new_perspective(1280. / 720., FRAC_2_PI, 0.0001, 1000.),
-            camera_pos,
-            padding: 0.,
-            resolution: [0, 0],
-        }
-    }
-}
-
 mod vs {
     vulkano_shaders::shader!(
         ty: "vertex",

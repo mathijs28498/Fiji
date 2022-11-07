@@ -1,4 +1,4 @@
-use std::{borrow::BorrowMut, sync::Arc};
+use std::sync::Arc;
 
 use vulkano::{
     command_buffer::allocator::StandardCommandBufferAllocator,
@@ -53,7 +53,6 @@ impl DeviceContainer {
             .build_vk_surface(&event_loop, instance.clone())
             .unwrap();
         {
-
             let window = surface.object().unwrap().downcast_ref::<Window>().unwrap();
 
             window.set_inner_size(PhysicalSize::new(width, height));

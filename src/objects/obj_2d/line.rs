@@ -5,7 +5,7 @@ use crate::{
     rendering::{
         data_types::{BufferContainer2D, Vertex2D},
         device_container::DeviceContainer,
-        render_passes::line_render_pass::{LinePushConstants, LineRenderPass},
+        render_passes::line_render_pass::LineRenderPass,
     },
 };
 
