@@ -11,7 +11,7 @@ use crate::{
 
 use super::DEFAULT_POSITION_2D;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Circle {
     pub color: Vec4,
     pub position: Vec2,

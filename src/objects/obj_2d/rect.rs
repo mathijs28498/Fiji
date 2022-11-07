@@ -11,7 +11,7 @@ use crate::{
 
 use super::{DEFAULT_POSITION_2D, DEFAULT_SIZE_2D};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Rect {
     pub position: Vec2,
     pub size: Vec2,

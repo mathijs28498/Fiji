@@ -5,9 +5,10 @@ pub mod rendering;
 // TODO IN PROGRESS:
 // [ ] - 2D camera
 // [ ] - Separation 2D between UI without camera and non UI with camera
-//          - Use ui_rect() as functions
+//          [ ] - Special UI queue for DrawObject2D
 // [X] - Builder pattern for all objects
 // [ ] - Add text components
+// [ ] - Wrap draw objects in other object with buffer info and draw implementation when in context (look at polygon buffers)
 //
 // TODO PRE PHYSICS:
 // [X] - Depth testing
@@ -24,6 +25,8 @@ pub mod rendering;
 // [ ] - Resizing of window
 // [ ] - Delta time
 // [ ] - Render/update closures
+// [ ] - Working borders
+// [ ] - Line renderer
 //
 // OPTIONAL TODO:
 // [ ] - Shadows

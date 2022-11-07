@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Line {
     pub color: Vec4,
     pub p0: Vec2,

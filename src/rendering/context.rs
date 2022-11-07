@@ -33,6 +33,7 @@ pub struct Context {
     // TODO: Split objects into 2d and 3d
     background: Background,
     draw_objects_2d: Vec<DrawObject2D>,
+    draw_objects_ui: Vec<DrawObject2D>,
     draw_objects_3d: Vec<DrawObject3D>,
 }
 
@@ -64,12 +65,17 @@ impl Context {
 
             background,
             draw_objects_2d: Vec::new(),
+            draw_objects_ui: Vec::new(),
             draw_objects_3d: Vec::new(),
         }
     }
 
     fn draw_2d(&mut self, draw_object: DrawObject2D) {
         self.draw_objects_2d.push(draw_object);
+    }
+
+    fn draw_ui(&mut self, draw_object: DrawObject2D) {
+        self.draw_objects_ui.push(draw_object);
     }
 
     fn draw_3d(&mut self, draw_object: DrawObject3D) {
@@ -80,16 +86,32 @@ impl Context {
         self.draw_2d(DrawObject2D::CircleObject(circle));
     }
 
+    pub fn ui_circle(&mut self, circle: Circle) {
+        self.draw_ui(DrawObject2D::CircleObject(circle));
+    }
+
     pub fn rect(&mut self, rect: Rect) {
         self.draw_2d(DrawObject2D::RectObject(rect));
+    }
+
+    pub fn ui_rect(&mut self, rect: Rect) {
+        self.draw_ui(DrawObject2D::RectObject(rect));
     }
 
     pub fn polygon(&mut self, polygon: Polygon) {
         self.draw_2d(DrawObject2D::PolyObject(polygon));
     }
 
+    pub fn ui_polygon(&mut self, polygon: Polygon) {
+        self.draw_ui(DrawObject2D::PolyObject(polygon));
+    }
+
     pub fn line(&mut self, line: Line) {
         self.draw_2d(DrawObject2D::LineObject(line));
+    }
+
+    pub fn ui_line(&mut self, line: Line) {
+        self.draw_ui(DrawObject2D::LineObject(line));
     }
 
     pub fn block(&mut self, block: Block) {
@@ -121,6 +143,23 @@ impl Context {
         };
 
         for object in self.draw_objects_2d.iter_mut() {
+            match object {
+                DrawObject2D::RectObject(rect) => {
+                    rect.draw(&mut self.poly_render_pass, &mut self.device_container)
+                }
+                DrawObject2D::CircleObject(circle) => {
+                    circle.draw(&mut self.circle_render_pass, &mut self.device_container)
+                }
+                DrawObject2D::LineObject(line) => {
+                    line.draw(&mut self.line_render_pass, &mut self.device_container)
+                }
+                DrawObject2D::PolyObject(polygon) => {
+                    polygon.draw(&mut self.poly_render_pass, &mut self.device_container)
+                }
+            }
+        }
+
+        for object in self.draw_objects_ui.iter_mut() {
             match object {
                 DrawObject2D::RectObject(rect) => {
                     rect.draw(&mut self.poly_render_pass, &mut self.device_container)

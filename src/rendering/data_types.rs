@@ -3,13 +3,13 @@ use std::sync::Arc;
 use bytemuck::{Pod, Zeroable};
 use vulkano::{impl_vertex, buffer::DeviceLocalBuffer};
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct BufferContainer2D {
     pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[Vertex2D]>>,
     pub(crate) index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct BufferContainer3D {
     pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[Vertex3D]>>,
     pub(crate) index_buffer: Arc<DeviceLocalBuffer<[u32]>>,

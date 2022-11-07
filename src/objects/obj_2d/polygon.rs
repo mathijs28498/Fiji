@@ -9,7 +9,7 @@ use crate::{
     },
 };
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Polygon {
     pub color: Vec4,
     pub points: Vec<Vec2>,

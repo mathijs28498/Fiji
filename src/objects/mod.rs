@@ -13,7 +13,7 @@ use self::{
 
 const DEFAULT_COLOR: Vec4 = Vec4::new(1., 1., 1., 1.);
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct Border {
     pub color: Vec4,
     pub width: u32,
