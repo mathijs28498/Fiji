@@ -1,5 +1,5 @@
 use crate::{
-    objects::obj_2d::line::Line,
+    public::objects::obj_2d::line::Line,
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},

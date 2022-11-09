@@ -1,7 +1,7 @@
 use nalgebra_glm::{dot, Vec2};
 
 use crate::{
-    objects::obj_2d::polygon::Polygon,
+    public::objects::{camera::camera_2d::Camera2D, obj_2d::polygon::Polygon},
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
@@ -25,6 +25,7 @@ impl PolygonRenderObject {
         &mut self,
         render_pass: &mut PolyRenderPass,
         device_container: &mut DeviceContainer,
+        camera_2d: Option<&Camera2D>,
     ) {
         render_pass.draw(
             device_container,
@@ -34,6 +35,7 @@ impl PolygonRenderObject {
                 Vec2::new(0., 0.),
                 Vec2::new(1., 1.),
                 self.polygon.border.clone(),
+                camera_2d,
             ),
         );
     }

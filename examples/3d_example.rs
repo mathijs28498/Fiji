@@ -4,8 +4,10 @@ use nalgebra_glm::{Vec2, Vec3, Vec4};
 
 use fiji::{
     input::input_enums::KeyCode,
-    objects::{background::Background, obj_3d::block::Block},
-    rendering::context::Context,
+    public::{
+        context::Context,
+        objects::{background::Background, obj_3d::block::Block},
+    },
 };
 
 fn main() {

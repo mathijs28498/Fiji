@@ -2,12 +2,14 @@ use nalgebra_glm::{Vec2, Vec3, Vec4};
 
 use fiji::{
     input::input_enums::{KeyCode, MouseButton},
-    objects::{
-        background::Background,
-        obj_2d::{circle::Circle, polygon::Polygon, rect::Rect},
-        Border,
+    public::{
+        context::Context,
+        objects::{
+            background::Background,
+            obj_2d::{circle::Circle, polygon::Polygon, rect::Rect},
+            Border,
+        },
     },
-    rendering::context::Context,
 };
 
 fn main() {

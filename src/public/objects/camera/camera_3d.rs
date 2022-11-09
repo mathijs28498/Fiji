@@ -1,6 +1,7 @@
 use nalgebra::Point3;
 use nalgebra_glm::{Vec3, Mat4};
 
+#[derive(Debug)]
 pub struct Camera3D {
     pub position: Vec3,
     pub dir: Vec3,

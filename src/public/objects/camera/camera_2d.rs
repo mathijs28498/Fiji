@@ -1,6 +1,7 @@
 #[allow(unused_imports)]
 use nalgebra_glm::Vec2;
 
+#[derive(Debug)]
 pub struct Camera2D {
     pub position: Vec2,
 }

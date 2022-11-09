@@ -1,10 +1,10 @@
 pub mod input;
-pub mod objects;
 pub mod rendering;
+pub mod public;
 
 // TODO IN PROGRESS:
-// [ ] - 2D camera
-// [ ] - Separation 2D between UI without camera and non UI with camera
+// [X] - 2D camera
+// [X] - Separation 2D between UI without camera and non UI with camera
 //          [X] - Special UI queue for DrawObject2D
 // [X] - Builder pattern for all objects
 // [ ] - Add text components
@@ -14,6 +14,7 @@ pub mod rendering;
 // [X] - Refactor the entire fucking project to abstract all render components
 // [X] - Exchange loose buffers with bufferContainer2D/3D for renderpass draws
 // [X] - Create RenderPass buffers when initializing new()
+// [ ] - Move "create_push_constants" to the respective RenderObjects 
 //
 // TODO PRE PHYSICS:
 // [X] - Depth testing

@@ -1,5 +1,5 @@
 use crate::{
-    objects::{camera::camera_3d::Camera3D, obj_3d::block::Block},
+    public::objects::{camera::camera_3d::Camera3D, obj_3d::block::Block},
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_3d, BufferContainer3D, Vertex3D},

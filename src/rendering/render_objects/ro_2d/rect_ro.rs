@@ -1,5 +1,5 @@
 use crate::{
-    objects::obj_2d::rect::Rect,
+    public::objects::{camera::camera_2d::Camera2D, obj_2d::rect::Rect},
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
@@ -34,6 +34,7 @@ impl RectRenderObject {
         &mut self,
         render_pass: &mut PolyRenderPass,
         device_container: &mut DeviceContainer,
+        camera_2d: Option<&Camera2D>,
     ) {
         render_pass.draw(
             device_container,
@@ -43,6 +44,7 @@ impl RectRenderObject {
                 self.rect.position.clone(),
                 self.rect.size.clone(),
                 self.rect.border.clone(),
+                camera_2d,
             ),
         );
     }

@@ -22,7 +22,7 @@ use vulkano::{
 use nalgebra_glm::{Vec2, Vec4};
 
 use crate::{
-    objects::Border,
+    public::objects::Border,
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{BufferContainer2D, Vertex2D},

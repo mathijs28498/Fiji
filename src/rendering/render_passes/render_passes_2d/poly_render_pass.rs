@@ -19,7 +19,7 @@ use vulkano::{
 };
 
 use crate::{
-    objects::Border,
+    public::objects::{camera::camera_2d::Camera2D, Border},
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{BufferContainer2D, Vertex2D},
@@ -171,23 +171,33 @@ impl PolyRenderPass {
         );
     }
 
+    #[allow(non_snake_case)]
     pub(crate) fn create_push_constants(
         color: Vec4,
         position: Vec2,
         size: Vec2,
         border: Option<Border>,
+        camera_pos: Option<&Camera2D>,
     ) -> fs::ty::Constants {
-        let (border_color, border_width) = match border {
-            Some(border) => (border.color, border.width),
-            None => (Vec4::new(0., 0., 0., 0.), 0),
+        let (borderColor, borderWidth) = match border {
+            Some(border) => (border.color.as_ref().clone(), border.width),
+            None => ([0.; 4], 0),
         };
+
+
+        let cameraPos = match camera_pos {
+            Some(camera_pos) => camera_pos.position.as_ref().clone(),
+            None => [0.; 2],
+        };
+
         fs::ty::Constants {
             resolution: [0, 0],
             position: position.as_ref().clone(),
             color: color.as_ref().clone(),
-            borderColor: border_color.as_ref().clone(),
+            borderColor,
             size: size.as_ref().clone(),
-            borderWidth: border_width,
+            borderWidth,
+            cameraPos,
         }
     }
 }

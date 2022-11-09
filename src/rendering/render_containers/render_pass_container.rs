@@ -1,7 +1,7 @@
 use queues::{IsQueue, Queue};
 
 use crate::{
-    objects::camera::{camera_2d::Camera2D, camera_3d::Camera3D},
+    public::objects::camera::{camera_2d::Camera2D, camera_3d::Camera3D},
     rendering::{
         render_objects::{background_ro::BackgroundRenderObject, RenderObject2D, RenderObject3D},
         render_passes::{
@@ -69,7 +69,7 @@ impl RenderPassContainer {
         while let Ok(object) = render_objects.remove() {
             match object {
                 RenderObject2D::RectObject(mut rect) => {
-                    rect.draw(&mut self.poly_render_pass, device_container)
+                    rect.draw(&mut self.poly_render_pass, device_container, Some(camera_2d))
                 }
                 RenderObject2D::CircleObject(mut circle) => {
                     circle.draw(&mut self.circle_render_pass, device_container)
@@ -78,7 +78,7 @@ impl RenderPassContainer {
                     line.draw(&mut self.line_render_pass, device_container)
                 }
                 RenderObject2D::PolyObject(mut polygon) => {
-                    polygon.draw(&mut self.poly_render_pass, device_container)
+                    polygon.draw(&mut self.poly_render_pass, device_container, Some(camera_2d))
                 }
             }
         }
@@ -92,7 +92,7 @@ impl RenderPassContainer {
         while let Ok(object) = render_objects.remove() {
             match object {
                 RenderObject2D::RectObject(mut rect) => {
-                    rect.draw(&mut self.poly_render_pass, device_container)
+                    rect.draw(&mut self.poly_render_pass, device_container, None)
                 }
                 RenderObject2D::CircleObject(mut circle) => {
                     circle.draw(&mut self.circle_render_pass, device_container)
@@ -101,7 +101,7 @@ impl RenderPassContainer {
                     line.draw(&mut self.line_render_pass, device_container)
                 }
                 RenderObject2D::PolyObject(mut polygon) => {
-                    polygon.draw(&mut self.poly_render_pass, device_container)
+                    polygon.draw(&mut self.poly_render_pass, device_container, None)
                 }
                 _ => (),
             }

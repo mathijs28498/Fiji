@@ -1,7 +1,7 @@
 use nalgebra_glm::{dot, Vec2, Vec4};
 
 use crate::{
-    objects::{Border, DEFAULT_COLOR},
+    public::objects::{Border, DEFAULT_COLOR},
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_passes::render_passes_2d::poly_render_pass::PolyRenderPass,

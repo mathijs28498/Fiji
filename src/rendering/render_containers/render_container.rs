@@ -2,7 +2,7 @@ use nalgebra_glm::Vec3;
 use queues::{IsQueue, Queue};
 
 use crate::{
-    objects::{
+    public::objects::{
         background::Background,
         camera::{
             camera_2d::Camera2D,
