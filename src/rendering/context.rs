@@ -1,21 +1,21 @@
 use nalgebra_glm::Vec3;
+use queues::{IsQueue, Queue};
 
-use crate::objects::camera::camera_2d::Camera2D;
-use crate::objects::camera::camera_3d::Camera3D;
-use crate::objects::obj_2d::circle::Circle;
-use crate::objects::obj_2d::line::Line;
-use crate::objects::obj_2d::polygon::Polygon;
-use crate::objects::obj_3d::block::Block;
-use crate::objects::{background::Background, obj_2d::rect::Rect, DrawObject2D, DrawObject3D};
+use crate::objects::{
+    background::Background,
+    camera::{camera_3d::Camera3D, camera_2d::Camera2D},
+    obj_2d::{circle::Circle, line::Line, polygon::Polygon, rect::Rect},
+    obj_3d::block::Block,
+    DrawObject2D, DrawObject3D,
+};
 
-use super::render_passes::block_render_pass::BlockRenderPass;
-use super::render_passes::circle_render_pass::CircleRenderPass;
-use super::render_passes::line_render_pass::LineRenderPass;
 use super::{
     device_container::DeviceContainer,
     event_loop_container::EventLoopContainer,
     render_passes::{
-        background_render_pass::BackgroundRenderPass, poly_render_pass::PolyRenderPass,
+        background_render_pass::BackgroundRenderPass, block_render_pass::BlockRenderPass,
+        circle_render_pass::CircleRenderPass, line_render_pass::LineRenderPass,
+        poly_render_pass::PolyRenderPass,
     },
 };
 
@@ -32,9 +32,9 @@ pub struct Context {
 
     // TODO: Split objects into 2d and 3d
     background: Background,
-    draw_objects_2d: Vec<DrawObject2D>,
-    draw_objects_ui: Vec<DrawObject2D>,
-    draw_objects_3d: Vec<DrawObject3D>,
+    draw_objects_2d: Queue<DrawObject2D>,
+    draw_objects_ui: Queue<DrawObject2D>,
+    draw_objects_3d: Queue<DrawObject3D>,
 }
 
 impl Context {
@@ -64,22 +64,22 @@ impl Context {
             camera_3d: Camera3D::new(),
 
             background,
-            draw_objects_2d: Vec::new(),
-            draw_objects_ui: Vec::new(),
-            draw_objects_3d: Vec::new(),
+            draw_objects_2d: Queue::new(),
+            draw_objects_ui: Queue::new(),
+            draw_objects_3d: Queue::new(),
         }
     }
 
     fn draw_2d(&mut self, draw_object: DrawObject2D) {
-        self.draw_objects_2d.push(draw_object);
+        self.draw_objects_2d.add(draw_object).unwrap();
     }
 
     fn draw_ui(&mut self, draw_object: DrawObject2D) {
-        self.draw_objects_ui.push(draw_object);
+        self.draw_objects_ui.add(draw_object).unwrap();
     }
 
     fn draw_3d(&mut self, draw_object: DrawObject3D) {
-        self.draw_objects_3d.push(draw_object);
+        self.draw_objects_3d.add(draw_object).unwrap();
     }
 
     pub fn circle(&mut self, circle: Circle) {
@@ -132,56 +132,49 @@ impl Context {
         self.background
             .draw(&self.background_render_pass, &mut self.device_container);
 
-        for object in self.draw_objects_3d.iter_mut() {
+        while let Ok(object) = self.draw_objects_3d.remove() {
             match object {
-                DrawObject3D::BlockObject(block) => block.draw(
+                DrawObject3D::BlockObject(mut block) => block.draw(
                     &mut self.block_render_pass,
                     &mut self.device_container,
                     &self.camera_3d,
                 ),
             }
-        };
+        }
 
-        for object in self.draw_objects_2d.iter_mut() {
+        while let Ok(object) = self.draw_objects_2d.remove() {
             match object {
-                DrawObject2D::RectObject(rect) => {
+                DrawObject2D::RectObject(mut rect) => {
                     rect.draw(&mut self.poly_render_pass, &mut self.device_container)
                 }
-                DrawObject2D::CircleObject(circle) => {
+                DrawObject2D::CircleObject(mut circle) => {
                     circle.draw(&mut self.circle_render_pass, &mut self.device_container)
                 }
-                DrawObject2D::LineObject(line) => {
+                DrawObject2D::LineObject(mut line) => {
                     line.draw(&mut self.line_render_pass, &mut self.device_container)
                 }
-                DrawObject2D::PolyObject(polygon) => {
+                DrawObject2D::PolyObject(mut polygon) => {
                     polygon.draw(&mut self.poly_render_pass, &mut self.device_container)
                 }
             }
         }
 
-        for object in self.draw_objects_ui.iter_mut() {
+        while let Ok(object) = self.draw_objects_ui.remove() {
             match object {
-                DrawObject2D::RectObject(rect) => {
+                DrawObject2D::RectObject(mut rect) => {
                     rect.draw(&mut self.poly_render_pass, &mut self.device_container)
                 }
-                DrawObject2D::CircleObject(circle) => {
+                DrawObject2D::CircleObject(mut circle) => {
                     circle.draw(&mut self.circle_render_pass, &mut self.device_container)
                 }
-                DrawObject2D::LineObject(line) => {
+                DrawObject2D::LineObject(mut line) => {
                     line.draw(&mut self.line_render_pass, &mut self.device_container)
                 }
-                DrawObject2D::PolyObject(polygon) => {
+                DrawObject2D::PolyObject(mut polygon) => {
                     polygon.draw(&mut self.poly_render_pass, &mut self.device_container)
                 }
             }
         }
         self.device_container.end_draw();
-
-        self.clear_objects();
-    }
-
-    fn clear_objects(&mut self) {
-        self.draw_objects_2d = Vec::new();
-        self.draw_objects_3d = Vec::new();
     }
 }

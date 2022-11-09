@@ -9,6 +9,7 @@ pub mod rendering;
 // [X] - Builder pattern for all objects
 // [ ] - Add text components
 // [ ] - Wrap draw objects in other object with buffer info and draw implementation when in context (look at polygon buffers)
+// [X] - Queues for draw objects in stead of Vecs
 //
 // TODO PRE PHYSICS:
 // [X] - Depth testing

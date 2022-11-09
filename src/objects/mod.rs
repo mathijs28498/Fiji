@@ -25,10 +25,12 @@ impl Border {
     }
 }
 
+#[derive(Clone)]
 pub enum DrawObject3D {
     BlockObject(Block),
 }
 
+#[derive(Clone)]
 pub enum DrawObject2D {
     RectObject(Rect),
     CircleObject(Circle),
