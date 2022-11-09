@@ -14,7 +14,7 @@ layout (location = 1) in vec3 fNormal;
 
 layout (location = 0) out vec4 f_color;
 
-const vec3 lightPos = vec3(5., -5., -5.);
+const vec3 lightPos = vec3(10., -5., 5.);
 const vec3 lightColor = vec3(1., 1., 1.);
 
 const float ambientStrength = 0.2;
@@ -26,7 +26,8 @@ void main() {
     
     // Calculate diffuse light
     vec3 lightDir = normalize(lightPos - fPosition);
-    float diff = max(dot(normalize(fNormal), lightDir), 0.0);
+    // float diff = max(dot(normalize(fNormal), lightDir), 0.0);
+    float diff = (dot(normalize(fNormal), lightDir) + 1.) * 0.5;
     vec3 diffuse = diff * lightColor;
 
     // Calculate specular light

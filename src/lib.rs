@@ -5,11 +5,15 @@ pub mod rendering;
 // TODO IN PROGRESS:
 // [ ] - 2D camera
 // [ ] - Separation 2D between UI without camera and non UI with camera
-//          [ ] - Special UI queue for DrawObject2D
+//          [X] - Special UI queue for DrawObject2D
 // [X] - Builder pattern for all objects
 // [ ] - Add text components
-// [ ] - Wrap draw objects in other object with buffer info and draw implementation when in context (look at polygon buffers)
+// [X] - Wrap draw objects in other object with buffer info and draw implementation when in context (look at polygon buffers)
 // [X] - Queues for draw objects in stead of Vecs
+// [X] - Render pass container
+// [X] - Refactor the entire fucking project to abstract all render components
+// [X] - Exchange loose buffers with bufferContainer2D/3D for renderpass draws
+// [X] - Create RenderPass buffers when initializing new()
 //
 // TODO PRE PHYSICS:
 // [X] - Depth testing
@@ -21,14 +25,17 @@ pub mod rendering;
 // [X] - Update to 0.32.0
 //
 // LATER TODO:
+// [ ] - anti aliasing
+//      [ ] - aa 2D
+//      [ ] - aa 3D
+// [ ] - Better/more camera options
 // [ ] - Configurable lights in context
 // [ ] - Figure out rotation
 // [ ] - Resizing of window
 // [ ] - Delta time
-// [ ] - Render/update closures
+// [ ] - Render and update closures
 // [ ] - Working borders
 // [ ] - Line renderer
-//
-// OPTIONAL TODO:
+// [ ] - Borders around 2D objects
 // [ ] - Shadows
 // [ ] - Figure out a better drawing strategy

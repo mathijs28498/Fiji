@@ -4,7 +4,7 @@ use nalgebra_glm::{Vec2, Vec3, Vec4};
 
 use fiji::{
     input::input_enums::KeyCode,
-    objects::{background::Background, obj_2d::circle::Circle, obj_3d::block::Block},
+    objects::{background::Background, obj_3d::block::Block},
     rendering::context::Context,
 };
 
@@ -28,7 +28,7 @@ fn main() {
 
     let mut wall = Block::new_default()
         .with_color(Vec4::new(0.57, 0.28, 0.9, 1.))
-        .with_position(Vec3::new(0., 41., -10.))
+        .with_position(Vec3::new(0., 40., -10.))
         .with_size(Vec3::new(100., 100., 1.));
 
     let mut ground = Block::new_default()

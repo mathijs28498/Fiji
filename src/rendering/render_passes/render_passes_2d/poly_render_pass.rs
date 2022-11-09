@@ -20,14 +20,17 @@ use vulkano::{
 
 use crate::{
     objects::Border,
-    rendering::{data_types::*, device_container::DeviceContainer},
+    rendering::{
+        render_containers::device_container::DeviceContainer,
+        render_objects::shared::{BufferContainer2D, Vertex2D},
+    },
 };
 
 use nalgebra_glm::{Vec2, Vec4};
 mod vs {
     vulkano_shaders::shader! {
         ty: "vertex",
-        path: "src/shaders/poly_render_pass.vert",
+        path: "src/shaders/shaders_2d/poly_render_pass.vert",
         types_meta: {
             use bytemuck::{Pod, Zeroable};
 
@@ -39,7 +42,7 @@ mod vs {
 mod fs {
     vulkano_shaders::shader! {
         ty: "fragment",
-        path: "src/shaders/poly_render_pass.frag",
+        path: "src/shaders/shaders_2d/poly_render_pass.frag",
         types_meta: {
             use bytemuck::{Pod, Zeroable};
 
@@ -168,7 +171,12 @@ impl PolyRenderPass {
         );
     }
 
-    pub(crate) fn create_push_constants(color: Vec4, position: Vec2, size: Vec2, border: Option<Border>) -> fs::ty::Constants {
+    pub(crate) fn create_push_constants(
+        color: Vec4,
+        position: Vec2,
+        size: Vec2,
+        border: Option<Border>,
+    ) -> fs::ty::Constants {
         let (border_color, border_width) = match border {
             Some(border) => (border.color, border.width),
             None => (Vec4::new(0., 0., 0., 0.), 0),

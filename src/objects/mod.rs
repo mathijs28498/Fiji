@@ -1,6 +1,5 @@
 pub mod background;
 pub mod camera;
-pub mod help_functions;
 pub mod obj_2d;
 pub mod obj_3d;
 
@@ -23,17 +22,4 @@ impl Border {
     pub fn new(color: Vec4, width: u32) -> Self {
         Border { color, width }
     }
-}
-
-#[derive(Clone)]
-pub enum DrawObject3D {
-    BlockObject(Block),
-}
-
-#[derive(Clone)]
-pub enum DrawObject2D {
-    RectObject(Rect),
-    CircleObject(Circle),
-    LineObject(Line),
-    PolyObject(Polygon),
 }

@@ -1,7 +1,7 @@
 use nalgebra_glm::Vec3;
 
 use crate::rendering::{
-    device_container::DeviceContainer, render_passes::background_render_pass::BackgroundRenderPass,
+    render_containers::device_container::DeviceContainer, render_passes::background_render_pass::BackgroundRenderPass,
 };
 
 #[derive(Clone, Debug)]

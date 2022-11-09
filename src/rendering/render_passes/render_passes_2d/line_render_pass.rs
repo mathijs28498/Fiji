@@ -1,17 +1,14 @@
-use std::{f32::consts::FRAC_2_PI, sync::Arc};
-
+use std::sync::Arc;
 use vulkano::{
     buffer::{DeviceLocalBuffer, TypedBufferAccess},
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
     },
-    image::view::ImageView,
+    image::{view::ImageView, ImageAccess},
     pipeline::{
         graphics::{
             color_blend::ColorBlendState,
-            depth_stencil::DepthStencilState,
             input_assembly::InputAssemblyState,
-            rasterization::{CullMode, RasterizationState},
             vertex_input::BuffersDefinition,
             viewport::{Viewport, ViewportState},
         },
@@ -21,41 +18,45 @@ use vulkano::{
     sync::GpuFuture,
 };
 
-use nalgebra_glm::{Mat4, Vec3, Vec4};
+use crate::rendering::{
+    render_containers::device_container::DeviceContainer,
+    render_objects::shared::{BufferContainer2D, Vertex2D},
+};
 
-use crate::rendering::{data_types::Vertex3D, device_container::DeviceContainer};
+use nalgebra_glm::Vec4;
 
 mod vs {
-    vulkano_shaders::shader!(
+    vulkano_shaders::shader! {
         ty: "vertex",
-        path: "src/shaders/block_render_pass.vert",
+        path: "src/shaders/shaders_2d/line_render_pass.vert",
         types_meta: {
             use bytemuck::{Pod, Zeroable};
 
             #[derive(Clone, Copy, Zeroable, Pod)]
         }
-    );
+    }
 }
+
 mod fs {
-    vulkano_shaders::shader!(
+    vulkano_shaders::shader! {
         ty: "fragment",
-        path: "src/shaders/block_render_pass.frag",
+        path: "src/shaders/shaders_2d/line_render_pass.frag",
         types_meta: {
             use bytemuck::{Pod, Zeroable};
 
             #[derive(Clone, Copy, Zeroable, Pod)]
         }
-    );
+    }
 }
 
-pub(crate) struct BlockRenderPass {
+pub(crate) struct LineRenderPass {
     pipeline: Arc<GraphicsPipeline>,
     viewport: Viewport,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
 
-impl BlockRenderPass {
-    pub(crate) fn new(device_container: &DeviceContainer) -> BlockRenderPass {
+impl LineRenderPass {
+    pub(crate) fn new(device_container: &DeviceContainer) -> Self {
         let vs = vs::load(device_container.device().clone()).unwrap();
         let fs = fs::load(device_container.device().clone()).unwrap();
 
@@ -67,63 +68,50 @@ impl BlockRenderPass {
                     store: Store,
                     format: device_container.image_format(),
                     samples: 1,
-                },
-                depth: {
-                    load: Load,
-                    store: Store,
-                    format: device_container.depth_image_format(),
-                    samples: 1,
                 }
             },
             pass: {
                 color: [color],
-                depth_stencil: {depth}
+                depth_stencil: {}
             }
         )
         .unwrap();
 
-        let viewport = Viewport {
-            origin: [0., 0.],
-            dimensions: device_container.resolution_f32(),
+        let pipeline = GraphicsPipeline::start()
+            .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
+            .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
+            .input_assembly_state(InputAssemblyState::new())
+            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2D>())
+            .vertex_shader(vs.entry_point("main").unwrap(), ())
+            .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
+            .fragment_shader(fs.entry_point("main").unwrap(), ())
+            .build(device_container.device().clone())
+            .unwrap();
+
+        let mut viewport = Viewport {
+            origin: [0.0, 0.0],
+            dimensions: [0.0, 0.0],
             depth_range: 0.0..1.0,
         };
 
-        let depth_view = ImageView::new_default(device_container.depth_image().clone()).unwrap();
+        let dimensions = device_container.images()[0].dimensions().width_height();
+        viewport.dimensions = [dimensions[0] as f32, dimensions[1] as f32];
 
         let framebuffers = device_container
             .images()
             .iter()
             .map(|image| {
-                let image_view = ImageView::new_default(image.clone()).unwrap();
+                let view = ImageView::new_default(image.clone()).unwrap();
                 Framebuffer::new(
                     render_pass.clone(),
                     FramebufferCreateInfo {
-                        attachments: vec![image_view, depth_view.clone()],
+                        attachments: vec![view],
                         ..Default::default()
                     },
                 )
                 .unwrap()
             })
             .collect::<Vec<_>>();
-
-        let pipeline = GraphicsPipeline::start()
-            .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
-            .input_assembly_state(InputAssemblyState::new())
-            .rasterization_state(RasterizationState::new().cull_mode(CullMode::Back))
-            .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
-            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex3D>())
-            .vertex_shader(vs.entry_point("main").unwrap(), ())
-            .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([
-                Viewport {
-                    origin: [0.0, 0.0],
-                    dimensions: device_container.resolution_f32(),
-                    depth_range: 0.0..1.0,
-                },
-            ]))
-            .fragment_shader(fs.entry_point("main").unwrap(), ())
-            .depth_stencil_state(DepthStencilState::simple_depth_test())
-            .build(device_container.device().clone())
-            .unwrap();
 
         Self {
             pipeline,
@@ -135,12 +123,9 @@ impl BlockRenderPass {
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
-        vertex_buffer: Arc<DeviceLocalBuffer<[Vertex3D]>>,
-        index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
-        mut push_constants: fs::ty::Constants,
+        buffers: &BufferContainer2D,
+        push_constants: fs::ty::Constants,
     ) {
-        push_constants.resolution = device_container.resolution();
-
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.command_buffer_allocator(),
             device_container.queue_family_index(),
@@ -151,7 +136,7 @@ impl BlockRenderPass {
         builder
             .begin_render_pass(
                 RenderPassBeginInfo {
-                    clear_values: vec![None, None],
+                    clear_values: vec![None],
                     ..RenderPassBeginInfo::framebuffer(
                         self.framebuffers[device_container.image_num()].clone(),
                     )
@@ -161,10 +146,10 @@ impl BlockRenderPass {
             .unwrap()
             .set_viewport(0, [self.viewport.clone()])
             .bind_pipeline_graphics(self.pipeline.clone())
-            .bind_vertex_buffers(0, vertex_buffer.clone())
-            .bind_index_buffer(index_buffer.clone())
+            .bind_vertex_buffers(0, buffers.vertex_buffer.clone())
+            .bind_index_buffer(buffers.index_buffer.clone())
             .push_constants(self.pipeline.layout().clone(), 0, push_constants)
-            .draw_indexed(index_buffer.len() as u32, 1, 0, 0, 0)
+            .draw_indexed(buffers.index_buffer.len() as u32, 1, 0, 0, 0)
             .unwrap()
             .end_render_pass()
             .unwrap();
@@ -182,27 +167,9 @@ impl BlockRenderPass {
         );
     }
 
-    pub(crate) fn create_push_constants(
-        color: Vec4,
-        position: Vec3,
-        size: &Vec3,
-        rotation: Vec3,
-        view: Mat4,
-        camera_pos: Vec3,
-    ) -> fs::ty::Constants {
-        let position = Vec3::new(position.x, -position.y, position.z);
-        let world = Mat4::new_translation(&position)
-            * Mat4::new_rotation(rotation)
-            * Mat4::new_nonuniform_scaling(size);
-
+    pub(crate) fn create_push_constants(color: Vec4) -> fs::ty::Constants {
         fs::ty::Constants {
             color: color.as_ref().clone(),
-            world: world.as_ref().clone(),
-            view: view.as_ref().clone(),
-            proj: Mat4::new_perspective(1280. / 720., FRAC_2_PI, 0.0001, 1000.).as_ref().clone(),
-            cameraPos: camera_pos.as_ref().clone(),
-            resolution: [0, 0],
-            _dummy0: [0; 4],
         }
     }
 }
