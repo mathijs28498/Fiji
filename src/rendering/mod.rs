@@ -1,5 +1,4 @@
-pub mod context;
-pub(crate) mod device_container;
 pub(crate) mod render_passes;
-pub(crate) mod data_types;
-pub(crate) mod event_loop_container;
+mod render_objects;
+//TODO: See if this can be made private
+pub(crate) mod render_containers;

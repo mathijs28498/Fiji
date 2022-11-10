@@ -8,7 +8,7 @@ use vulkano::{
 
 use nalgebra_glm::Vec3;
 
-use crate::rendering::device_container::DeviceContainer;
+use crate::rendering::render_containers::device_container::DeviceContainer;
 pub(crate) struct BackgroundRenderPass {}
 
 impl BackgroundRenderPass {
