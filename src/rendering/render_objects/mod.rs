@@ -1,8 +1,3 @@
-use crate::public::objects::{
-    obj_2d::{circle::Circle, line::Line, polygon::Polygon, rect::Rect},
-    obj_3d::block::Block,
-};
-
 use self::{
     ro_2d::{
         circle_ro::CircleRenderObject, line_ro::LineRenderObject, polygon_ro::PolygonRenderObject,

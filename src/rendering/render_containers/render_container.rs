@@ -4,10 +4,7 @@ use queues::{IsQueue, Queue};
 use crate::{
     public::objects::{
         background::Background,
-        camera::{
-            camera_2d::Camera2D,
-            camera_3d::{self, Camera3D},
-        },
+        camera::{camera_2d::Camera2D, camera_3d::Camera3D},
         obj_2d::{circle::Circle, line::Line, polygon::Polygon, rect::Rect},
         obj_3d::block::Block,
     },
@@ -151,7 +148,7 @@ impl RenderContainer {
 
     pub(crate) fn render(&mut self, camera_2d: &Camera2D, camera_3d: &Camera3D) {
         self.device_container.begin_draw();
-        
+
         self.render_pass_container
             .render_background(&mut self.device_container, &self.background);
 

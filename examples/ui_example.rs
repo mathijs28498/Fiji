@@ -1,13 +1,8 @@
 use fiji::{
-    input::input_enums::{KeyCode, MouseButton},
+    input::input_enums::KeyCode,
     public::{
-        objects::{
-            background::Background,
-            obj_2d::{circle::Circle, polygon::Polygon, rect::Rect},
-            obj_3d::block::Block,
-            Border,
-        },
         context::Context,
+        objects::{background::Background, obj_2d::rect::Rect},
     },
 };
 use nalgebra_glm::{Vec2, Vec3, Vec4};
@@ -30,8 +25,6 @@ pub fn main() {
         if input.key_pressed(&KeyCode::Escape) {
             event_handler.exit();
         }
-
-        context.camera_2d.position.x += 0.1;
 
         context.ui_rect(r_2.clone());
         context.rect(r.clone());

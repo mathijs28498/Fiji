@@ -1,4 +1,3 @@
-#[allow(unused_imports)]
 use nalgebra_glm::Vec2;
 
 #[derive(Debug)]

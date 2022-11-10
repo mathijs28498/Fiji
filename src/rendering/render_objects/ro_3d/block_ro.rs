@@ -9,7 +9,7 @@ use crate::{
 
 #[derive(Clone)]
 pub(crate) struct BlockRenderObject {
-    pub(crate) block: Block,
+    block: Block,
     buffers: BufferContainer3D,
 }
 

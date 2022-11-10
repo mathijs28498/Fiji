@@ -1,14 +1,8 @@
 use nalgebra_glm::{Vec3, Vec4};
 
-use crate::{
-    public::objects::{camera::camera_3d::Camera3D, DEFAULT_COLOR},
-    rendering::{
-        render_containers::device_container::DeviceContainer,
-        render_passes::render_passes_3d::block_render_pass::BlockRenderPass,
-    },
-};
+use crate::public::objects::DEFAULT_COLOR;
 
-use super::{DEFAULT_SIZE_3D, DEFAULT_POSITION_3D, DEFAULT_ROTATION_3D};
+use super::{DEFAULT_POSITION_3D, DEFAULT_ROTATION_3D, DEFAULT_SIZE_3D};
 
 #[derive(Clone, Debug)]
 pub struct Block {
@@ -47,5 +41,4 @@ impl Block {
         self.rotation = rotation;
         self
     }
-
 }

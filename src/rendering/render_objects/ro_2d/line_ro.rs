@@ -9,7 +9,7 @@ use crate::{
 
 #[derive(Clone)]
 pub(crate) struct LineRenderObject {
-    pub(crate) line: Line,
+    line: Line,
     buffers: BufferContainer2D,
 }
 

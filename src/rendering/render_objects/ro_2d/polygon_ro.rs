@@ -11,7 +11,7 @@ use crate::{
 
 #[derive(Clone)]
 pub(crate) struct PolygonRenderObject {
-    pub(crate) polygon: Polygon,
+    polygon: Polygon,
     buffers: BufferContainer2D,
 }
 

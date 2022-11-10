@@ -1,7 +1,7 @@
 use std::{f32::consts::FRAC_2_PI, sync::Arc};
 
 use vulkano::{
-    buffer::{DeviceLocalBuffer, TypedBufferAccess},
+    buffer::TypedBufferAccess,
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
     },

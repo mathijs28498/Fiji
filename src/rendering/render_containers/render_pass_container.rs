@@ -37,12 +37,11 @@ impl RenderPassContainer {
     }
 
     pub(super) fn render_background(
-        &self,
+        &mut self,
         device_container: &mut DeviceContainer,
         background_ro: &BackgroundRenderObject,
     ) {
-        self.background_render_pass
-            .draw(device_container, &background_ro.background.color);
+        background_ro.draw(&mut self.background_render_pass, device_container);
     }
 
     pub(super) fn render_3d(
@@ -68,18 +67,22 @@ impl RenderPassContainer {
     ) {
         while let Ok(object) = render_objects.remove() {
             match object {
-                RenderObject2D::RectObject(mut rect) => {
-                    rect.draw(&mut self.poly_render_pass, device_container, Some(camera_2d))
-                }
+                RenderObject2D::RectObject(mut rect) => rect.draw(
+                    &mut self.poly_render_pass,
+                    device_container,
+                    Some(camera_2d),
+                ),
                 RenderObject2D::CircleObject(mut circle) => {
                     circle.draw(&mut self.circle_render_pass, device_container)
                 }
                 RenderObject2D::LineObject(mut line) => {
                     line.draw(&mut self.line_render_pass, device_container)
                 }
-                RenderObject2D::PolyObject(mut polygon) => {
-                    polygon.draw(&mut self.poly_render_pass, device_container, Some(camera_2d))
-                }
+                RenderObject2D::PolyObject(mut polygon) => polygon.draw(
+                    &mut self.poly_render_pass,
+                    device_container,
+                    Some(camera_2d),
+                ),
             }
         }
     }
@@ -103,7 +106,6 @@ impl RenderPassContainer {
                 RenderObject2D::PolyObject(mut polygon) => {
                     polygon.draw(&mut self.poly_render_pass, device_container, None)
                 }
-                _ => (),
             }
         }
     }

@@ -1,12 +1,6 @@
 use nalgebra_glm::{Vec2, Vec4};
 
-use crate::{
-    public::objects::DEFAULT_COLOR,
-    rendering::{
-        render_containers::device_container::DeviceContainer,
-        render_passes::render_passes_2d::line_render_pass::LineRenderPass,
-    },
-};
+use crate::public::objects::DEFAULT_COLOR;
 
 #[derive(Clone, Debug)]
 pub struct Line {

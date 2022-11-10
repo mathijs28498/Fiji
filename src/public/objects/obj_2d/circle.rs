@@ -1,12 +1,6 @@
 use nalgebra_glm::{Vec2, Vec4};
 
-use crate::{
-    public::objects::{Border, DEFAULT_COLOR},
-    rendering::{
-        render_containers::device_container::DeviceContainer,
-        render_passes::render_passes_2d::circle_render_pass::CircleRenderPass,
-    },
-};
+use crate::public::objects::{Border, DEFAULT_COLOR};
 
 use super::DEFAULT_POSITION_2D;
 

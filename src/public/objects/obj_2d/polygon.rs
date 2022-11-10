@@ -1,12 +1,6 @@
-use nalgebra_glm::{dot, Vec2, Vec4};
+use nalgebra_glm::{Vec2, Vec4};
 
-use crate::{
-    public::objects::{Border, DEFAULT_COLOR},
-    rendering::{
-        render_containers::device_container::DeviceContainer,
-        render_passes::render_passes_2d::poly_render_pass::PolyRenderPass,
-    },
-};
+use crate::public::objects::{Border, DEFAULT_COLOR};
 
 #[derive(Clone, Debug)]
 pub struct Polygon {
@@ -41,5 +35,4 @@ impl Polygon {
         self.border = Some(border);
         self
     }
-
 }

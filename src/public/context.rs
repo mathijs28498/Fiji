@@ -1,6 +1,3 @@
-use nalgebra_glm::Vec3;
-use queues::{IsQueue, Queue};
-
 use crate::{
     public::objects::{
         background::Background,

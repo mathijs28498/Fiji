@@ -9,7 +9,7 @@ use crate::{
 
 #[derive(Clone)]
 pub(crate) struct CircleRenderObject {
-    pub(crate) circle: Circle,
+    circle: Circle,
     buffers: BufferContainer2D,
 }
 
