@@ -10,6 +10,8 @@ use crate::{
     },
 };
 
+use super::objects::obj_2d::text::Text;
+
 pub struct Context {
     render_container: RenderContainer,
     pub camera_2d: Camera2D,
@@ -55,6 +57,14 @@ impl Context {
 
     pub fn ui_line(&mut self, line: Line) {
         self.render_container.ui_line(line);
+    }
+
+    pub fn text(&mut self, text: Text) {
+        self.render_container.text(text);
+    }
+
+    pub fn ui_text(&mut self, text: Text) {
+        self.render_container.ui_text(text);
     }
 
     pub fn block(&mut self, block: Block) {

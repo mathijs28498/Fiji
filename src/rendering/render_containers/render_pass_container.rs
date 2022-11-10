@@ -8,7 +8,7 @@ use crate::{
             background_render_pass::BackgroundRenderPass,
             render_passes_2d::{
                 circle_render_pass::CircleRenderPass, line_render_pass::LineRenderPass,
-                poly_render_pass::PolyRenderPass,
+                poly_render_pass::PolyRenderPass, text_render_pass::TextRenderPass,
             },
             render_passes_3d::block_render_pass::BlockRenderPass,
         },
@@ -23,16 +23,18 @@ pub(super) struct RenderPassContainer {
     line_render_pass: LineRenderPass,
     background_render_pass: BackgroundRenderPass,
     block_render_pass: BlockRenderPass,
+    text_render_pass: TextRenderPass,
 }
 
 impl RenderPassContainer {
     pub(super) fn new(device_container: &DeviceContainer) -> Self {
         Self {
             background_render_pass: BackgroundRenderPass::new(),
-            poly_render_pass: PolyRenderPass::new(&device_container),
-            circle_render_pass: CircleRenderPass::new(&device_container),
-            line_render_pass: LineRenderPass::new(&device_container),
-            block_render_pass: BlockRenderPass::new(&device_container),
+            poly_render_pass: PolyRenderPass::new(device_container),
+            circle_render_pass: CircleRenderPass::new(device_container),
+            line_render_pass: LineRenderPass::new(device_container),
+            block_render_pass: BlockRenderPass::new(device_container),
+            text_render_pass: TextRenderPass::new(device_container),
         }
     }
 
@@ -83,6 +85,9 @@ impl RenderPassContainer {
                     device_container,
                     Some(camera_2d),
                 ),
+                RenderObject2D::TextObject(mut text) => {
+                    text.draw(Some(camera_2d))
+                }
             }
         }
     }
@@ -105,6 +110,9 @@ impl RenderPassContainer {
                 }
                 RenderObject2D::PolyObject(mut polygon) => {
                     polygon.draw(&mut self.poly_render_pass, device_container, None)
+                },
+                RenderObject2D::TextObject(mut text) => {
+                    text.draw(None)
                 }
             }
         }

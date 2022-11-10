@@ -5,14 +5,14 @@ use crate::{
     public::objects::{
         background::Background,
         camera::{camera_2d::Camera2D, camera_3d::Camera3D},
-        obj_2d::{circle::Circle, line::Line, polygon::Polygon, rect::Rect},
+        obj_2d::{circle::Circle, line::Line, polygon::Polygon, rect::Rect, text::Text},
         obj_3d::block::Block,
     },
     rendering::render_objects::{
         background_ro::BackgroundRenderObject,
         ro_2d::{
             circle_ro::CircleRenderObject, line_ro::LineRenderObject,
-            polygon_ro::PolygonRenderObject, rect_ro::RectRenderObject,
+            polygon_ro::PolygonRenderObject, rect_ro::RectRenderObject, text_ro::TextRenderObject,
         },
         ro_3d::block_ro::BlockRenderObject,
         RenderObject2D, RenderObject3D,
@@ -124,6 +124,24 @@ impl RenderContainer {
         self.render_objects_ui
             .add(RenderObject2D::LineObject(LineRenderObject::new(
                 line,
+                &mut self.device_container,
+            )))
+            .unwrap();
+    }
+
+    pub(crate) fn text(&mut self, text: Text) {
+        self.render_objects_2d
+            .add(RenderObject2D::TextObject(TextRenderObject::new(
+                text,
+                &mut self.device_container,
+            )))
+            .unwrap();
+    }
+
+    pub(crate) fn ui_text(&mut self, text: Text) {
+        self.render_objects_ui
+            .add(RenderObject2D::TextObject(TextRenderObject::new(
+                text,
                 &mut self.device_container,
             )))
             .unwrap();

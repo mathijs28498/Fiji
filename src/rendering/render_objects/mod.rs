@@ -1,7 +1,7 @@
 use self::{
     ro_2d::{
         circle_ro::CircleRenderObject, line_ro::LineRenderObject, polygon_ro::PolygonRenderObject,
-        rect_ro::RectRenderObject,
+        rect_ro::RectRenderObject, text_ro::TextRenderObject,
     },
     ro_3d::block_ro::BlockRenderObject,
 };
@@ -22,4 +22,5 @@ pub(super) enum RenderObject2D {
     CircleObject(CircleRenderObject),
     LineObject(LineRenderObject),
     PolyObject(PolygonRenderObject),
+    TextObject(TextRenderObject),
 }
