@@ -29,7 +29,7 @@ use crate::{
     },
 };
 
-mod vs {
+pub(crate) mod circle_vs {
     vulkano_shaders::shader!(
         ty: "vertex",
         path: "src/shaders/shaders_2d/circle_render_pass.vert",
@@ -40,7 +40,8 @@ mod vs {
         }
     );
 }
-mod fs {
+
+pub(crate) mod circle_fs {
     vulkano_shaders::shader!(
         ty: "fragment",
         path: "src/shaders/shaders_2d/circle_render_pass.frag",
@@ -60,8 +61,8 @@ pub(crate) struct CircleRenderPass {
 
 impl CircleRenderPass {
     pub(crate) fn new(device_container: &DeviceContainer) -> CircleRenderPass {
-        let vs = vs::load(device_container.device().clone()).unwrap();
-        let fs = fs::load(device_container.device().clone()).unwrap();
+        let vs = circle_vs::load(device_container.device().clone()).unwrap();
+        let fs = circle_fs::load(device_container.device().clone()).unwrap();
 
         let render_pass = vulkano::single_pass_renderpass!(
             device_container.device().clone(),
@@ -124,7 +125,7 @@ impl CircleRenderPass {
         &mut self,
         device_container: &mut DeviceContainer,
         buffers: &BufferContainer2D,
-        mut push_constants: fs::ty::Constants,
+        mut push_constants: circle_fs::ty::Constants,
     ) {
         push_constants.resolution = device_container.resolution();
 
@@ -167,25 +168,5 @@ impl CircleRenderPass {
                 .unwrap()
                 .boxed(),
         );
-    }
-
-    pub(crate) fn create_push_constants(
-        color: Vec4,
-        position: Vec2,
-        radius: f32,
-        border: Option<Border>,
-    ) -> fs::ty::Constants {
-        let (border_color, border_width) = match border {
-            Some(border) => (border.color, border.width),
-            None => (Vec4::new(0., 0., 0., 0.), 0),
-        };
-        fs::ty::Constants {
-            resolution: [0, 0],
-            color: color.as_ref().clone(),
-            position: position.as_ref().clone(),
-            borderColor: border_color.as_ref().clone(),
-            borderWidth: border_width,
-            radius,
-        }
     }
 }

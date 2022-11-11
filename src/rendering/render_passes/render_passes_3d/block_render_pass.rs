@@ -28,7 +28,7 @@ use crate::rendering::{
     render_objects::shared::{BufferContainer3D, Vertex3D},
 };
 
-mod vs {
+pub(crate) mod block_vs {
     vulkano_shaders::shader!(
         ty: "vertex",
         path: "src/shaders/shaders_3d/block_render_pass.vert",
@@ -39,7 +39,8 @@ mod vs {
         }
     );
 }
-mod fs {
+
+pub(crate) mod block_fs {
     vulkano_shaders::shader!(
         ty: "fragment",
         path: "src/shaders/shaders_3d/block_render_pass.frag",
@@ -59,8 +60,8 @@ pub(crate) struct BlockRenderPass {
 
 impl BlockRenderPass {
     pub(crate) fn new(device_container: &DeviceContainer) -> BlockRenderPass {
-        let vs = vs::load(device_container.device().clone()).unwrap();
-        let fs = fs::load(device_container.device().clone()).unwrap();
+        let vs = block_vs::load(device_container.device().clone()).unwrap();
+        let fs = block_fs::load(device_container.device().clone()).unwrap();
 
         let render_pass = vulkano::single_pass_renderpass!(
             device_container.device().clone(),
@@ -139,7 +140,7 @@ impl BlockRenderPass {
         &mut self,
         device_container: &mut DeviceContainer,
         buffers: &BufferContainer3D,
-        mut push_constants: fs::ty::Constants,
+        mut push_constants: block_fs::ty::Constants,
     ) {
         push_constants.resolution = device_container.resolution();
 
@@ -182,31 +183,5 @@ impl BlockRenderPass {
                 .unwrap()
                 .boxed(),
         );
-    }
-
-    pub(crate) fn create_push_constants(
-        color: Vec4,
-        position: Vec3,
-        size: &Vec3,
-        rotation: Vec3,
-        view: Mat4,
-        camera_pos: Vec3,
-    ) -> fs::ty::Constants {
-        let position = Vec3::new(position.x, -position.y, position.z);
-        let world = Mat4::new_translation(&position)
-            * Mat4::new_rotation(rotation)
-            * Mat4::new_nonuniform_scaling(size);
-
-        fs::ty::Constants {
-            color: color.as_ref().clone(),
-            world: world.as_ref().clone(),
-            view: view.as_ref().clone(),
-            proj: Mat4::new_perspective(1280. / 720., FRAC_2_PI, 0.01, 1000.)
-                .as_ref()
-                .clone(),
-            cameraPos: camera_pos.as_ref().clone(),
-            resolution: [0, 0],
-            _dummy0: [0; 4],
-        }
     }
 }

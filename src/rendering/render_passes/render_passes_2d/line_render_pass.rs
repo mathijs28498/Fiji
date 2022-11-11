@@ -25,7 +25,7 @@ use crate::rendering::{
 
 use nalgebra_glm::Vec4;
 
-mod vs {
+pub(crate) mod line_vs {
     vulkano_shaders::shader! {
         ty: "vertex",
         path: "src/shaders/shaders_2d/line_render_pass.vert",
@@ -37,7 +37,7 @@ mod vs {
     }
 }
 
-mod fs {
+pub(crate) mod line_fs {
     vulkano_shaders::shader! {
         ty: "fragment",
         path: "src/shaders/shaders_2d/line_render_pass.frag",
@@ -57,8 +57,8 @@ pub(crate) struct LineRenderPass {
 
 impl LineRenderPass {
     pub(crate) fn new(device_container: &DeviceContainer) -> Self {
-        let vs = vs::load(device_container.device().clone()).unwrap();
-        let fs = fs::load(device_container.device().clone()).unwrap();
+        let vs = line_vs::load(device_container.device().clone()).unwrap();
+        let fs = line_fs::load(device_container.device().clone()).unwrap();
 
         let render_pass = vulkano::single_pass_renderpass!(
             device_container.device().clone(),
@@ -124,7 +124,7 @@ impl LineRenderPass {
         &mut self,
         device_container: &mut DeviceContainer,
         buffers: &BufferContainer2D,
-        push_constants: fs::ty::Constants,
+        push_constants: line_fs::ty::Constants,
     ) {
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.command_buffer_allocator(),
@@ -165,11 +165,5 @@ impl LineRenderPass {
                 .unwrap()
                 .boxed(),
         );
-    }
-
-    pub(crate) fn create_push_constants(color: Vec4) -> fs::ty::Constants {
-        fs::ty::Constants {
-            color: color.as_ref().clone(),
-        }
     }
 }

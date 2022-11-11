@@ -22,8 +22,8 @@ impl Context {
     pub fn new(width: u32, height: u32) -> Self {
         Self {
             render_container: RenderContainer::new(width, height),
-            camera_2d: Camera2D::new(),
-            camera_3d: Camera3D::new(),
+            camera_2d: Camera2D::new_default(),
+            camera_3d: Camera3D::new_default(),
         }
     }
 

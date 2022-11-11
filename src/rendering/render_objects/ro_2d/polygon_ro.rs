@@ -5,7 +5,7 @@ use crate::{
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
-        render_passes::render_passes_2d::poly_render_pass::PolyRenderPass,
+        render_passes::render_passes_2d::poly_render_pass::{poly_fs, PolyRenderPass},
     },
 };
 
@@ -30,14 +30,35 @@ impl PolygonRenderObject {
         render_pass.draw(
             device_container,
             &self.buffers,
-            PolyRenderPass::create_push_constants(
-                self.polygon.color.clone(),
-                Vec2::new(0., 0.),
-                Vec2::new(1., 1.),
-                self.polygon.border.clone(),
-                camera_2d,
-            ),
+            self.create_push_constants(device_container, camera_2d),
         );
+    }
+
+    #[allow(non_snake_case)]
+    pub(crate) fn create_push_constants(
+        &self,
+        device_container: &DeviceContainer,
+        camera_2d: Option<&Camera2D>,
+    ) -> poly_fs::ty::Constants {
+        let (borderColor, borderWidth) = match &self.polygon.border {
+            Some(border) => (border.color.as_ref().clone(), border.width),
+            None => ([0.; 4], 0),
+        };
+
+        let cameraPos = match camera_2d {
+            Some(camera_2d) => camera_2d.position.as_ref().clone(),
+            None => [0.; 2],
+        };
+
+        poly_fs::ty::Constants {
+            resolution: device_container.resolution(),
+            position: [0., 0.],
+            color: self.polygon.color.as_ref().clone(),
+            borderColor,
+            size: [1., 1.],
+            borderWidth,
+            cameraPos,
+        }
     }
 
     fn create_buffers(

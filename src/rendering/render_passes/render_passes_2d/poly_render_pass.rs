@@ -27,7 +27,7 @@ use crate::{
 };
 
 use nalgebra_glm::{Vec2, Vec4};
-mod vs {
+pub(crate) mod poly_vs {
     vulkano_shaders::shader! {
         ty: "vertex",
         path: "src/shaders/shaders_2d/poly_render_pass.vert",
@@ -39,7 +39,7 @@ mod vs {
     }
 }
 
-mod fs {
+pub(crate) mod poly_fs {
     vulkano_shaders::shader! {
         ty: "fragment",
         path: "src/shaders/shaders_2d/poly_render_pass.frag",
@@ -59,8 +59,8 @@ pub(crate) struct PolyRenderPass {
 
 impl PolyRenderPass {
     pub(crate) fn new(device_container: &DeviceContainer) -> Self {
-        let vs = vs::load(device_container.device().clone()).unwrap();
-        let fs = fs::load(device_container.device().clone()).unwrap();
+        let vs = poly_vs::load(device_container.device().clone()).unwrap();
+        let fs = poly_fs::load(device_container.device().clone()).unwrap();
 
         let render_pass = vulkano::single_pass_renderpass!(
             device_container.device().clone(),
@@ -126,7 +126,7 @@ impl PolyRenderPass {
         &mut self,
         device_container: &mut DeviceContainer,
         buffers: &BufferContainer2D,
-        mut push_constants: fs::ty::Constants,
+        mut push_constants: poly_fs::ty::Constants,
     ) {
         push_constants.resolution = device_container.resolution();
 
@@ -169,35 +169,5 @@ impl PolyRenderPass {
                 .unwrap()
                 .boxed(),
         );
-    }
-
-    #[allow(non_snake_case)]
-    pub(crate) fn create_push_constants(
-        color: Vec4,
-        position: Vec2,
-        size: Vec2,
-        border: Option<Border>,
-        camera_pos: Option<&Camera2D>,
-    ) -> fs::ty::Constants {
-        let (borderColor, borderWidth) = match border {
-            Some(border) => (border.color.as_ref().clone(), border.width),
-            None => ([0.; 4], 0),
-        };
-
-
-        let cameraPos = match camera_pos {
-            Some(camera_pos) => camera_pos.position.as_ref().clone(),
-            None => [0.; 2],
-        };
-
-        fs::ty::Constants {
-            resolution: [0, 0],
-            position: position.as_ref().clone(),
-            color: color.as_ref().clone(),
-            borderColor,
-            size: size.as_ref().clone(),
-            borderWidth,
-            cameraPos,
-        }
     }
 }
