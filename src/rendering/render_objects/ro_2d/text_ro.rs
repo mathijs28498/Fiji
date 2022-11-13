@@ -1,6 +1,9 @@
 use crate::{
     public::objects::{camera::camera_2d::Camera2D, obj_2d::text::Text},
-    rendering::render_containers::device_container::DeviceContainer,
+    rendering::{
+        pipelines::pipelines_2d::text_pipeline::TextPipeline,
+        render_containers::device_container::DeviceContainer,
+    },
 };
 
 #[derive(Clone)]
@@ -13,5 +16,5 @@ impl TextRenderObject {
         Self { text }
     }
 
-    pub(crate) fn draw(&mut self, camera_2d: Option<&Camera2D>) {}
+    pub(crate) fn draw(&mut self, text_pipeline: &mut TextPipeline, camera_2d: Option<&Camera2D>) {}
 }

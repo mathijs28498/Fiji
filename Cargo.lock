@@ -370,6 +370,7 @@ name = "fiji"
 version = "0.1.0"
 dependencies = [
  "bytemuck",
+ "freetype-rs",
  "nalgebra",
  "nalgebra-glm",
  "queues",

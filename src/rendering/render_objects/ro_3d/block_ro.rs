@@ -5,7 +5,7 @@ use crate::{
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_3d, BufferContainer3D, Vertex3D},
-        render_passes::render_passes_3d::block_render_pass::{block_fs, BlockRenderPass},
+        pipelines::pipelines_3d::block_pipeline::{block_fs, BlockPipeline},
     },
 };
 
@@ -34,11 +34,11 @@ impl BlockRenderObject {
 
     pub(crate) fn draw(
         &mut self,
-        render_pass: &mut BlockRenderPass,
+        pipeline: &mut BlockPipeline,
         device_container: &mut DeviceContainer,
         camera: &Camera3D,
     ) {
-        render_pass.draw(
+        pipeline.draw(
             device_container,
             &self.buffers,
             self.create_push_constants(device_container, camera),

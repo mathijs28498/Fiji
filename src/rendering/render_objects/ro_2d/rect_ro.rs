@@ -3,7 +3,7 @@ use crate::{
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
-        render_passes::render_passes_2d::poly_render_pass::{PolyRenderPass, poly_fs},
+        pipelines::pipelines_2d::poly_pipeline::{PolyPipeline, poly_fs},
     },
 };
 
@@ -32,11 +32,11 @@ impl RectRenderObject {
 
     pub(crate) fn draw(
         &mut self,
-        render_pass: &mut PolyRenderPass,
+        pipeline: &mut PolyPipeline,
         device_container: &mut DeviceContainer,
         camera_2d: Option<&Camera2D>,
     ) {
-        render_pass.draw(
+        pipeline.draw(
             device_container,
             &self.buffers,
             self.create_push_constants(device_container, camera_2d),

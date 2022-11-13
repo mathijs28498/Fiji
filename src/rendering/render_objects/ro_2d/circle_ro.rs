@@ -5,7 +5,7 @@ use crate::{
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
-        render_passes::render_passes_2d::circle_render_pass::{CircleRenderPass, circle_fs},
+        pipelines::pipelines_2d::circle_pipeline::{CirclePipeline, circle_fs},
     },
 };
 
@@ -33,12 +33,12 @@ impl CircleRenderObject {
 
     pub(crate) fn draw(
         &mut self,
-        render_pass: &mut CircleRenderPass,
+        pipeline: &mut CirclePipeline,
         device_container: &mut DeviceContainer,
     ) {
         // Unsafe is used to change these static values.
         // This is definitely safe, even thought the compiler can't verify.
-        render_pass.draw(
+        pipeline.draw(
             device_container,
             &self.buffers,
             self.create_push_constants(device_container),
