@@ -51,7 +51,6 @@ pub(crate) mod line_fs {
 
 pub(crate) struct LinePipeline {
     pipeline: Arc<GraphicsPipeline>,
-    viewport: Viewport,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
 
@@ -83,19 +82,16 @@ impl LinePipeline {
             .input_assembly_state(InputAssemblyState::new())
             .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2D>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
-            .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
+            .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([
+                Viewport {
+                    origin: [0.0, 0.0],
+                    dimensions: device_container.resolution_f32(),
+                    depth_range: 0.0..1.0,
+                },
+            ]))
             .fragment_shader(fs.entry_point("main").unwrap(), ())
             .build(device_container.device().clone())
             .unwrap();
-
-        let mut viewport = Viewport {
-            origin: [0.0, 0.0],
-            dimensions: [0.0, 0.0],
-            depth_range: 0.0..1.0,
-        };
-
-        let dimensions = device_container.images()[0].dimensions().width_height();
-        viewport.dimensions = [dimensions[0] as f32, dimensions[1] as f32];
 
         let framebuffers = device_container
             .images()
@@ -115,7 +111,6 @@ impl LinePipeline {
 
         Self {
             pipeline,
-            viewport,
             framebuffers,
         }
     }
@@ -144,7 +139,6 @@ impl LinePipeline {
                 SubpassContents::Inline,
             )
             .unwrap()
-            .set_viewport(0, [self.viewport.clone()])
             .bind_pipeline_graphics(self.pipeline.clone())
             .bind_vertex_buffers(0, buffers.vertex_buffer.clone())
             .bind_index_buffer(buffers.index_buffer.clone())

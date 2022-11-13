@@ -3,7 +3,9 @@ pub mod rendering;
 pub mod public;
 
 // TODO IN PROGRESS:
-// [ ] - Rename render pass structs/file names
+// [X] - Rename render pass structs/file names
+// [ ] - Resizing of window
+// [ ] - Make use of static viewports
 // [ ] - Add text components
 //      [X] - Figure out how to create R8_UINT image and sent it to the gpu
 //      [ ] - Create hashmap for character textures (in render pass)
@@ -19,7 +21,6 @@ pub mod public;
 // [ ] - Better/more camera options
 // [ ] - Configurable lights in context
 // [ ] - Figure out rotation
-// [ ] - Resizing of window
 // [ ] - Delta time
 // [ ] - Render and update closures
 // [ ] - Working borders

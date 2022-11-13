@@ -54,7 +54,6 @@ pub(crate) mod block_fs {
 
 pub(crate) struct BlockPipeline {
     pipeline: Arc<GraphicsPipeline>,
-    viewport: Viewport,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
 
@@ -85,12 +84,6 @@ impl BlockPipeline {
             }
         )
         .unwrap();
-
-        let viewport = Viewport {
-            origin: [0., 0.],
-            dimensions: device_container.resolution_f32(),
-            depth_range: 0.0..1.0,
-        };
 
         let depth_view = ImageView::new_default(device_container.depth_image().clone()).unwrap();
 
@@ -131,7 +124,6 @@ impl BlockPipeline {
 
         Self {
             pipeline,
-            viewport,
             framebuffers,
         }
     }
@@ -162,7 +154,6 @@ impl BlockPipeline {
                 SubpassContents::Inline,
             )
             .unwrap()
-            .set_viewport(0, [self.viewport.clone()])
             .bind_pipeline_graphics(self.pipeline.clone())
             .bind_vertex_buffers(0, buffers.vertex_buffer.clone())
             .bind_index_buffer(buffers.index_buffer.clone())

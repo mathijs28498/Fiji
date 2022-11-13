@@ -55,7 +55,6 @@ pub(crate) mod circle_fs {
 
 pub(crate) struct CirclePipeline {
     pipeline: Arc<GraphicsPipeline>,
-    viewport: Viewport,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
 
@@ -87,16 +86,16 @@ impl CirclePipeline {
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
             .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2D>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
-            .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
+            .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([
+                Viewport {
+                    origin: [0.0, 0.0],
+                    dimensions: device_container.resolution_f32(),
+                    depth_range: 0.0..1.0,
+                },
+            ]))
             .fragment_shader(fs.entry_point("main").unwrap(), ())
             .build(device_container.device().clone())
             .unwrap();
-
-        let viewport = Viewport {
-            origin: [0., 0.],
-            dimensions: device_container.resolution_f32(),
-            depth_range: 0.0..1.0,
-        };
 
         let framebuffers = device_container
             .images()
@@ -116,7 +115,6 @@ impl CirclePipeline {
 
         Self {
             pipeline,
-            viewport,
             framebuffers,
         }
     }
@@ -127,8 +125,6 @@ impl CirclePipeline {
         buffers: &BufferContainer2D,
         mut push_constants: circle_fs::ty::Constants,
     ) {
-        push_constants.resolution = device_container.resolution();
-
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.command_buffer_allocator(),
             device_container.queue_family_index(),
@@ -147,7 +143,6 @@ impl CirclePipeline {
                 SubpassContents::Inline,
             )
             .unwrap()
-            .set_viewport(0, [self.viewport.clone()])
             .bind_pipeline_graphics(self.pipeline.clone())
             .bind_vertex_buffers(0, buffers.vertex_buffer.clone())
             .bind_index_buffer(buffers.index_buffer.clone())

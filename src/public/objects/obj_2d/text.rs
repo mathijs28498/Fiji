@@ -22,16 +22,16 @@ impl Text {
 
     pub fn with_text(mut self, text: &str) -> Self {
         self.text = text.to_string();
-        Self
+        self
     }
 
     pub fn with_color(mut self, color: Vec4) -> Self {
         self.color = color;
-        Self
+        self
     }
 
-    pub fn with_text(mut self, position: Vec2) -> Self {
+    pub fn with_position(mut self, position: Vec2) -> Self {
         self.position = position;
-        Self
+        self
     }
 }
