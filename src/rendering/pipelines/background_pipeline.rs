@@ -38,16 +38,6 @@ impl BackgroundRenderPass {
             })
             .unwrap();
 
-        let command_buffer = builder.build().unwrap();
-
-        device_container.previous_frame_end = Some(
-            device_container
-                .previous_frame_end
-                .take()
-                .unwrap()
-                .then_execute(device_container.queue().clone(), command_buffer)
-                .unwrap()
-                .boxed(),
-        );
+        device_container.execute_command_buffer(builder.build().unwrap());
     }
 }

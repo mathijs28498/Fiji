@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use vulkano::{
-    command_buffer::allocator::StandardCommandBufferAllocator,
+    command_buffer::{allocator::StandardCommandBufferAllocator, PrimaryAutoCommandBuffer},
     device::{
         physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue,
         QueueCreateInfo,
@@ -27,7 +27,7 @@ pub(crate) struct DeviceContainer {
     swapchain: Arc<Swapchain>,
     images: Vec<Arc<SwapchainImage>>,
     depth_image: Arc<AttachmentImage>,
-    pub(crate) previous_frame_end: Option<Box<dyn GpuFuture>>,
+    previous_frame_end: Option<Box<dyn GpuFuture>>,
     image_num: usize,
 
     memory_allocator: GenericMemoryAllocator<Arc<FreeListAllocator>>,
@@ -219,6 +219,17 @@ impl DeviceContainer {
                 .unwrap()
                 .boxed(),
         );
+    }
+
+    pub(crate) fn execute_command_buffer(&mut self, command_buffer: PrimaryAutoCommandBuffer) {
+        self.previous_frame_end = Some(
+            self.previous_frame_end
+                .take()
+                .unwrap()
+                .then_execute(self.queue().clone(), command_buffer)
+                .unwrap()
+                .boxed(),
+        )
     }
 
     pub(crate) fn device(&self) -> &Arc<Device> {

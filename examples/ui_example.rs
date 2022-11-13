@@ -2,7 +2,7 @@ use fiji::{
     input::input_enums::KeyCode,
     public::{
         context::Context,
-        objects::{background::Background, obj_2d::rect::Rect},
+        objects::{background::Background, obj_2d::{rect::Rect, text::Text}},
     },
 };
 use nalgebra_glm::{Vec2, Vec3, Vec4};
@@ -28,6 +28,7 @@ pub fn main() {
 
         context.ui_rect(r_2.clone());
         context.rect(r.clone());
+        context.text(Text::new_with_text("Test"));
 
         context.render();
     });

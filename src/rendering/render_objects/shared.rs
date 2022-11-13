@@ -1,20 +1,40 @@
 use std::sync::Arc;
 
-use bytemuck::{Zeroable, Pod};
+use bytemuck::{Pod, Zeroable};
 use vulkano::{
     buffer::{BufferUsage, DeviceLocalBuffer},
     command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, PrimaryCommandBufferAbstract},
-    sync::GpuFuture, impl_vertex,
+    impl_vertex,
+    sync::GpuFuture,
 };
 
-use crate::rendering::{
-    render_containers::device_container::DeviceContainer,
-};
+use crate::rendering::render_containers::device_container::DeviceContainer;
 
-//TODO: Change this to local in stead of pub(super)
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Zeroable, Pod)]
+pub(crate) struct Vertex2D {
+    pub(crate) position: [f32; 2],
+}
+impl_vertex!(Vertex2D, position);
+
+#[allow(non_snake_case)]
+#[repr(C)]
+#[derive(Clone, Copy, Debug, Default, Zeroable, Pod)]
+pub(crate) struct VertexText {
+    pub(crate) position: [f32; 2],
+    pub(crate) uvCoord: [f32; 2],
+}
+impl_vertex!(VertexText, position, uvCoord);
+
 #[derive(Clone, Debug)]
 pub(crate) struct BufferContainer2D {
     pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[Vertex2D]>>,
+    pub(crate) index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
+}
+
+#[derive(Clone, Debug)]
+pub(crate) struct BufferContainerText {
+    pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[VertexText]>>,
     pub(crate) index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
 }
 
@@ -23,13 +43,6 @@ pub(crate) struct BufferContainer3D {
     pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[Vertex3D]>>,
     pub(crate) index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
 }
-
-#[repr(C)]
-#[derive(Clone, Copy, Debug, Default, Zeroable, Pod)]
-pub(crate) struct Vertex2D {
-    pub(crate) position: [f32; 2],
-}
-impl_vertex!(Vertex2D, position);
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Zeroable, Pod)]

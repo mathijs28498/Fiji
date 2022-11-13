@@ -15,7 +15,7 @@ vulkano-util = "0.32.0"
 winit = "0.27.5"
 bytemuck = { version = "1.7", features = ["derive", "extern_crate_std", "min_const_generics"] }
 
-freetype-rs = "0.26.0"
+fontdue = "0.7.2"
 
 rand = "0.8.5"
 nalgebra = "0.31.1"

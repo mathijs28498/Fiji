@@ -4,7 +4,7 @@ use vulkano::{
     command_buffer::{
         AutoCommandBufferBuilder, CommandBufferUsage, RenderPassBeginInfo, SubpassContents,
     },
-    image::{view::ImageView, ImageAccess},
+    image::view::ImageView,
     pipeline::{
         graphics::{
             color_blend::ColorBlendState,
@@ -18,15 +18,11 @@ use vulkano::{
     sync::GpuFuture,
 };
 
-use crate::{
-    public::objects::{camera::camera_2d::Camera2D, Border},
-    rendering::{
-        render_containers::device_container::DeviceContainer,
-        render_objects::shared::{BufferContainer2D, Vertex2D},
-    },
+use crate::rendering::{
+    render_containers::device_container::DeviceContainer,
+    render_objects::shared::{BufferContainer2D, Vertex2D},
 };
 
-use nalgebra_glm::{Vec2, Vec4};
 pub(crate) mod poly_vs {
     vulkano_shaders::shader! {
         ty: "vertex",
@@ -150,16 +146,6 @@ impl PolyPipeline {
             .end_render_pass()
             .unwrap();
 
-        let command_buffer = builder.build().unwrap();
-
-        device_container.previous_frame_end = Some(
-            device_container
-                .previous_frame_end
-                .take()
-                .unwrap()
-                .then_execute(device_container.queue().clone(), command_buffer)
-                .unwrap()
-                .boxed(),
-        );
+        device_container.execute_command_buffer(builder.build().unwrap());
     }
 }

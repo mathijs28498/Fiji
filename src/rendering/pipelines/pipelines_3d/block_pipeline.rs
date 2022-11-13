@@ -1,4 +1,4 @@
-use std::{f32::consts::FRAC_2_PI, sync::Arc};
+use std::sync::Arc;
 
 use vulkano::{
     buffer::TypedBufferAccess,
@@ -20,8 +20,6 @@ use vulkano::{
     render_pass::{Framebuffer, FramebufferCreateInfo, Subpass},
     sync::GpuFuture,
 };
-
-use nalgebra_glm::{Mat4, Vec3, Vec4};
 
 use crate::rendering::{
     render_containers::device_container::DeviceContainer,
@@ -163,16 +161,6 @@ impl BlockPipeline {
             .end_render_pass()
             .unwrap();
 
-        let command_buffer = builder.build().unwrap();
-
-        device_container.previous_frame_end = Some(
-            device_container
-                .previous_frame_end
-                .take()
-                .unwrap()
-                .then_execute(device_container.queue().clone(), command_buffer)
-                .unwrap()
-                .boxed(),
-        );
+        device_container.execute_command_buffer(builder.build().unwrap());
     }
 }

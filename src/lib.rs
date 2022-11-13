@@ -28,6 +28,7 @@ pub mod public;
 // [ ] - Borders around 2D objects
 // [ ] - Shadows
 // [ ] - Figure out a better drawing strategy
+// [ ] - Add generic to buffercontainer (based on vertex) in stead of different container structs 
 //
 // DONE:
 // [X] - Depth testing
