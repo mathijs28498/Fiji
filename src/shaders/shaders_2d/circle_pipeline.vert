@@ -9,7 +9,7 @@ layout(push_constant) uniform Constants {
     float radius;
 } pc;
 
-layout(location=1) in vec2 position;
+layout (location = 0) in vec2 position;
 
 vec2 worldToScreen(vec2 worldPos);
 

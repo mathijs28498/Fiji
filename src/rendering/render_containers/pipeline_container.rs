@@ -3,7 +3,6 @@ use queues::{IsQueue, Queue};
 use crate::{
     public::objects::camera::{camera_2d::Camera2D, camera_3d::Camera3D},
     rendering::{
-        render_objects::{background_ro::BackgroundRenderObject, RenderObject2D, RenderObject3D},
         pipelines::{
             background_pipeline::BackgroundRenderPass,
             pipelines_2d::{
@@ -12,6 +11,7 @@ use crate::{
             },
             pipelines_3d::block_pipeline::BlockPipeline,
         },
+        render_objects::{background_ro::BackgroundRenderObject, RenderObject2D, RenderObject3D},
     },
 };
 
@@ -69,24 +69,20 @@ impl PipelineContainer {
     ) {
         while let Ok(object) = render_objects.remove() {
             match object {
-                RenderObject2D::RectObject(mut rect) => rect.draw(
-                    &mut self.poly_pipeline,
-                    device_container,
-                    Some(camera_2d),
-                ),
+                RenderObject2D::RectObject(mut rect) => {
+                    rect.draw(&mut self.poly_pipeline, device_container, Some(camera_2d))
+                }
                 RenderObject2D::CircleObject(mut circle) => {
                     circle.draw(&mut self.circle_pipeline, device_container)
                 }
                 RenderObject2D::LineObject(mut line) => {
                     line.draw(&mut self.line_pipeline, device_container)
                 }
-                RenderObject2D::PolyObject(mut polygon) => polygon.draw(
-                    &mut self.poly_pipeline,
-                    device_container,
-                    Some(camera_2d),
-                ),
+                RenderObject2D::PolyObject(mut polygon) => {
+                    polygon.draw(&mut self.poly_pipeline, device_container, Some(camera_2d))
+                }
                 RenderObject2D::TextObject(mut text) => {
-                    text.draw(&mut self.text_pipeline, Some(camera_2d))
+                    text.draw(&mut self.text_pipeline, device_container, Some(camera_2d))
                 }
             }
         }
@@ -110,9 +106,9 @@ impl PipelineContainer {
                 }
                 RenderObject2D::PolyObject(mut polygon) => {
                     polygon.draw(&mut self.poly_pipeline, device_container, None)
-                },
+                }
                 RenderObject2D::TextObject(mut text) => {
-                    text.draw(&mut self.text_pipeline, None)
+                    text.draw(&mut self.text_pipeline, device_container, None)
                 }
             }
         }

@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use vulkano::{
     command_buffer::{allocator::StandardCommandBufferAllocator, PrimaryAutoCommandBuffer},
+    descriptor_set::allocator::{DescriptorSetAllocator, StandardDescriptorSetAllocator},
     device::{
         physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue,
         QueueCreateInfo,
@@ -32,6 +33,7 @@ pub(crate) struct DeviceContainer {
 
     memory_allocator: GenericMemoryAllocator<Arc<FreeListAllocator>>,
     command_buffer_allocator: StandardCommandBufferAllocator,
+    descriptor_set_allocator: StandardDescriptorSetAllocator,
 }
 
 impl DeviceContainer {
@@ -109,6 +111,7 @@ impl DeviceContainer {
         let memory_allocator = StandardMemoryAllocator::new_default(device.clone());
         let command_buffer_allocator =
             StandardCommandBufferAllocator::new(device.clone(), Default::default());
+        let descriptor_set_allocator = StandardDescriptorSetAllocator::new(device.clone());
 
         let queue = queues.next().unwrap();
         let (swapchain, images) = {
@@ -185,6 +188,7 @@ impl DeviceContainer {
             image_num: 0,
             memory_allocator,
             command_buffer_allocator,
+            descriptor_set_allocator,
         }
     }
 
@@ -278,6 +282,10 @@ impl DeviceContainer {
 
     pub(crate) fn command_buffer_allocator(&self) -> &StandardCommandBufferAllocator {
         &self.command_buffer_allocator
+    }
+
+    pub(crate) fn descriptor_set_allocator(&self) -> &StandardDescriptorSetAllocator {
+        &self.descriptor_set_allocator
     }
 
     pub(crate) fn resolution(&self) -> [u32; 2] {

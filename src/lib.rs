@@ -5,12 +5,13 @@ pub mod public;
 // TODO IN PROGRESS:
 // [X] - Rename render pass structs/file names
 // [ ] - Resizing of window
-// [ ] - Make use of static viewports
-// [ ] - Add text components
+// [X] - Make use of static viewports
+// [X] - Add text components
 //      [X] - Figure out how to create R8_UINT image and sent it to the gpu
-//      [ ] - Create hashmap for character textures (in render pass)
-//      [ ] - Either get character from hashmap or create new one and put in hashmap
-//      [ ] - Render strings to screen using Text object  
+//      [X] - Create hashmap for character textures (in render pass)
+//      [X] - Either get character from hashmap or create new one and put in hashmap
+//      [X] - Render strings to screen using Text object  
+//      [X] - Spaces
 
 // TODO PRE PHYSICS:
 //
@@ -29,6 +30,12 @@ pub mod public;
 // [ ] - Shadows
 // [ ] - Figure out a better drawing strategy
 // [ ] - Add generic to buffercontainer (based on vertex) in stead of different container structs 
+// [ ] - Create a better way to store fonts
+// [ ] - Better way to store all fonts
+// [ ] - Font and fontsize as key for text_pipeline set hashmap
+// [ ] - A container that holds all fonts and font buffer containers with metrics
+// [ ] - Replace the unsafe static BUFFERS from the render objects
+// [ ] - New lines for text (using y offset)
 //
 // DONE:
 // [X] - Depth testing

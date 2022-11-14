@@ -5,10 +5,16 @@ use crate::public::objects::DEFAULT_COLOR;
 use super::DEFAULT_POSITION_2D;
 
 #[derive(Clone, Debug)]
+pub enum TextFont {
+    ComicSans
+}
+
+#[derive(Clone, Debug)]
 pub struct Text {
-    text: String,
-    color: Vec4,
-    position: Vec2,
+    pub text: String,
+    pub color: Vec4,
+    pub position: Vec2,
+    pub font: TextFont,
 }
 
 impl Text {
@@ -17,6 +23,7 @@ impl Text {
             text: text.to_string(),
             color: DEFAULT_COLOR,
             position: DEFAULT_POSITION_2D,
+            font: TextFont::ComicSans,
         }
     }
 
@@ -32,6 +39,11 @@ impl Text {
 
     pub fn with_position(mut self, position: Vec2) -> Self {
         self.position = position;
+        self
+    }
+
+    pub fn with_font(mut self, font: TextFont) -> Self {
+        self.font = font;
         self
     }
 }
