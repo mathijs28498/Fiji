@@ -1,6 +1,6 @@
 use super::input_enums::{KeyCode, MouseButton};
 
-pub fn convert_mouse_button(mouse_button: winit::event::MouseButton) -> MouseButton {
+pub(crate) fn convert_mouse_button(mouse_button: winit::event::MouseButton) -> MouseButton {
     match mouse_button {
         winit::event::MouseButton::Left => MouseButton::Left,
         winit::event::MouseButton::Right => MouseButton::Right,
@@ -9,7 +9,7 @@ pub fn convert_mouse_button(mouse_button: winit::event::MouseButton) -> MouseBut
     }
 }
 
-pub fn convert_virtual_key_code(virtual_key_code: winit::event::VirtualKeyCode) -> KeyCode {
+pub(crate) fn convert_virtual_key_code(virtual_key_code: winit::event::VirtualKeyCode) -> KeyCode {
     match virtual_key_code {
         winit::event::VirtualKeyCode::Key1 => KeyCode::Key1,
         winit::event::VirtualKeyCode::Key2 => KeyCode::Key2,

@@ -1,16 +1,6 @@
 use nalgebra_glm::{Vec2, Vec3, Vec4};
 
-use fiji::{
-    input::input_enums::{KeyCode, MouseButton},
-    public::{
-        context::Context,
-        objects::{
-            background::Background,
-            obj_2d::{circle::Circle, polygon::Polygon, rect::Rect, text::Text},
-            Border,
-        },
-    },
-};
+use fiji::{Background, Border, Circle, Context, KeyCode, MouseButton, Polygon, Rect, Text};
 
 fn main() {
     let mut context = Context::new(1280, 720);

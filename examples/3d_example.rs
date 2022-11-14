@@ -2,17 +2,7 @@ use std::f32::consts::{FRAC_PI_2, PI};
 
 use nalgebra_glm::{Vec2, Vec3, Vec4};
 
-use fiji::{
-    input::input_enums::KeyCode,
-    public::{
-        context::Context,
-        objects::{
-            background::Background,
-            obj_2d::{rect::Rect, text::Text},
-            obj_3d::block::Block,
-        },
-    },
-};
+use fiji::{Background, Block, Context, KeyCode, Rect, Text};
 
 fn main() {
     let mut context = Context::new(1280, 720);

@@ -1,13 +1,4 @@
-use fiji::{
-    input::input_enums::{KeyCode, MouseButton},
-    objects::{
-        background::Background,
-        obj_2d::{circle::Circle, polygon::Polygon, rect::Rect},
-        obj_3d::block::Block,
-        Border,
-    },
-    rendering::context::Context,
-};
+use fiji::{Background, Block, Border, Circle, Context, KeyCode, MouseButton, Polygon, Rect};
 use nalgebra_glm::{Vec3, Vec4};
 
 pub fn main() {
@@ -26,6 +17,6 @@ pub fn main() {
         context.rect(Rect::new_default().with_color(Vec4::new(1., 0., 0., 1.)));
         context.circle(Circle::new_default());
 
-        context.render();
+        context.render(event_handler);
     })
 }

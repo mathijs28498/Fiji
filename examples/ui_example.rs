@@ -1,13 +1,4 @@
-use fiji::{
-    input::input_enums::KeyCode,
-    public::{
-        context::Context,
-        objects::{
-            background::Background,
-            obj_2d::{rect::Rect, text::Text},
-        },
-    },
-};
+use fiji::{Background, Context, KeyCode, Rect, Text};
 use nalgebra_glm::{Vec2, Vec3, Vec4};
 
 pub fn main() {

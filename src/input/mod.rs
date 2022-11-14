@@ -14,7 +14,7 @@ use self::{
 };
 
 #[derive(Clone)]
-pub enum InteractionEvent {
+pub(crate) enum InteractionEvent {
     MouseEvent(ElementState, winit::event::MouseButton),
     MouseMovedEvent(Vec2),
     MouseDeltaEvent(Vec2),
@@ -22,6 +22,7 @@ pub enum InteractionEvent {
     ModifiersEvent(ModifiersState),
 }
 
+// TODO: Check if Input can be private
 pub struct Input {
     key_pressed: HashSet<KeyCode>,
     key_held: HashSet<KeyCode>,

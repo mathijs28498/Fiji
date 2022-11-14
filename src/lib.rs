@@ -1,6 +1,20 @@
-pub mod input;
-pub mod rendering;
-pub mod public;
+mod input;
+mod public;
+mod rendering;
+
+pub use crate::{
+    input::{fiji_events::*, input_enums::*, *},
+    public::{
+        context::*,
+        objects::{
+            background::*,
+            camera::{camera_2d::*, camera_3d::*},
+            obj_2d::{circle::*, line::*, polygon::*, rect::*, text::*},
+            obj_3d::block::*,
+            *,
+        },
+    },
+};
 
 // TODO IN PROGRESS:
 // [X] - Rename render pass structs/file names
@@ -10,14 +24,17 @@ pub mod public;
 //      [X] - Figure out how to create R8_UINT image and sent it to the gpu
 //      [X] - Create hashmap for character textures (in render pass)
 //      [X] - Either get character from hashmap or create new one and put in hashmap
-//      [X] - Render strings to screen using Text object  
+//      [X] - Render strings to screen using Text object
 //      [X] - Spaces
 // [X] - Better font
 // [X] - Fix bottom alignment of text
 // [ ] - Fix error when window size == 0
 // [ ] - Recreate pipelines when window out of date
+// [ ] - Make all fiji public objects accessible directly from lib.rs
 //
 // LATER TODO:
+// [ ] - Capture mouse option
+// [ ] - Check all pub modifiers to see if they should be private
 // [ ] - Make text position 0, 0 in center
 // [ ] - anti aliasing
 //      [ ] - aa 2D
@@ -32,10 +49,10 @@ pub mod public;
 // [ ] - Borders around 2D objects
 // [ ] - Shadows
 // [ ] - Figure out a better drawing strategy
-// [ ] - Add generic to buffercontainer (based on vertex) in stead of different container structs 
+// [ ] - Add generic to buffercontainer (based on vertex) in stead of different container structs
 // [ ] - Create a better way to store fonts
 // [ ] - Better way to store all fonts
-// [ ] - Font and fontsize as key for text_pipeline set hashmap
+// [ ] - Font and fontsize included in key for text_pipeline set hashmap
 // [ ] - A container that holds all fonts and font buffer containers with metrics
 // [ ] - Replace the unsafe static BUFFERS from the render objects
 // [ ] - New lines for text (using y offset)
@@ -59,7 +76,7 @@ pub mod public;
 // [X] - Refactor the entire fucking project to abstract all render components
 // [X] - Exchange loose buffers with bufferContainer2D/3D for renderpass draws
 // [X] - Create RenderPass buffers when initializing new()
-// [X] - Move "create_push_constants" to the respective RenderObjects 
+// [X] - Move "create_push_constants" to the respective RenderObjects
 // [X] - 2D camera
 // [X] - Separation 2D between UI without camera and non UI with camera
 //          [X] - Special UI queue for DrawObject2D
