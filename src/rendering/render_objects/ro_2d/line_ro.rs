@@ -3,7 +3,7 @@ use crate::{
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
-        render_passes::render_passes_2d::line_render_pass::LineRenderPass,
+        pipelines::pipelines_2d::line_pipeline::{line_fs, LinePipeline},
     },
 };
 
@@ -31,14 +31,20 @@ impl LineRenderObject {
 
     pub(crate) fn draw(
         &mut self,
-        render_pass: &mut LineRenderPass,
+        pipeline: &mut LinePipeline,
         device_container: &mut DeviceContainer,
     ) {
-        render_pass.draw(
+        pipeline.draw(
             device_container,
             &self.buffers,
-            LineRenderPass::create_push_constants(self.line.color.clone()),
+            self.create_push_constants(),
         );
+    }
+
+    pub(crate) fn create_push_constants(&self) -> line_fs::ty::Constants {
+        line_fs::ty::Constants {
+            color: self.line.color.as_ref().clone(),
+        }
     }
 
     fn create_buffers(device_container: &mut DeviceContainer) -> BufferContainer2D {

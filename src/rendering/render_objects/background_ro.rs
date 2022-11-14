@@ -2,7 +2,7 @@ use crate::{
     public::objects::background::Background,
     rendering::{
         render_containers::device_container::DeviceContainer,
-        render_passes::background_render_pass::BackgroundRenderPass,
+        pipelines::background_pipeline::BackgroundRenderPass,
     },
 };
 
@@ -17,9 +17,9 @@ impl BackgroundRenderObject {
 
     pub(crate) fn draw(
         &self,
-        render_pass: &mut BackgroundRenderPass,
+        pipeline: &mut BackgroundRenderPass,
         device_container: &mut DeviceContainer,
     ) {
-        render_pass.draw(device_container, &self.background.color);
+        pipeline.draw(device_container, &self.background.color);
     }
 }

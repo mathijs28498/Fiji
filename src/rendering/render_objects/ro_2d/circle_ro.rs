@@ -1,9 +1,11 @@
+use nalgebra_glm::Vec4;
+
 use crate::{
     public::objects::obj_2d::circle::Circle,
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
-        render_passes::render_passes_2d::circle_render_pass::CircleRenderPass,
+        pipelines::pipelines_2d::circle_pipeline::{CirclePipeline, circle_fs},
     },
 };
 
@@ -31,21 +33,34 @@ impl CircleRenderObject {
 
     pub(crate) fn draw(
         &mut self,
-        render_pass: &mut CircleRenderPass,
+        pipeline: &mut CirclePipeline,
         device_container: &mut DeviceContainer,
     ) {
         // Unsafe is used to change these static values.
         // This is definitely safe, even thought the compiler can't verify.
-        render_pass.draw(
+        pipeline.draw(
             device_container,
             &self.buffers,
-            CircleRenderPass::create_push_constants(
-                self.circle.color.clone(),
-                self.circle.position.clone(),
-                self.circle.radius.clone(),
-                self.circle.border.clone(),
-            ),
+            self.create_push_constants(device_container),
         );
+    }
+    
+    fn create_push_constants(
+        &self,
+        device_container: &DeviceContainer,
+    ) -> circle_fs::ty::Constants {
+        let (border_color, border_width) = match &self.circle.border {
+            Some(border) => (border.color, border.width),
+            None => (Vec4::new(0., 0., 0., 0.), 0),
+        };
+        circle_fs::ty::Constants {
+            resolution: device_container.resolution(),
+            color: self.circle.color.as_ref().clone(),
+            position: self.circle.position.as_ref().clone(),
+            borderColor: border_color.as_ref().clone(),
+            borderWidth: border_width,
+            radius: self.circle.radius,
+        }
     }
 
     fn create_buffers(device_container: &mut DeviceContainer) -> BufferContainer2D {

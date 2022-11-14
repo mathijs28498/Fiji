@@ -6,7 +6,7 @@ pub struct Camera2D {
 }
 
 impl Camera2D {
-    pub fn new() -> Self {
+    pub fn new_default() -> Self {
         Self {
             position: Vec2::new(0., 0.),
         }

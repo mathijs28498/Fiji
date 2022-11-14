@@ -7,8 +7,10 @@ use crate::{
     },
     rendering::render_containers::{
         event_loop_container::EventLoopContainer, render_container::RenderContainer,
-    },
+    }, input::fiji_events::FijiEventHandler,
 };
+
+use super::objects::obj_2d::text::Text;
 
 pub struct Context {
     render_container: RenderContainer,
@@ -20,8 +22,8 @@ impl Context {
     pub fn new(width: u32, height: u32) -> Self {
         Self {
             render_container: RenderContainer::new(width, height),
-            camera_2d: Camera2D::new(),
-            camera_3d: Camera3D::new(),
+            camera_2d: Camera2D::new_default(),
+            camera_3d: Camera3D::new_default(),
         }
     }
 
@@ -57,6 +59,14 @@ impl Context {
         self.render_container.ui_line(line);
     }
 
+    pub fn text(&mut self, text: Text) {
+        self.render_container.text(text);
+    }
+
+    pub fn ui_text(&mut self, text: Text) {
+        self.render_container.ui_text(text);
+    }
+
     pub fn block(&mut self, block: Block) {
         self.render_container.block(block);
     }
@@ -69,8 +79,8 @@ impl Context {
         self.render_container.event_loop()
     }
 
-    pub fn render(&mut self) {
+    pub fn render(&mut self, fiji_event_handler: &mut FijiEventHandler) {
         self.render_container
-            .render(&self.camera_2d, &self.camera_3d);
+            .render(fiji_event_handler, &self.camera_2d, &self.camera_3d);
     }
 }

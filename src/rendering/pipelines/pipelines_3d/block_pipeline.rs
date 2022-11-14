@@ -1,4 +1,4 @@
-use std::{f32::consts::FRAC_2_PI, sync::Arc};
+use std::sync::Arc;
 
 use vulkano::{
     buffer::TypedBufferAccess,
@@ -7,6 +7,7 @@ use vulkano::{
     },
     image::view::ImageView,
     pipeline::{
+        self,
         graphics::{
             color_blend::ColorBlendState,
             depth_stencil::DepthStencilState,
@@ -17,21 +18,20 @@ use vulkano::{
         },
         GraphicsPipeline, Pipeline,
     },
-    render_pass::{Framebuffer, FramebufferCreateInfo, Subpass},
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
+    shader::ShaderModule,
     sync::GpuFuture,
 };
-
-use nalgebra_glm::{Mat4, Vec3, Vec4};
 
 use crate::rendering::{
     render_containers::device_container::DeviceContainer,
     render_objects::shared::{BufferContainer3D, Vertex3D},
 };
 
-mod vs {
+pub(crate) mod block_vs {
     vulkano_shaders::shader!(
         ty: "vertex",
-        path: "src/shaders/shaders_3d/block_render_pass.vert",
+        path: "src/shaders/shaders_3d/block_pipeline.vert",
         types_meta: {
             use bytemuck::{Pod, Zeroable};
 
@@ -39,10 +39,11 @@ mod vs {
         }
     );
 }
-mod fs {
+
+pub(crate) mod block_fs {
     vulkano_shaders::shader!(
         ty: "fragment",
-        path: "src/shaders/shaders_3d/block_render_pass.frag",
+        path: "src/shaders/shaders_3d/block_pipeline.frag",
         types_meta: {
             use bytemuck::{Pod, Zeroable};
 
@@ -51,16 +52,18 @@ mod fs {
     );
 }
 
-pub(crate) struct BlockRenderPass {
+pub(crate) struct BlockPipeline {
+    vs: Arc<ShaderModule>,
+    fs: Arc<ShaderModule>,
+    render_pass: Arc<RenderPass>,
     pipeline: Arc<GraphicsPipeline>,
-    viewport: Viewport,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
 
-impl BlockRenderPass {
-    pub(crate) fn new(device_container: &DeviceContainer) -> BlockRenderPass {
-        let vs = vs::load(device_container.device().clone()).unwrap();
-        let fs = fs::load(device_container.device().clone()).unwrap();
+impl BlockPipeline {
+    pub(crate) fn new(device_container: &DeviceContainer) -> BlockPipeline {
+        let vs = block_vs::load(device_container.device().clone()).unwrap();
+        let fs = block_fs::load(device_container.device().clone()).unwrap();
 
         let render_pass = vulkano::single_pass_renderpass!(
             device_container.device().clone(),
@@ -85,30 +88,24 @@ impl BlockRenderPass {
         )
         .unwrap();
 
-        let viewport = Viewport {
-            origin: [0., 0.],
-            dimensions: device_container.resolution_f32(),
-            depth_range: 0.0..1.0,
-        };
+        let (pipeline, framebuffers) =
+            Self::create_pipeline(device_container, &vs, &fs, &render_pass);
 
-        let depth_view = ImageView::new_default(device_container.depth_image().clone()).unwrap();
+        Self {
+            vs,
+            fs,
+            render_pass,
+            pipeline,
+            framebuffers,
+        }
+    }
 
-        let framebuffers = device_container
-            .images()
-            .iter()
-            .map(|image| {
-                let image_view = ImageView::new_default(image.clone()).unwrap();
-                Framebuffer::new(
-                    render_pass.clone(),
-                    FramebufferCreateInfo {
-                        attachments: vec![image_view, depth_view.clone()],
-                        ..Default::default()
-                    },
-                )
-                .unwrap()
-            })
-            .collect::<Vec<_>>();
-
+    fn create_pipeline(
+        device_container: &DeviceContainer,
+        vs: &Arc<ShaderModule>,
+        fs: &Arc<ShaderModule>,
+        render_pass: &Arc<RenderPass>,
+    ) -> (Arc<GraphicsPipeline>, Vec<Arc<Framebuffer>>) {
         let pipeline = GraphicsPipeline::start()
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .input_assembly_state(InputAssemblyState::new())
@@ -128,18 +125,36 @@ impl BlockRenderPass {
             .build(device_container.device().clone())
             .unwrap();
 
-        Self {
-            pipeline,
-            viewport,
-            framebuffers,
-        }
+        let depth_view = ImageView::new_default(device_container.depth_image().clone()).unwrap();
+
+        let framebuffers = device_container
+            .images()
+            .iter()
+            .map(|image| {
+                let image_view = ImageView::new_default(image.clone()).unwrap();
+                Framebuffer::new(
+                    render_pass.clone(),
+                    FramebufferCreateInfo {
+                        attachments: vec![image_view, depth_view.clone()],
+                        ..Default::default()
+                    },
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+
+        (pipeline, framebuffers)
+    }
+
+    pub(crate) fn recreate_pipeline(&mut self, device_container: &DeviceContainer) {
+        (self.pipeline, self.framebuffers) = Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass)
     }
 
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
         buffers: &BufferContainer3D,
-        mut push_constants: fs::ty::Constants,
+        mut push_constants: block_fs::ty::Constants,
     ) {
         push_constants.resolution = device_container.resolution();
 
@@ -161,7 +176,6 @@ impl BlockRenderPass {
                 SubpassContents::Inline,
             )
             .unwrap()
-            .set_viewport(0, [self.viewport.clone()])
             .bind_pipeline_graphics(self.pipeline.clone())
             .bind_vertex_buffers(0, buffers.vertex_buffer.clone())
             .bind_index_buffer(buffers.index_buffer.clone())
@@ -171,42 +185,6 @@ impl BlockRenderPass {
             .end_render_pass()
             .unwrap();
 
-        let command_buffer = builder.build().unwrap();
-
-        device_container.previous_frame_end = Some(
-            device_container
-                .previous_frame_end
-                .take()
-                .unwrap()
-                .then_execute(device_container.queue().clone(), command_buffer)
-                .unwrap()
-                .boxed(),
-        );
-    }
-
-    pub(crate) fn create_push_constants(
-        color: Vec4,
-        position: Vec3,
-        size: &Vec3,
-        rotation: Vec3,
-        view: Mat4,
-        camera_pos: Vec3,
-    ) -> fs::ty::Constants {
-        let position = Vec3::new(position.x, -position.y, position.z);
-        let world = Mat4::new_translation(&position)
-            * Mat4::new_rotation(rotation)
-            * Mat4::new_nonuniform_scaling(size);
-
-        fs::ty::Constants {
-            color: color.as_ref().clone(),
-            world: world.as_ref().clone(),
-            view: view.as_ref().clone(),
-            proj: Mat4::new_perspective(1280. / 720., FRAC_2_PI, 0.01, 1000.)
-                .as_ref()
-                .clone(),
-            cameraPos: camera_pos.as_ref().clone(),
-            resolution: [0, 0],
-            _dummy0: [0; 4],
-        }
+        device_container.execute_command_buffer(builder.build().unwrap());
     }
 }

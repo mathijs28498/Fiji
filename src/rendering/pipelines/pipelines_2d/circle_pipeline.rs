@@ -15,7 +15,8 @@ use vulkano::{
         },
         GraphicsPipeline, Pipeline,
     },
-    render_pass::{Framebuffer, FramebufferCreateInfo, Subpass},
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
+    shader::ShaderModule,
     sync::GpuFuture,
 };
 
@@ -29,10 +30,10 @@ use crate::{
     },
 };
 
-mod vs {
+pub(crate) mod circle_vs {
     vulkano_shaders::shader!(
         ty: "vertex",
-        path: "src/shaders/shaders_2d/circle_render_pass.vert",
+        path: "src/shaders/shaders_2d/circle_pipeline.vert",
         types_meta: {
             use bytemuck::{Pod, Zeroable};
 
@@ -40,10 +41,11 @@ mod vs {
         }
     );
 }
-mod fs {
+
+pub(crate) mod circle_fs {
     vulkano_shaders::shader!(
         ty: "fragment",
-        path: "src/shaders/shaders_2d/circle_render_pass.frag",
+        path: "src/shaders/shaders_2d/circle_pipeline.frag",
         types_meta: {
             use bytemuck::{Pod, Zeroable};
 
@@ -52,16 +54,18 @@ mod fs {
     );
 }
 
-pub(crate) struct CircleRenderPass {
+pub(crate) struct CirclePipeline {
+    vs: Arc<ShaderModule>,
+    fs: Arc<ShaderModule>,
+    render_pass: Arc<RenderPass>,
     pipeline: Arc<GraphicsPipeline>,
-    viewport: Viewport,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
 
-impl CircleRenderPass {
-    pub(crate) fn new(device_container: &DeviceContainer) -> CircleRenderPass {
-        let vs = vs::load(device_container.device().clone()).unwrap();
-        let fs = fs::load(device_container.device().clone()).unwrap();
+impl CirclePipeline {
+    pub(crate) fn new(device_container: &DeviceContainer) -> CirclePipeline {
+        let vs = circle_vs::load(device_container.device().clone()).unwrap();
+        let fs = circle_fs::load(device_container.device().clone()).unwrap();
 
         let render_pass = vulkano::single_pass_renderpass!(
             device_container.device().clone(),
@@ -80,22 +84,40 @@ impl CircleRenderPass {
         )
         .unwrap();
 
+        let (pipeline, framebuffers) =
+            Self::create_pipeline(device_container, &vs, &fs, &render_pass);
+
+        Self {
+            pipeline,
+            vs,
+            fs,
+            render_pass,
+            framebuffers,
+        }
+    }
+
+    fn create_pipeline(
+        device_container: &DeviceContainer,
+        vs: &Arc<ShaderModule>,
+        fs: &Arc<ShaderModule>,
+        render_pass: &Arc<RenderPass>,
+    ) -> (Arc<GraphicsPipeline>, Vec<Arc<Framebuffer>>) {
         let pipeline = GraphicsPipeline::start()
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .input_assembly_state(InputAssemblyState::new())
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
             .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2D>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
-            .viewport_state(ViewportState::viewport_dynamic_scissor_irrelevant())
+            .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([
+                Viewport {
+                    origin: [0.0, 0.0],
+                    dimensions: device_container.resolution_f32(),
+                    depth_range: 0.0..1.0,
+                },
+            ]))
             .fragment_shader(fs.entry_point("main").unwrap(), ())
             .build(device_container.device().clone())
             .unwrap();
-
-        let viewport = Viewport {
-            origin: [0., 0.],
-            dimensions: device_container.resolution_f32(),
-            depth_range: 0.0..1.0,
-        };
 
         let framebuffers = device_container
             .images()
@@ -113,21 +135,20 @@ impl CircleRenderPass {
             })
             .collect::<Vec<_>>();
 
-        Self {
-            pipeline,
-            viewport,
-            framebuffers,
-        }
+        (pipeline, framebuffers)
+    }
+
+    pub(crate) fn recreate_pipeline(&mut self, device_container: &DeviceContainer) {
+        (self.pipeline, self.framebuffers) =
+            Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass);
     }
 
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
         buffers: &BufferContainer2D,
-        mut push_constants: fs::ty::Constants,
+        mut push_constants: circle_fs::ty::Constants,
     ) {
-        push_constants.resolution = device_container.resolution();
-
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.command_buffer_allocator(),
             device_container.queue_family_index(),
@@ -146,7 +167,6 @@ impl CircleRenderPass {
                 SubpassContents::Inline,
             )
             .unwrap()
-            .set_viewport(0, [self.viewport.clone()])
             .bind_pipeline_graphics(self.pipeline.clone())
             .bind_vertex_buffers(0, buffers.vertex_buffer.clone())
             .bind_index_buffer(buffers.index_buffer.clone())
@@ -156,36 +176,6 @@ impl CircleRenderPass {
             .end_render_pass()
             .unwrap();
 
-        let command_buffer = builder.build().unwrap();
-
-        device_container.previous_frame_end = Some(
-            device_container
-                .previous_frame_end
-                .take()
-                .unwrap()
-                .then_execute(device_container.queue().clone(), command_buffer)
-                .unwrap()
-                .boxed(),
-        );
-    }
-
-    pub(crate) fn create_push_constants(
-        color: Vec4,
-        position: Vec2,
-        radius: f32,
-        border: Option<Border>,
-    ) -> fs::ty::Constants {
-        let (border_color, border_width) = match border {
-            Some(border) => (border.color, border.width),
-            None => (Vec4::new(0., 0., 0., 0.), 0),
-        };
-        fs::ty::Constants {
-            resolution: [0, 0],
-            color: color.as_ref().clone(),
-            position: position.as_ref().clone(),
-            borderColor: border_color.as_ref().clone(),
-            borderWidth: border_width,
-            radius,
-        }
+        device_container.execute_command_buffer(builder.build().unwrap());
     }
 }

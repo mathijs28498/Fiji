@@ -1,9 +1,11 @@
+use nalgebra_glm::{Mat4, Vec3};
+
 use crate::{
     public::objects::{camera::camera_3d::Camera3D, obj_3d::block::Block},
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_3d, BufferContainer3D, Vertex3D},
-        render_passes::render_passes_3d::block_render_pass::BlockRenderPass,
+        pipelines::pipelines_3d::block_pipeline::{block_fs, BlockPipeline},
     },
 };
 
@@ -32,22 +34,45 @@ impl BlockRenderObject {
 
     pub(crate) fn draw(
         &mut self,
-        render_pass: &mut BlockRenderPass,
+        pipeline: &mut BlockPipeline,
         device_container: &mut DeviceContainer,
         camera: &Camera3D,
     ) {
-        render_pass.draw(
+        pipeline.draw(
             device_container,
             &self.buffers,
-            BlockRenderPass::create_push_constants(
-                self.block.color.clone(),
-                self.block.position.clone(),
-                &self.block.size,
-                self.block.rotation.clone(),
-                camera.get_view_matrix(),
-                camera.position.clone(),
-            ),
+            self.create_push_constants(device_container, camera),
         );
+    }
+
+    fn get_world_matrix(&self) -> Mat4 {
+        let position = Vec3::new(
+            self.block.position.x,
+            -self.block.position.y,
+            self.block.position.z,
+        );
+        Mat4::new_translation(&position)
+            * Mat4::new_rotation(self.block.rotation.clone())
+            * Mat4::new_nonuniform_scaling(&self.block.size)
+    }
+
+    fn create_push_constants(
+        &self,
+        device_container: &DeviceContainer,
+        camera_3d: &Camera3D,
+    ) -> block_fs::ty::Constants {
+        block_fs::ty::Constants {
+            color: self.block.color.as_ref().clone(),
+            world: self.get_world_matrix().as_ref().clone(),
+            view: camera_3d.get_view_matrix().as_ref().clone(),
+            proj: camera_3d
+                .get_proj_matrix(device_container.resolution_f32())
+                .as_ref()
+                .clone(),
+            cameraPos: camera_3d.position.as_ref().clone(),
+            resolution: device_container.resolution(),
+            _dummy0: [0; 4],
+        }
     }
 
     fn create_buffers(device_container: &mut DeviceContainer) -> BufferContainer3D {

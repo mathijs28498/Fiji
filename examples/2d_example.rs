@@ -6,7 +6,7 @@ use fiji::{
         context::Context,
         objects::{
             background::Background,
-            obj_2d::{circle::Circle, polygon::Polygon, rect::Rect},
+            obj_2d::{circle::Circle, polygon::Polygon, rect::Rect, text::Text},
             Border,
         },
     },
@@ -19,6 +19,7 @@ fn main() {
     let mut border_width = 0;
 
     let mut polygon_points = Vec::new();
+    let mut timer = 0.;
 
     context.event_loop().run(move |input, fiji_event_handler| {
         if input.key_pressed(&KeyCode::Escape) {
@@ -59,8 +60,11 @@ fn main() {
         if input.key_pressed(&KeyCode::C) {
             polygon_points = Vec::new();
         }
+        timer += 0.03;
 
         context.background(Background::new_with_color(Vec3::new(0., 0., 0.)));
+
+        context.ui_text(Text::new_with_text(&format!("{:.2}", timer)));
 
         context.rect(
             Rect::new_default()
@@ -107,6 +111,6 @@ fn main() {
             )
         }
 
-        context.render();
+        context.render(fiji_event_handler);
     });
 }
