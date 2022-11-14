@@ -17,23 +17,14 @@ pub use crate::{
 };
 
 // TODO IN PROGRESS:
-// [X] - Rename render pass structs/file names
-// [X] - Resizing of window
-// [X] - Make use of static viewports
-// [X] - Add text components
-//      [X] - Figure out how to create R8_UINT image and sent it to the gpu
-//      [X] - Create hashmap for character textures (in render pass)
-//      [X] - Either get character from hashmap or create new one and put in hashmap
-//      [X] - Render strings to screen using Text object
-//      [X] - Spaces
-// [X] - Better font
-// [X] - Fix bottom alignment of text
 // [ ] - Fix error when window size == 0
 // [ ] - Recreate pipelines when window out of date
 // [ ] - Make all fiji public objects accessible directly from lib.rs
 //
 // LATER TODO:
-// [ ] - Capture mouse option
+// [ ] - Window options
+//      [ ] - Capture mouse option
+//      [ ] - Unresizable option
 // [ ] - Check all pub modifiers to see if they should be private
 // [ ] - Make text position 0, 0 in center
 // [ ] - anti aliasing
@@ -81,3 +72,14 @@ pub use crate::{
 // [X] - Separation 2D between UI without camera and non UI with camera
 //          [X] - Special UI queue for DrawObject2D
 // [X] - Builder pattern for all objects
+// [X] - Rename render pass structs/file names
+// [X] - Resizing of window
+// [X] - Make use of static viewports
+// [X] - Add text components
+//      [X] - Figure out how to create R8_UINT image and sent it to the gpu
+//      [X] - Create hashmap for character textures (in render pass)
+//      [X] - Either get character from hashmap or create new one and put in hashmap
+//      [X] - Render strings to screen using Text object
+//      [X] - Spaces
+// [X] - Better font
+// [X] - Fix bottom alignment of text
