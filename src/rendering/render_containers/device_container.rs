@@ -12,7 +12,8 @@ use vulkano::{
     instance::{Instance, InstanceCreateInfo},
     memory::allocator::{FreeListAllocator, GenericMemoryAllocator, StandardMemoryAllocator},
     swapchain::{
-        acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
+        acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainCreationError,
+        SwapchainPresentInfo,
     },
     sync,
     sync::GpuFuture,
@@ -186,14 +187,20 @@ impl DeviceContainer {
         }
     }
 
-    pub(super) fn recreate_swapchain_images(&mut self) {
-        (self.swapchain, self.images) = self
-            .swapchain
-            .recreate(SwapchainCreateInfo {
-                image_extent: self.dimensions().into(),
-                ..self.swapchain.create_info()
-            })
-            .unwrap();
+    // TODO: Return error type in stead of bool
+    pub(super) fn recreate_swapchain_images(&mut self) -> bool {
+        let dimensions = self.dimensions();
+        if dimensions.width == 0 || dimensions.height == 0 {
+            return false;
+        }
+        (self.swapchain, self.images) = match self.swapchain.recreate(SwapchainCreateInfo {
+            image_extent: dimensions.into(),
+            ..self.swapchain.create_info()
+        }) {
+            Ok(r) => r,
+            Err(SwapchainCreationError::ImageExtentNotSupported { .. }) => return false,
+            Err(e) => panic!("Failed to recreate swapchain: {:?}", e),
+        };
 
         self.depth_image = AttachmentImage::with_usage(
             self.memory_allocator(),
@@ -205,6 +212,8 @@ impl DeviceContainer {
             },
         )
         .unwrap();
+
+        return true;
     }
 
     pub(super) fn begin_draw(&mut self) {
@@ -311,7 +320,7 @@ impl DeviceContainer {
             .unwrap()
     }
 
-    pub(crate) fn dimensions(&self) -> PhysicalSize<u32> {
+    fn dimensions(&self) -> PhysicalSize<u32> {
         self.window().inner_size()
     }
 

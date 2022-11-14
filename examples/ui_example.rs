@@ -13,6 +13,7 @@ use nalgebra_glm::{Vec2, Vec3, Vec4};
 pub fn main() {
     let mut context = Context::new(1280, 720);
     context.background(Background::new_with_color(Vec3::new(0.3, 0.1, 0.1)));
+    let mut neg_timer = 0.;
 
     let r = Rect::new_default()
         .with_color(Vec4::new(0.7, 0.3, 0.7, 1.))
@@ -28,11 +29,11 @@ pub fn main() {
         if input.key_pressed(&KeyCode::Escape) {
             event_handler.exit();
         }
+        neg_timer -= 0.13;
 
-        context.rect(r.clone());
-        context.text(Text::new_with_text("This is a test"));
+        context.ui_rect(r.clone());
         context.ui_text(
-            Text::new_with_text("This is another test!!!")
+            Text::new_with_text(&format!("{neg_timer:.2}"))
                 .with_position(Vec2::new(400., 300.))
                 .with_color(Vec4::new(0.2, 0.7, 0.9, 1.)),
         );

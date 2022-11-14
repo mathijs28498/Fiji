@@ -2,11 +2,12 @@ use nalgebra_glm::{Vec2, Vec4};
 
 use crate::public::objects::DEFAULT_COLOR;
 
-use super::DEFAULT_POSITION_2D;
+use super::{DEFAULT_POSITION_2D, DEFAULT_FONT};
 
 #[derive(Clone, Debug)]
 pub enum TextFont {
-    ComicSans
+    ComicSans,
+    Roboto
 }
 
 #[derive(Clone, Debug)]
@@ -23,7 +24,7 @@ impl Text {
             text: text.to_string(),
             color: DEFAULT_COLOR,
             position: DEFAULT_POSITION_2D,
-            font: TextFont::ComicSans,
+            font: DEFAULT_FONT,
         }
     }
 

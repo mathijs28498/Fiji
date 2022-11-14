@@ -12,13 +12,13 @@ pub mod public;
 //      [X] - Either get character from hashmap or create new one and put in hashmap
 //      [X] - Render strings to screen using Text object  
 //      [X] - Spaces
-// [ ] - Better font
-// [ ] - Fix bottom alignment of text
+// [X] - Better font
+// [X] - Fix bottom alignment of text
 // [ ] - Fix error when window size == 0
-//
-// TODO PRE PHYSICS:
+// [ ] - Recreate pipelines when window out of date
 //
 // LATER TODO:
+// [ ] - Make text position 0, 0 in center
 // [ ] - anti aliasing
 //      [ ] - aa 2D
 //      [ ] - aa 3D
@@ -41,6 +41,9 @@ pub mod public;
 // [ ] - New lines for text (using y offset)
 // [ ] - Handle recreating the pipelines better
 // [ ] - Use proper error handling rather than unwrap
+// [ ] - 2D element alignment options (text most important)
+// [ ] - 3D elemet alignment options
+// [ ] - Add 2D camera option to all pipelines
 //
 // DONE:
 // [X] - Depth testing

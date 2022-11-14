@@ -2,6 +2,7 @@ use nalgebra_glm::Vec3;
 use queues::{IsQueue, Queue};
 
 use crate::{
+    input::fiji_events::FijiEventHandler,
     public::objects::{
         background::Background,
         camera::{camera_2d::Camera2D, camera_3d::Camera3D},
@@ -16,7 +17,7 @@ use crate::{
         },
         ro_3d::block_ro::BlockRenderObject,
         RenderObject2D, RenderObject3D,
-    }, input::fiji_events::FijiEventHandler,
+    },
 };
 
 use super::{
@@ -164,10 +165,18 @@ impl RenderContainer {
         self.event_loop_container.take().unwrap()
     }
 
-    pub(crate) fn render(&mut self, fiji_event_handler: &mut FijiEventHandler ,camera_2d: &Camera2D, camera_3d: &Camera3D) {
+    pub(crate) fn render(
+        &mut self,
+        fiji_event_handler: &mut FijiEventHandler,
+        camera_2d: &Camera2D,
+        camera_3d: &Camera3D,
+    ) {
         if fiji_event_handler.recreate_pipelines {
-            self.device_container.recreate_swapchain_images();
-            self.pipeline_container.recreate_pipelines(&self.device_container);
+            if !self.device_container.recreate_swapchain_images() {
+                return;
+            }
+            self.pipeline_container
+                .recreate_pipelines(&self.device_container);
             fiji_event_handler.recreate_pipelines = false;
         }
 

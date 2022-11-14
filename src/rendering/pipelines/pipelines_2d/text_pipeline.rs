@@ -66,6 +66,7 @@ pub(crate) struct TextPipeline {
     font_sets: HashMap<char, (Option<Arc<PersistentDescriptorSet>>, Metrics)>,
     font_image_sampler: Arc<Sampler>,
     comic_sans_font: Font,
+    roboto_font: Font,
 }
 
 impl TextPipeline {
@@ -111,6 +112,13 @@ impl TextPipeline {
         )
         .unwrap();
 
+        let roboto_font = Font::from_bytes(
+            include_bytes!("C:/Users/mathi/OneDrive/Documents/Fonts/Roboto/roboto-regular.ttf")
+                as &[u8],
+            FontSettings::default(),
+        )
+        .unwrap();
+
         Self {
             vs,
             fs,
@@ -120,6 +128,7 @@ impl TextPipeline {
             font_sets: HashMap::new(),
             font_image_sampler,
             comic_sans_font,
+            roboto_font,
         }
     }
 
@@ -181,12 +190,17 @@ impl TextPipeline {
             return font_set.clone();
         }
 
-        let (metrics, bitmap);
+        let actual_font;
         match font {
             TextFont::ComicSans => {
-                (metrics, bitmap) = self.comic_sans_font.rasterize(c, 40.);
+                actual_font = &self.comic_sans_font;
+            }
+            TextFont::Roboto => {
+                actual_font = &self.roboto_font;
             }
         }
+        
+        let (metrics, bitmap) = actual_font.rasterize(c, 40.);
 
         if metrics.width == 0 {
             self.font_sets.insert(c, (None, metrics.clone()));
@@ -254,17 +268,10 @@ impl TextPipeline {
         )
         .unwrap();
 
-        let mut max_height = 0.;
-        for (set, metrics) in sets.iter() {
-            if metrics.height as f32 > max_height {
-                max_height = metrics.height as f32;
-            }
-        }
-
-        let mut offset = 0.;
+        let mut x_offset = 0.;
         for (set_option, metrics) in sets {
             if let None = set_option {
-                offset += metrics.advance_width;
+                x_offset += metrics.advance_width;
                 continue;
             }
 
@@ -273,10 +280,9 @@ impl TextPipeline {
             let buffers = create_buffers(
                 device_container,
                 metrics,
-                max_height - metrics.height as f32,
-                offset,
+                x_offset as i32,
             );
-            offset += metrics.advance_width;
+            x_offset += metrics.advance_width;
 
             builder
                 .begin_render_pass(
@@ -312,25 +318,31 @@ impl TextPipeline {
 fn create_buffers(
     device_container: &mut DeviceContainer,
     metrics: Metrics,
-    y_min: f32,
-    x_offset: f32,
+    x_offset: i32,
 ) -> BufferContainerText {
-    let x_min = x_offset;
+    let x_min = x_offset as f32 + metrics.xmin as f32;
+    let x_max = x_min + metrics.width as f32;
+    let y_max = -metrics.ymin as f32;
+    let y_min = y_max - metrics.height as f32;
+    // let x_min = x_offset as f32 + metrics.bounds.xmin as f32;
+    // let x_max = x_min + metrics.bounds.width as f32;
+    // let y_max = -metrics.bounds.ymin as f32;
+    // let y_min = y_max - metrics.bounds.height as f32;
     let vertices = vec![
         VertexText {
             position: [x_min, y_min],
             uvCoord: [0., 0.],
         },
         VertexText {
-            position: [x_min + metrics.width as f32, y_min],
+            position: [x_max, y_min],
             uvCoord: [1., 0.],
         },
         VertexText {
-            position: [x_min, y_min + metrics.height as f32],
+            position: [x_min, y_max],
             uvCoord: [0., 1.],
         },
         VertexText {
-            position: [x_min + metrics.width as f32, y_min + metrics.height as f32],
+            position: [x_max, y_max],
             uvCoord: [1., 1.],
         },
     ];

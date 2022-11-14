@@ -6,7 +6,11 @@ use fiji::{
     input::input_enums::KeyCode,
     public::{
         context::Context,
-        objects::{background::Background, obj_2d::text::Text, obj_3d::block::Block},
+        objects::{
+            background::Background,
+            obj_2d::{rect::Rect, text::Text},
+            obj_3d::block::Block,
+        },
     },
 };
 
@@ -100,7 +104,7 @@ fn main() {
             context.camera_3d.position += move_dir.normalize() * speed;
         }
 
-        block_0.rotation.x += 0.01;
+        block_0.rotation.x -= 0.01;
 
         context.background(Background::new_with_color(Vec3::new(0.07, 0.51, 0.6)));
         context.block(block_0.clone());
@@ -109,12 +113,19 @@ fn main() {
         context.block(wall.clone());
         context.block(ground.clone());
 
+        context.ui_rect(
+            Rect::new_default()
+                .with_size(Vec2::new(450., 80.))
+                .with_position(Vec2::new(225., 40.))
+                .with_color(Vec4::new(0., 0., 0., 0.7)),
+        );
+
         context.ui_text(
             Text::new_with_text(&format!(
-                "{:.2} {:.2} {:.2}",
+                "test: {:.2} {:.2} {:.2}",
                 block_0.rotation.x, block_0.rotation.y, block_0.rotation.z
             ))
-            .with_position(Vec2::new(10., 10.))
+            .with_position(Vec2::new(10., 50.))
             .with_color(Vec4::new(1., 1., 1., 0.6)),
         );
 

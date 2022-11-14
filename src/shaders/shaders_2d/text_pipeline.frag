@@ -37,6 +37,6 @@ void main() {
         alpha = 1.;
     }
 
-    vec4 charValue = vec4(sampled / 255.);
+    vec4 charValue = vec4(vec3(sampled / 255.), alpha);
     f_color = pc.color * charValue;
 }
