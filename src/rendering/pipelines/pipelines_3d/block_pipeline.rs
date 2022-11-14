@@ -7,6 +7,7 @@ use vulkano::{
     },
     image::view::ImageView,
     pipeline::{
+        self,
         graphics::{
             color_blend::ColorBlendState,
             depth_stencil::DepthStencilState,
@@ -17,7 +18,8 @@ use vulkano::{
         },
         GraphicsPipeline, Pipeline,
     },
-    render_pass::{Framebuffer, FramebufferCreateInfo, Subpass},
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
+    shader::ShaderModule,
     sync::GpuFuture,
 };
 
@@ -51,6 +53,9 @@ pub(crate) mod block_fs {
 }
 
 pub(crate) struct BlockPipeline {
+    vs: Arc<ShaderModule>,
+    fs: Arc<ShaderModule>,
+    render_pass: Arc<RenderPass>,
     pipeline: Arc<GraphicsPipeline>,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
@@ -83,24 +88,24 @@ impl BlockPipeline {
         )
         .unwrap();
 
-        let depth_view = ImageView::new_default(device_container.depth_image().clone()).unwrap();
+        let (pipeline, framebuffers) =
+            Self::create_pipeline(device_container, &vs, &fs, &render_pass);
 
-        let framebuffers = device_container
-            .images()
-            .iter()
-            .map(|image| {
-                let image_view = ImageView::new_default(image.clone()).unwrap();
-                Framebuffer::new(
-                    render_pass.clone(),
-                    FramebufferCreateInfo {
-                        attachments: vec![image_view, depth_view.clone()],
-                        ..Default::default()
-                    },
-                )
-                .unwrap()
-            })
-            .collect::<Vec<_>>();
+        Self {
+            vs,
+            fs,
+            render_pass,
+            pipeline,
+            framebuffers,
+        }
+    }
 
+    fn create_pipeline(
+        device_container: &DeviceContainer,
+        vs: &Arc<ShaderModule>,
+        fs: &Arc<ShaderModule>,
+        render_pass: &Arc<RenderPass>,
+    ) -> (Arc<GraphicsPipeline>, Vec<Arc<Framebuffer>>) {
         let pipeline = GraphicsPipeline::start()
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .input_assembly_state(InputAssemblyState::new())
@@ -120,10 +125,29 @@ impl BlockPipeline {
             .build(device_container.device().clone())
             .unwrap();
 
-        Self {
-            pipeline,
-            framebuffers,
-        }
+        let depth_view = ImageView::new_default(device_container.depth_image().clone()).unwrap();
+
+        let framebuffers = device_container
+            .images()
+            .iter()
+            .map(|image| {
+                let image_view = ImageView::new_default(image.clone()).unwrap();
+                Framebuffer::new(
+                    render_pass.clone(),
+                    FramebufferCreateInfo {
+                        attachments: vec![image_view, depth_view.clone()],
+                        ..Default::default()
+                    },
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+
+        (pipeline, framebuffers)
+    }
+
+    pub(crate) fn recreate_pipeline(&mut self, device_container: &DeviceContainer) {
+        (self.pipeline, self.framebuffers) = Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass)
     }
 
     pub(crate) fn draw(

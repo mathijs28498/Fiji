@@ -11,7 +11,9 @@ use vulkano::{
     image::{AttachmentImage, ImageAccess, ImageUsage, SwapchainImage},
     instance::{Instance, InstanceCreateInfo},
     memory::allocator::{FreeListAllocator, GenericMemoryAllocator, StandardMemoryAllocator},
-    swapchain::{acquire_next_image, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo},
+    swapchain::{
+        acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainPresentInfo,
+    },
     sync,
     sync::GpuFuture,
     VulkanLibrary,
@@ -23,7 +25,10 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
+use crate::input::fiji_events::FijiEventHandler;
+
 pub(crate) struct DeviceContainer {
+    surface: Arc<Surface>,
     queue: Arc<Queue>,
     swapchain: Arc<Swapchain>,
     images: Vec<Arc<SwapchainImage>>,
@@ -164,22 +169,11 @@ impl DeviceContainer {
             },
         )
         .unwrap();
-        // {
-        //     // image_usage: ImageUsage {
-        //     //     transient_attachment: true,
-        //     //     ..ImageUsage::none()
-        //     // },
-        //     ..AttachmentImage::transient(
-        //         device.clone(),
-        //         images[0].dimensions().width_height(),
-        //         Format::D32_SFLOAT,
-        //     )
-        // }
-        // .unwrap();
 
         let previous_frame_end = Some(sync::now(queue.device().clone()).boxed());
 
         Self {
+            surface,
             queue,
             swapchain,
             images,
@@ -190,6 +184,27 @@ impl DeviceContainer {
             command_buffer_allocator,
             descriptor_set_allocator,
         }
+    }
+
+    pub(super) fn recreate_swapchain_images(&mut self) {
+        (self.swapchain, self.images) = self
+            .swapchain
+            .recreate(SwapchainCreateInfo {
+                image_extent: self.dimensions().into(),
+                ..self.swapchain.create_info()
+            })
+            .unwrap();
+
+        self.depth_image = AttachmentImage::with_usage(
+            self.memory_allocator(),
+            self.resolution(),
+            Format::D32_SFLOAT,
+            ImageUsage {
+                transfer_dst: true,
+                ..ImageUsage::empty()
+            },
+        )
+        .unwrap();
     }
 
     pub(super) fn begin_draw(&mut self) {
@@ -286,6 +301,18 @@ impl DeviceContainer {
 
     pub(crate) fn descriptor_set_allocator(&self) -> &StandardDescriptorSetAllocator {
         &self.descriptor_set_allocator
+    }
+
+    pub(crate) fn window(&self) -> &Window {
+        self.surface
+            .object()
+            .unwrap()
+            .downcast_ref::<Window>()
+            .unwrap()
+    }
+
+    pub(crate) fn dimensions(&self) -> PhysicalSize<u32> {
+        self.window().inner_size()
     }
 
     pub(crate) fn resolution(&self) -> [u32; 2] {

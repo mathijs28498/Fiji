@@ -6,7 +6,7 @@ use fiji::{
     input::input_enums::KeyCode,
     public::{
         context::Context,
-        objects::{background::Background, obj_3d::block::Block},
+        objects::{background::Background, obj_2d::text::Text, obj_3d::block::Block},
     },
 };
 
@@ -16,7 +16,7 @@ fn main() {
     let mut block_0 = Block::new_default()
         .with_color(Vec4::new(0.9, 0.57, 0.28, 1.))
         .with_size(Vec3::new(1., 10., 0.1))
-        .with_rotation(Vec3::new(0.3, 0.6, -0.2));
+        .with_rotation(Vec3::new(0.3, 0.6, 0.2));
 
     let mut block_3 = Block::new_default()
         .with_color(Vec4::new(0.28, 0.57, 0.9, 1.))
@@ -109,6 +109,15 @@ fn main() {
         context.block(wall.clone());
         context.block(ground.clone());
 
-        context.render();
+        context.ui_text(
+            Text::new_with_text(&format!(
+                "{:.2} {:.2} {:.2}",
+                block_0.rotation.x, block_0.rotation.y, block_0.rotation.z
+            ))
+            .with_position(Vec2::new(10., 10.))
+            .with_color(Vec4::new(1., 1., 1., 0.6)),
+        );
+
+        context.render(event_handler);
     })
 }

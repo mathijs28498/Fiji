@@ -6,7 +6,7 @@ use winit::{
 
 use nalgebra_glm::Vec2;
 
-use crate::input::{Input, InteractionEvent, fiji_events::FijiEventHandler};
+use crate::{input::{Input, InteractionEvent, fiji_events::FijiEventHandler}, public::context::Context};
 
 pub struct EventLoopContainer {
     pub(super) event_loop: EventLoop<()>,
@@ -36,6 +36,9 @@ impl EventLoopContainer {
                 
                 match event {
                     Event::WindowEvent { event, .. } => match event {
+                        WindowEvent::Resized(_) => {
+                            self.fiji_event_handler.recreate_pipelines = true;
+                        }
                         WindowEvent::CloseRequested => {
                             *control_flow = ControlFlow::Exit;
                         }

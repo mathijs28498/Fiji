@@ -4,7 +4,7 @@ pub mod public;
 
 // TODO IN PROGRESS:
 // [X] - Rename render pass structs/file names
-// [ ] - Resizing of window
+// [X] - Resizing of window
 // [X] - Make use of static viewports
 // [X] - Add text components
 //      [X] - Figure out how to create R8_UINT image and sent it to the gpu
@@ -12,7 +12,10 @@ pub mod public;
 //      [X] - Either get character from hashmap or create new one and put in hashmap
 //      [X] - Render strings to screen using Text object  
 //      [X] - Spaces
-
+// [ ] - Better font
+// [ ] - Fix bottom alignment of text
+// [ ] - Fix error when window size == 0
+//
 // TODO PRE PHYSICS:
 //
 // LATER TODO:
@@ -36,6 +39,8 @@ pub mod public;
 // [ ] - A container that holds all fonts and font buffer containers with metrics
 // [ ] - Replace the unsafe static BUFFERS from the render objects
 // [ ] - New lines for text (using y offset)
+// [ ] - Handle recreating the pipelines better
+// [ ] - Use proper error handling rather than unwrap
 //
 // DONE:
 // [X] - Depth testing

@@ -23,6 +23,8 @@ use crate::rendering::{
     render_objects::shared::{BufferContainer2D, Vertex2D},
 };
 
+// TODO: Implement recreate pipeline
+
 pub(crate) mod line_vs {
     vulkano_shaders::shader! {
         ty: "vertex",

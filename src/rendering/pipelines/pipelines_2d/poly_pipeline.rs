@@ -14,7 +14,8 @@ use vulkano::{
         },
         GraphicsPipeline, Pipeline,
     },
-    render_pass::{Framebuffer, FramebufferCreateInfo, Subpass},
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
+    shader::ShaderModule,
     sync::GpuFuture,
 };
 
@@ -48,6 +49,9 @@ pub(crate) mod poly_fs {
 }
 
 pub(crate) struct PolyPipeline {
+    vs: Arc<ShaderModule>,
+    fs: Arc<ShaderModule>,
+    render_pass: Arc<RenderPass>,
     pipeline: Arc<GraphicsPipeline>,
     framebuffers: Vec<Arc<Framebuffer>>,
 }
@@ -74,6 +78,24 @@ impl PolyPipeline {
         )
         .unwrap();
 
+        let (pipeline, framebuffers) =
+            Self::create_pipeline(device_container, &vs, &fs, &render_pass);
+
+        Self {
+            vs,
+            fs,
+            render_pass,
+            pipeline,
+            framebuffers,
+        }
+    }
+
+    fn create_pipeline(
+        device_container: &DeviceContainer,
+        vs: &Arc<ShaderModule>,
+        fs: &Arc<ShaderModule>,
+        render_pass: &Arc<RenderPass>,
+    ) -> (Arc<GraphicsPipeline>, Vec<Arc<Framebuffer>>) {
         let pipeline = GraphicsPipeline::start()
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
@@ -107,10 +129,11 @@ impl PolyPipeline {
             })
             .collect::<Vec<_>>();
 
-        Self {
-            pipeline,
-            framebuffers,
-        }
+        (pipeline, framebuffers)
+    }
+
+    pub(crate) fn recreate_pipeline(&mut self, device_container: &DeviceContainer) {
+        (self.pipeline, self.framebuffers) = Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass)
     }
 
     pub(crate) fn draw(

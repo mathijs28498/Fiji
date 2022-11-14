@@ -38,6 +38,13 @@ impl PipelineContainer {
         }
     }
 
+    pub(super) fn recreate_pipelines(&mut self, device_container: &DeviceContainer) {
+        self.circle_pipeline.recreate_pipeline(device_container);
+        self.text_pipeline.recreate_pipeline(device_container);
+        self.poly_pipeline.recreate_pipeline(device_container);
+        self.block_pipeline.recreate_pipeline(device_container);
+    }
+
     pub(super) fn render_background(
         &mut self,
         device_container: &mut DeviceContainer,

@@ -38,6 +38,6 @@ pub fn main() {
         );
         context.ui_rect(r_2.clone());
 
-        context.render();
+        context.render(event_handler);
     });
 }

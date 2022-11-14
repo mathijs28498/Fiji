@@ -7,7 +7,7 @@ use crate::{
     },
     rendering::render_containers::{
         event_loop_container::EventLoopContainer, render_container::RenderContainer,
-    },
+    }, input::fiji_events::FijiEventHandler,
 };
 
 use super::objects::obj_2d::text::Text;
@@ -79,8 +79,8 @@ impl Context {
         self.render_container.event_loop()
     }
 
-    pub fn render(&mut self) {
+    pub fn render(&mut self, fiji_event_handler: &mut FijiEventHandler) {
         self.render_container
-            .render(&self.camera_2d, &self.camera_3d);
+            .render(fiji_event_handler, &self.camera_2d, &self.camera_3d);
     }
 }

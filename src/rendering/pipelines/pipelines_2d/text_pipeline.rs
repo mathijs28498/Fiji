@@ -19,8 +19,9 @@ use vulkano::{
         },
         GraphicsPipeline, Pipeline, PipelineBindPoint,
     },
-    render_pass::{Framebuffer, FramebufferCreateInfo, Subpass},
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
     sampler::{Filter, Sampler, SamplerAddressMode, SamplerCreateInfo},
+    shader::ShaderModule,
     sync::GpuFuture,
 };
 
@@ -57,6 +58,9 @@ pub(crate) mod text_fs {
 }
 
 pub(crate) struct TextPipeline {
+    vs: Arc<ShaderModule>,
+    fs: Arc<ShaderModule>,
+    render_pass: Arc<RenderPass>,
     pipeline: Arc<GraphicsPipeline>,
     framebuffers: Vec<Arc<Framebuffer>>,
     font_sets: HashMap<char, (Option<Arc<PersistentDescriptorSet>>, Metrics)>,
@@ -86,6 +90,45 @@ impl TextPipeline {
         )
         .unwrap();
 
+        let (pipeline, framebuffers) =
+            Self::create_pipeline(device_container, &vs, &fs, &render_pass);
+
+        let font_image_sampler = Sampler::new(
+            device_container.device().clone(),
+            SamplerCreateInfo {
+                mag_filter: Filter::Nearest,
+                min_filter: Filter::Nearest,
+                address_mode: [SamplerAddressMode::Repeat; 3],
+                ..Default::default()
+            },
+        )
+        .unwrap();
+
+        let comic_sans_font = Font::from_bytes(
+            include_bytes!("C:/Users/mathi/OneDrive/Documents/Fonts/comic-sans-ms/comicz.ttf")
+                as &[u8],
+            FontSettings::default(),
+        )
+        .unwrap();
+
+        Self {
+            vs,
+            fs,
+            render_pass,
+            pipeline,
+            framebuffers,
+            font_sets: HashMap::new(),
+            font_image_sampler,
+            comic_sans_font,
+        }
+    }
+
+    fn create_pipeline(
+        device_container: &DeviceContainer,
+        vs: &Arc<ShaderModule>,
+        fs: &Arc<ShaderModule>,
+        render_pass: &Arc<RenderPass>,
+    ) -> (Arc<GraphicsPipeline>, Vec<Arc<Framebuffer>>) {
         let pipeline = GraphicsPipeline::start()
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .input_assembly_state(InputAssemblyState::new())
@@ -119,31 +162,12 @@ impl TextPipeline {
             })
             .collect::<Vec<_>>();
 
-        let font_image_sampler = Sampler::new(
-            device_container.device().clone(),
-            SamplerCreateInfo {
-                mag_filter: Filter::Nearest,
-                min_filter: Filter::Nearest,
-                address_mode: [SamplerAddressMode::Repeat; 3],
-                ..Default::default()
-            },
-        )
-        .unwrap();
+        (pipeline, framebuffers)
+    }
 
-        let comic_sans_font = Font::from_bytes(
-            include_bytes!("C:/Users/mathi/OneDrive/Documents/Fonts/comic-sans-ms/comicz.ttf")
-                as &[u8],
-            FontSettings::default(),
-        )
-        .unwrap();
-
-        Self {
-            pipeline,
-            framebuffers,
-            font_sets: HashMap::new(),
-            font_image_sampler,
-            comic_sans_font,
-        }
+    pub(crate) fn recreate_pipeline(&mut self, device_container: &DeviceContainer) {
+        (self.pipeline, self.framebuffers) =
+            Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass);
     }
 
     // TODO: Only wait for builder once in stead for each char
@@ -166,7 +190,7 @@ impl TextPipeline {
 
         if metrics.width == 0 {
             self.font_sets.insert(c, (None, metrics.clone()));
-            return (None, metrics)
+            return (None, metrics);
         }
 
         let mut builder = AutoCommandBufferBuilder::primary(
