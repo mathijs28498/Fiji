@@ -200,7 +200,7 @@ impl TextPipeline {
             }
         }
         
-        let (metrics, bitmap) = actual_font.rasterize(c, 40.);
+        let (metrics, bitmap) = actual_font.rasterize(c, 17.);
 
         if metrics.width == 0 {
             self.font_sets.insert(c, (None, metrics.clone()));
