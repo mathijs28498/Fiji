@@ -3,12 +3,12 @@ use vulkano::{
         AutoCommandBufferBuilder, ClearColorImageInfo, ClearDepthStencilImageInfo,
         CommandBufferUsage,
     },
-    sync::GpuFuture,
 };
 
 use nalgebra_glm::Vec3;
 
 use crate::rendering::render_containers::device_container::DeviceContainer;
+
 pub(crate) struct BackgroundRenderPass {}
 
 impl BackgroundRenderPass {

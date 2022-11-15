@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use vulkano::{
     command_buffer::{allocator::StandardCommandBufferAllocator, PrimaryAutoCommandBuffer},
-    descriptor_set::allocator::{DescriptorSetAllocator, StandardDescriptorSetAllocator},
+    descriptor_set::allocator::StandardDescriptorSetAllocator,
     device::{
         physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue,
         QueueCreateInfo,
@@ -25,8 +25,6 @@ use winit::{
     event_loop::EventLoop,
     window::{Window, WindowBuilder},
 };
-
-use crate::input::fiji_events::FijiEventHandler;
 
 pub(crate) struct DeviceContainer {
     surface: Arc<Surface>,

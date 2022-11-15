@@ -16,7 +16,6 @@ use vulkano::{
     },
     render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
     shader::ShaderModule,
-    sync::GpuFuture,
 };
 
 use crate::rendering::{
@@ -133,14 +132,15 @@ impl PolyPipeline {
     }
 
     pub(crate) fn recreate_pipeline(&mut self, device_container: &DeviceContainer) {
-        (self.pipeline, self.framebuffers) = Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass)
+        (self.pipeline, self.framebuffers) =
+            Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass)
     }
 
     pub(crate) fn draw(
         &mut self,
         device_container: &mut DeviceContainer,
         buffers: &BufferContainer2D,
-        mut push_constants: poly_fs::ty::Constants,
+        push_constants: poly_fs::ty::Constants,
     ) {
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.command_buffer_allocator(),

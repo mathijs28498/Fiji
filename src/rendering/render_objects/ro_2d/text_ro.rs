@@ -1,12 +1,3 @@
-use vulkano::{
-    command_buffer::{AutoCommandBufferBuilder, CommandBufferUsage, PrimaryCommandBufferAbstract},
-    descriptor_set::{PersistentDescriptorSet, WriteDescriptorSet},
-    format::Format,
-    image::{view::ImageView, ImageDimensions, ImmutableImage},
-    pipeline::Pipeline,
-    sync::GpuFuture,
-};
-
 use crate::{
     public::objects::{camera::camera_2d::Camera2D, obj_2d::text::Text},
     rendering::{
@@ -21,16 +12,22 @@ pub(crate) struct TextRenderObject {
 }
 
 impl TextRenderObject {
-    pub(crate) fn new(text: Text, device_container: &mut DeviceContainer) -> Self {
+    pub(crate) fn new(text: Text) -> Self {
         Self { text }
     }
 
+    #[allow(non_snake_case)]
     pub(crate) fn draw(
         &mut self,
         text_pipeline: &mut TextPipeline,
         device_container: &mut DeviceContainer,
         camera_2d: Option<&Camera2D>,
     ) {
+        let cameraPos = match camera_2d {
+            Some(camera_2d) => camera_2d.position.as_ref().clone(),
+            None => [0.; 2],
+        };
+
         let sets = self
             .text
             .text
@@ -44,6 +41,7 @@ impl TextRenderObject {
                 resolution: device_container.resolution(),
                 position: self.text.position.as_ref().clone(),
                 color: self.text.color.as_ref().clone(),
+                cameraPos,
             },
             sets,
         );

@@ -80,7 +80,7 @@ impl PipelineContainer {
                     rect.draw(&mut self.poly_pipeline, device_container, Some(camera_2d))
                 }
                 RenderObject2D::CircleObject(mut circle) => {
-                    circle.draw(&mut self.circle_pipeline, device_container)
+                    circle.draw(&mut self.circle_pipeline, device_container, Some(camera_2d))
                 }
                 RenderObject2D::LineObject(mut line) => {
                     line.draw(&mut self.line_pipeline, device_container)
@@ -106,7 +106,7 @@ impl PipelineContainer {
                     rect.draw(&mut self.poly_pipeline, device_container, None)
                 }
                 RenderObject2D::CircleObject(mut circle) => {
-                    circle.draw(&mut self.circle_pipeline, device_container)
+                    circle.draw(&mut self.circle_pipeline, device_container, None)
                 }
                 RenderObject2D::LineObject(mut line) => {
                     line.draw(&mut self.line_pipeline, device_container)

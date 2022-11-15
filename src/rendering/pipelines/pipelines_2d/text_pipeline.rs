@@ -259,7 +259,7 @@ impl TextPipeline {
         &mut self,
         device_container: &mut DeviceContainer,
         push_constants: text_fs::ty::Constants,
-        mut sets: Vec<(Option<Arc<PersistentDescriptorSet>>, Metrics)>,
+        sets: Vec<(Option<Arc<PersistentDescriptorSet>>, Metrics)>,
     ) {
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.command_buffer_allocator(),

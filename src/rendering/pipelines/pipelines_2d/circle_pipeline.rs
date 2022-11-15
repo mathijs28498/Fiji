@@ -17,13 +17,9 @@ use vulkano::{
     },
     render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
     shader::ShaderModule,
-    sync::GpuFuture,
 };
 
-use nalgebra_glm::{Vec2, Vec4};
-
 use crate::{
-    public::objects::Border,
     rendering::{
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{BufferContainer2D, Vertex2D},
@@ -147,7 +143,7 @@ impl CirclePipeline {
         &mut self,
         device_container: &mut DeviceContainer,
         buffers: &BufferContainer2D,
-        mut push_constants: circle_fs::ty::Constants,
+        push_constants: circle_fs::ty::Constants,
     ) {
         let mut builder = AutoCommandBufferBuilder::primary(
             device_container.command_buffer_allocator(),

@@ -19,7 +19,8 @@ pub use crate::{
 // TODO IN PROGRESS:
 // [ ] - Fix error when window size == 0
 // [ ] - Recreate pipelines when window out of date
-// [ ] - Make all fiji public objects accessible directly from lib.rs
+// [X] - Make all fiji public objects accessible directly from lib.rs
+// [X] - Camera 2d for all 2d pipelines
 //
 // LATER TODO:
 // [ ] - Window options

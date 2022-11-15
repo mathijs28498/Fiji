@@ -15,7 +15,6 @@ use vulkano::{
         GraphicsPipeline, Pipeline,
     },
     render_pass::{Framebuffer, FramebufferCreateInfo, Subpass},
-    sync::GpuFuture,
 };
 
 use crate::rendering::{

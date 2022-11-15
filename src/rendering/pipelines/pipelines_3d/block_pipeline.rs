@@ -7,7 +7,6 @@ use vulkano::{
     },
     image::view::ImageView,
     pipeline::{
-        self,
         graphics::{
             color_blend::ColorBlendState,
             depth_stencil::DepthStencilState,
@@ -20,7 +19,6 @@ use vulkano::{
     },
     render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass, Subpass},
     shader::ShaderModule,
-    sync::GpuFuture,
 };
 
 use crate::rendering::{
@@ -147,7 +145,8 @@ impl BlockPipeline {
     }
 
     pub(crate) fn recreate_pipeline(&mut self, device_container: &DeviceContainer) {
-        (self.pipeline, self.framebuffers) = Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass)
+        (self.pipeline, self.framebuffers) =
+            Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass)
     }
 
     pub(crate) fn draw(

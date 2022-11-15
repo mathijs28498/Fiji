@@ -132,19 +132,13 @@ impl RenderContainer {
 
     pub(crate) fn text(&mut self, text: Text) {
         self.render_objects_2d
-            .add(RenderObject2D::TextObject(TextRenderObject::new(
-                text,
-                &mut self.device_container,
-            )))
+            .add(RenderObject2D::TextObject(TextRenderObject::new(text)))
             .unwrap();
     }
 
     pub(crate) fn ui_text(&mut self, text: Text) {
         self.render_objects_ui
-            .add(RenderObject2D::TextObject(TextRenderObject::new(
-                text,
-                &mut self.device_container,
-            )))
+            .add(RenderObject2D::TextObject(TextRenderObject::new(text)))
             .unwrap();
     }
 

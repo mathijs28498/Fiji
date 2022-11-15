@@ -4,6 +4,7 @@ layout(push_constant) uniform Constants {
     uvec2 resolution;
     vec2 position;
     vec4 color;
+    vec2 cameraPos;
 } pc;
 
 layout(location = 0) in vec2 position;
@@ -14,7 +15,7 @@ layout(location = 0) out vec2 fUvCoord;
 vec2 worldToScreen(vec2 worldPos);
 
 void main() {
-    vec2 pos = worldToScreen(position + pc.position);
+    vec2 pos = worldToScreen(position + pc.position + pc.cameraPos);
     gl_Position = vec4(pos, 0., 1.);
     fUvCoord = uvCoord;
 }

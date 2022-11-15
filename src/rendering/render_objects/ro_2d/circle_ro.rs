@@ -1,12 +1,10 @@
-use nalgebra_glm::Vec4;
-
 use crate::{
     public::objects::obj_2d::circle::Circle,
     rendering::{
+        pipelines::pipelines_2d::circle_pipeline::{circle_fs, CirclePipeline},
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
-        pipelines::pipelines_2d::circle_pipeline::{CirclePipeline, circle_fs},
-    },
+    }, Camera2D,
 };
 
 #[derive(Clone)]
@@ -35,31 +33,39 @@ impl CircleRenderObject {
         &mut self,
         pipeline: &mut CirclePipeline,
         device_container: &mut DeviceContainer,
+        camera_2d: Option<&Camera2D>
     ) {
-        // Unsafe is used to change these static values.
-        // This is definitely safe, even thought the compiler can't verify.
         pipeline.draw(
             device_container,
             &self.buffers,
-            self.create_push_constants(device_container),
+            self.create_push_constants(device_container, camera_2d),
         );
     }
-    
+
+    #[allow(non_snake_case)]
     fn create_push_constants(
         &self,
         device_container: &DeviceContainer,
+        camera_2d: Option<&Camera2D>
     ) -> circle_fs::ty::Constants {
-        let (border_color, border_width) = match &self.circle.border {
-            Some(border) => (border.color, border.width),
-            None => (Vec4::new(0., 0., 0., 0.), 0),
+        let (borderColor, borderWidth) = match &self.circle.border {
+            Some(border) => (border.color.as_ref().clone(), border.width),
+            None => ([0.; 4], 0),
         };
+
+        let cameraPos = match camera_2d {
+            Some(camera_2d) => camera_2d.position.as_ref().clone(),
+            None => [0.; 2],
+        };
+
         circle_fs::ty::Constants {
             resolution: device_container.resolution(),
             color: self.circle.color.as_ref().clone(),
             position: self.circle.position.as_ref().clone(),
-            borderColor: border_color.as_ref().clone(),
-            borderWidth: border_width,
+            borderColor,
+            borderWidth,
             radius: self.circle.radius,
+            cameraPos,
         }
     }
 

@@ -6,14 +6,13 @@ use winit::{
 
 use nalgebra_glm::Vec2;
 
-use crate::{input::{Input, InteractionEvent, fiji_events::FijiEventHandler}, public::context::Context};
+use crate::input::{fiji_events::FijiEventHandler, Input, InteractionEvent};
 
 pub struct EventLoopContainer {
     pub(super) event_loop: EventLoop<()>,
     events: Queue<InteractionEvent>,
     input: Input,
     fiji_event_handler: FijiEventHandler,
-    
 }
 
 impl EventLoopContainer {
@@ -33,7 +32,7 @@ impl EventLoopContainer {
         self.event_loop
             .run(move |event, _, control_flow: &mut ControlFlow| {
                 *control_flow = ControlFlow::Poll;
-                
+
                 match event {
                     Event::WindowEvent { event, .. } => match event {
                         WindowEvent::Resized(_) => {
