@@ -19,8 +19,6 @@ pub use crate::{
 // TODO IN PROGRESS:
 // [ ] - Fix error when window size == 0
 // [ ] - Recreate pipelines when window out of date
-// [X] - Make all fiji public objects accessible directly from lib.rs
-// [X] - Camera 2d for all 2d pipelines
 //
 // LATER TODO:
 // [ ] - Window options
@@ -34,7 +32,6 @@ pub use crate::{
 // [ ] - Better/more camera options
 // [ ] - Configurable lights in context
 // [ ] - Figure out rotation
-// [ ] - Delta time
 // [ ] - Render and update closures
 // [ ] - Working borders
 // [ ] - Line renderer
@@ -51,10 +48,14 @@ pub use crate::{
 // [ ] - Handle recreating the pipelines better
 // [ ] - Use proper error handling rather than unwrap
 // [ ] - 2D element alignment options (text most important)
-// [ ] - 3D elemet alignment options
+// [ ] - 3D element alignment options
 // [ ] - Add 2D camera option to all pipelines
+// [ ] - Fix text drawing performance!
 //
 // DONE:
+// [X] - Delta time
+// [X] - Make all fiji public objects accessible directly from lib.rs
+// [X] - Camera 2d for all 2d pipelines
 // [X] - Depth testing
 // [X] - Normals
 // [X] - Phong shading
