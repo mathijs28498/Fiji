@@ -199,7 +199,7 @@ impl TextPipeline {
                 actual_font = &self.roboto_font;
             }
         }
-        
+
         let (metrics, bitmap) = actual_font.rasterize(c, 17.);
 
         if metrics.width == 0 {
@@ -252,7 +252,9 @@ impl TextPipeline {
             .wait(None /* timeout */)
             .unwrap();
 
-        (Some(set), metrics)
+        let res = (Some(set), metrics);
+        self.font_sets.insert(c, res.clone());
+        res
     }
 
     pub(crate) fn draw(
@@ -277,11 +279,7 @@ impl TextPipeline {
 
             let set = set_option.unwrap();
 
-            let buffers = create_buffers(
-                device_container,
-                metrics,
-                x_offset as i32,
-            );
+            let buffers = create_buffers(device_container, metrics, x_offset as i32);
             x_offset += metrics.advance_width;
 
             builder
