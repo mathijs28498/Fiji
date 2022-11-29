@@ -1,12 +1,9 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
 use fiji::{Background, Circle, Context, KeyCode, Rect, Text};
 use nalgebra_glm::{Vec2, Vec3, Vec4};
 
 pub fn main() {
     let mut context = Context::new(1280, 720);
     context.background(Background::new_with_color(Vec3::new(0.3, 0.1, 0.1)));
-    let mut neg_timer = 0.;
 
     let r = Rect::new_default()
         .with_color(Vec4::new(0.7, 0.3, 0.7, 1.))

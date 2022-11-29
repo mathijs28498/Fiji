@@ -3,6 +3,7 @@ use nalgebra_glm::Vec2;
 use self::text::TextFont;
 
 pub mod circle;
+pub mod figure;
 pub mod line;
 pub mod polygon;
 pub mod rect;

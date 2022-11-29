@@ -11,6 +11,7 @@ use crate::{
     rendering::render_containers::{
         event_loop_container::EventLoopContainer, render_container::RenderContainer,
     },
+    Figure,
 };
 
 use super::objects::obj_2d::text::Text;
@@ -72,6 +73,14 @@ impl Context {
 
     pub fn ui_text(&mut self, text: Text) {
         self.render_container.ui_text(text);
+    }
+
+    pub fn figure(&mut self, figure: Figure) {
+        self.render_container.figure(figure);
+    }
+
+    pub fn ui_figure(&mut self, figure: Figure) {
+        self.render_container.ui_figure(figure);
     }
 
     pub fn block(&mut self, block: Block) {

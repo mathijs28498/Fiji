@@ -7,9 +7,9 @@ use nalgebra_glm::{Mat4, Vec3};
 pub struct Camera3D {
     pub position: Vec3,
     pub dir: Vec3,
-    pub near: f32,
-    pub far: f32,
-    pub fov: f32,
+    near: f32,
+    far: f32,
+    fov: f32,
 }
 
 impl Camera3D {

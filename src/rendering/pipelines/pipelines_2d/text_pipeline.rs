@@ -29,7 +29,7 @@ use crate::{
     public::objects::obj_2d::text::TextFont,
     rendering::{
         render_containers::device_container::DeviceContainer,
-        render_objects::shared::{create_buffers_text, BufferContainerText, VertexText},
+        render_objects::shared::{create_buffers_2d_uv, BufferContainer2DUv, Vertex2DUv},
     },
 };
 
@@ -142,7 +142,7 @@ impl TextPipeline {
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .input_assembly_state(InputAssemblyState::new())
             .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
-            .vertex_input_state(BuffersDefinition::new().vertex::<VertexText>())
+            .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2DUv>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
             .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([
                 Viewport {
@@ -317,7 +317,7 @@ fn create_buffers(
     device_container: &mut DeviceContainer,
     metrics: Metrics,
     x_offset: i32,
-) -> BufferContainerText {
+) -> BufferContainer2DUv {
     let x_min = x_offset as f32 + metrics.xmin as f32;
     let x_max = x_min + metrics.width as f32;
     let y_max = -metrics.ymin as f32;
@@ -327,19 +327,19 @@ fn create_buffers(
     // let y_max = -metrics.bounds.ymin as f32;
     // let y_min = y_max - metrics.bounds.height as f32;
     let vertices = vec![
-        VertexText {
+        Vertex2DUv {
             position: [x_min, y_min],
             uvCoord: [0., 0.],
         },
-        VertexText {
+        Vertex2DUv {
             position: [x_max, y_min],
             uvCoord: [1., 0.],
         },
-        VertexText {
+        Vertex2DUv {
             position: [x_min, y_max],
             uvCoord: [0., 1.],
         },
-        VertexText {
+        Vertex2DUv {
             position: [x_max, y_max],
             uvCoord: [1., 1.],
         },
@@ -347,5 +347,5 @@ fn create_buffers(
 
     let indices = vec![0, 1, 2, 2, 1, 3];
 
-    create_buffers_text(device_container, vertices, indices)
+    create_buffers_2d_uv(device_container, vertices, indices)
 }

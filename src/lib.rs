@@ -9,7 +9,7 @@ pub use crate::{
         objects::{
             background::*,
             camera::{camera_2d::*, camera_3d::*},
-            obj_2d::{circle::*, line::*, polygon::*, rect::*, text::*},
+            obj_2d::{circle::*, figure::*, line::*, polygon::*, rect::*, text::*},
             obj_3d::block::*,
             *,
         },
@@ -19,8 +19,13 @@ pub use crate::{
 // TODO IN PROGRESS:
 // [ ] - Fix error when window size == 0
 // [ ] - Recreate pipelines when window out of date
+// [ ] - Add image object
 //
 // LATER TODO:
+// [ ] - Keep render objects alive as long as their counter part is alive
+//      [ ] - Keep a list of objects which can be set to active/inactive
+// [ ] - Make better/less verbose abstraction for objects/render objects/pipelines
+// [ ] - Add sphere object
 // [ ] - Window options
 //      [ ] - Capture mouse option
 //      [ ] - Unresizable option
@@ -51,6 +56,7 @@ pub use crate::{
 // [ ] - 3D element alignment options
 // [ ] - Add 2D camera option to all pipelines
 // [ ] - Fix text drawing performance!
+// [ ] - Unreverse camera position
 //
 // DONE:
 // [X] - Delta time

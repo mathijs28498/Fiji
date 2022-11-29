@@ -20,11 +20,11 @@ impl_vertex!(Vertex2D, position);
 #[allow(non_snake_case)]
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Zeroable, Pod)]
-pub(crate) struct VertexText {
+pub(crate) struct Vertex2DUv {
     pub(crate) position: [f32; 2],
     pub(crate) uvCoord: [f32; 2],
 }
-impl_vertex!(VertexText, position, uvCoord);
+impl_vertex!(Vertex2DUv, position, uvCoord);
 
 #[derive(Clone, Debug)]
 pub(crate) struct BufferContainer2D {
@@ -33,8 +33,8 @@ pub(crate) struct BufferContainer2D {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct BufferContainerText {
-    pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[VertexText]>>,
+pub(crate) struct BufferContainer2DUv {
+    pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[Vertex2DUv]>>,
     pub(crate) index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
 }
 
@@ -100,11 +100,11 @@ pub(crate) fn create_buffers_2d(
     }
 }
 
-pub(crate) fn create_buffers_text(
+pub(crate) fn create_buffers_2d_uv(
     device_container: &mut DeviceContainer,
-    vertices: Vec<VertexText>,
+    vertices: Vec<Vertex2DUv>,
     indices: Vec<u32>,
-) -> BufferContainerText {
+) -> BufferContainer2DUv {
     let mut cb_builder = AutoCommandBufferBuilder::primary(
         device_container.command_buffer_allocator(),
         device_container.queue_family_index(),
@@ -142,7 +142,7 @@ pub(crate) fn create_buffers_text(
         .wait(None)
         .unwrap();
 
-    BufferContainerText {
+    BufferContainer2DUv {
         vertex_buffer,
         index_buffer,
     }

@@ -6,8 +6,9 @@ use crate::{
         pipelines::{
             background_pipeline::BackgroundRenderPass,
             pipelines_2d::{
-                circle_pipeline::CirclePipeline, line_pipeline::LinePipeline,
-                poly_pipeline::PolyPipeline, text_pipeline::TextPipeline,
+                circle_pipeline::CirclePipeline, figure_pipeline::FigurePipeline,
+                line_pipeline::LinePipeline, poly_pipeline::PolyPipeline,
+                text_pipeline::TextPipeline,
             },
             pipelines_3d::block_pipeline::BlockPipeline,
         },
@@ -24,6 +25,7 @@ pub(super) struct PipelineContainer {
     background_pipeline: BackgroundRenderPass,
     block_pipeline: BlockPipeline,
     text_pipeline: TextPipeline,
+    figure_pipeline: FigurePipeline,
 }
 
 impl PipelineContainer {
@@ -35,14 +37,17 @@ impl PipelineContainer {
             line_pipeline: LinePipeline::new(device_container),
             block_pipeline: BlockPipeline::new(device_container),
             text_pipeline: TextPipeline::new(device_container),
+            figure_pipeline: FigurePipeline::new(device_container),
         }
     }
 
+    // TODO: Add line pipeline recreation
     pub(super) fn recreate_pipelines(&mut self, device_container: &DeviceContainer) {
         self.circle_pipeline.recreate_pipeline(device_container);
         self.text_pipeline.recreate_pipeline(device_container);
         self.poly_pipeline.recreate_pipeline(device_container);
         self.block_pipeline.recreate_pipeline(device_container);
+        self.figure_pipeline.recreate_pipeline(device_container);
     }
 
     pub(super) fn render_background(
@@ -91,6 +96,9 @@ impl PipelineContainer {
                 RenderObject2D::TextObject(mut text) => {
                     text.draw(&mut self.text_pipeline, device_container, Some(camera_2d))
                 }
+                RenderObject2D::FigureObject(mut figure) => {
+                    figure.draw(&mut self.figure_pipeline, device_container, Some(camera_2d))
+                }
             }
         }
     }
@@ -116,6 +124,9 @@ impl PipelineContainer {
                 }
                 RenderObject2D::TextObject(mut text) => {
                     text.draw(&mut self.text_pipeline, device_container, None)
+                }
+                RenderObject2D::FigureObject(mut figure) => {
+                    figure.draw(&mut self.figure_pipeline, device_container, None)
                 }
             }
         }
