@@ -51,7 +51,7 @@ pub fn main() {
             context.dt_micros() as f64 / 1000.
         ));
 
-        for i in 0..5 {
+        for i in 0..0 {
             context.ui_text(
                 text.clone()
                     .with_position(Vec2::new(50., 50. + i as f32 * 20.)),

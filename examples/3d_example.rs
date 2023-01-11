@@ -119,6 +119,16 @@ fn main() {
             .with_color(Vec4::new(1., 1., 1., 0.6)),
         );
 
+        context.text(
+            Text::new_with_text(&format!(
+                "fps: {:.3} ({:.3}ms)",
+                context.fps(),
+                context.dt_micros() as f64 / 1000.
+            ))
+            .with_position(Vec2::new(200., 100.))
+            .with_color(Vec4::new(0.9, 0.7, 0.2, 1.)),
+        );
+
         context.render(event_handler);
     })
 }

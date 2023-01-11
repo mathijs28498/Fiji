@@ -31,7 +31,6 @@ impl EventLoopContainer {
     {
         self.event_loop
             .run(move |event, _, control_flow: &mut ControlFlow| {
-                *control_flow = ControlFlow::Poll;
 
                 match event {
                     Event::WindowEvent { event, .. } => match event {

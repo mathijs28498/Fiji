@@ -55,14 +55,15 @@ impl DeviceContainer {
         )
         .unwrap();
 
-        let surface = WindowBuilder::new()
-            .build_vk_surface(&event_loop, instance.clone())
-            .unwrap();
-        {
+        let surface = {
+            let surface = WindowBuilder::new()
+                .build_vk_surface(&event_loop, instance.clone())
+                .unwrap();
             let window = surface.object().unwrap().downcast_ref::<Window>().unwrap();
-
             window.set_inner_size(PhysicalSize::new(width, height));
-        }
+
+            surface
+        };
 
         let device_extensions = DeviceExtensions {
             khr_swapchain: true,
