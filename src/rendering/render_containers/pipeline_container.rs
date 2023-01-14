@@ -4,7 +4,6 @@ use crate::{
     public::objects::camera::{camera_2d::Camera2D, camera_3d::Camera3D},
     rendering::{
         pipelines::{
-            background_pipeline::BackgroundRenderPass,
             pipelines_2d::{
                 circle_pipeline::CirclePipeline, figure_pipeline::FigurePipeline,
                 line_pipeline::LinePipeline, poly_pipeline::PolyPipeline,
@@ -22,16 +21,14 @@ pub(super) struct PipelineContainer {
     poly_pipeline: PolyPipeline,
     circle_pipeline: CirclePipeline,
     line_pipeline: LinePipeline,
-    background_pipeline: BackgroundRenderPass,
     block_pipeline: BlockPipeline,
-    text_pipeline: TextPipeline,
+    pub text_pipeline: TextPipeline,
     figure_pipeline: FigurePipeline,
 }
 
 impl PipelineContainer {
     pub(super) fn new(device_container: &DeviceContainer) -> Self {
         Self {
-            background_pipeline: BackgroundRenderPass::new(),
             poly_pipeline: PolyPipeline::new(device_container),
             circle_pipeline: CirclePipeline::new(device_container),
             line_pipeline: LinePipeline::new(device_container),
@@ -48,14 +45,7 @@ impl PipelineContainer {
         self.poly_pipeline.recreate_pipeline(device_container);
         self.block_pipeline.recreate_pipeline(device_container);
         self.figure_pipeline.recreate_pipeline(device_container);
-    }
-
-    pub(super) fn render_background(
-        &mut self,
-        device_container: &mut DeviceContainer,
-        background_ro: &BackgroundRenderObject,
-    ) {
-        background_ro.draw(&mut self.background_pipeline, device_container);
+        self.line_pipeline.recreate_pipeline(device_container);
     }
 
     pub(super) fn render_3d(
@@ -64,6 +54,7 @@ impl PipelineContainer {
         render_objects: &mut Queue<RenderObject3D>,
         camera_3d: &Camera3D,
     ) {
+        // TODO: Fix 3d drawing
         while let Ok(object) = render_objects.remove() {
             match object {
                 RenderObject3D::BlockObject(mut block) => {
@@ -99,6 +90,7 @@ impl PipelineContainer {
                 RenderObject2D::FigureObject(mut figure) => {
                     figure.draw(&mut self.figure_pipeline, device_container, Some(camera_2d))
                 }
+                _ => (),
             }
         }
     }
@@ -128,6 +120,7 @@ impl PipelineContainer {
                 RenderObject2D::FigureObject(mut figure) => {
                     figure.draw(&mut self.figure_pipeline, device_container, None)
                 }
+                _ => (),
             }
         }
     }

@@ -1,9 +1,6 @@
 use crate::{
     public::objects::background::Background,
-    rendering::{
-        render_containers::device_container::DeviceContainer,
-        pipelines::background_pipeline::BackgroundRenderPass,
-    },
+    rendering::render_containers::device_container::DeviceContainer,
 };
 
 pub(crate) struct BackgroundRenderObject {
@@ -15,11 +12,12 @@ impl BackgroundRenderObject {
         Self { background }
     }
 
-    pub(crate) fn draw(
-        &self,
-        pipeline: &mut BackgroundRenderPass,
-        device_container: &mut DeviceContainer,
-    ) {
-        pipeline.draw(device_container, &self.background.color);
+    pub fn background_color(&self) -> [f32; 4] {
+        [
+            self.background.color.x,
+            self.background.color.y,
+            self.background.color.z,
+            1.,
+        ]
     }
 }

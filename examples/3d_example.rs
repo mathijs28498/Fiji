@@ -38,7 +38,7 @@ fn main() {
     let sensitivity = 0.01;
     let speed = 0.04;
 
-    context.event_loop().run(move |input, event_handler| {
+    context.run(move |input, event_handler, context| {
         if input.key_pressed(&KeyCode::Escape) {
             event_handler.exit();
         }
@@ -94,7 +94,7 @@ fn main() {
             context.camera_3d.position += move_dir.normalize() * speed;
         }
 
-        block_0.rotation.x -= 0.01;
+        block_0.rotation.x -= 1. * context.dt();
 
         context.background(Background::new_with_color(Vec3::new(0.07, 0.51, 0.6)));
         context.block(block_0.clone());

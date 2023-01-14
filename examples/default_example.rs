@@ -4,7 +4,7 @@ use nalgebra_glm::{Vec3, Vec4};
 pub fn main() {
     let mut context = Context::new(1280, 720);
 
-    context.event_loop().run(move |input, event_handler| {
+    context.run(move |input, event_handler, context| {
         if input.key_pressed(&KeyCode::Escape) {
             event_handler.exit();
         }

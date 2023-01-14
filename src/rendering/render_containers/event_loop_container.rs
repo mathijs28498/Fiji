@@ -6,7 +6,7 @@ use winit::{
 
 use nalgebra_glm::Vec2;
 
-use crate::input::{fiji_events::FijiEventHandler, Input, InteractionEvent};
+use crate::{input::{fiji_events::FijiEventHandler, Input, InteractionEvent}, Context};
 
 pub struct EventLoopContainer {
     pub(super) event_loop: EventLoop<()>,
@@ -25,9 +25,9 @@ impl EventLoopContainer {
         }
     }
 
-    pub fn run<F>(mut self, mut event_handler: F)
+    pub fn run<F>(mut self, mut context: Context, mut event_fn: F)
     where
-        F: 'static + FnMut(&Input, &mut FijiEventHandler),
+        F: 'static + FnMut(&Input, &mut FijiEventHandler, &mut Context),
     {
         self.event_loop
             .run(move |event, _, control_flow: &mut ControlFlow| {
@@ -86,7 +86,7 @@ impl EventLoopContainer {
                             self.input.handle_interaction_event(event);
                         }
 
-                        event_handler(&self.input, &mut self.fiji_event_handler);
+                        event_fn(&self.input, &mut self.fiji_event_handler, &mut context);
 
                         self.fiji_event_handler.handle_events(control_flow);
                     }

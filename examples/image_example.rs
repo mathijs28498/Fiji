@@ -6,7 +6,7 @@ pub fn main() {
 
     let figure = Figure::new_with_image(FigureImage::new_with_size(UVec2::new(10, 10)));
 
-    context.event_loop().run(move |input, event_handler| {
+    context.run(move |input, event_handler, context| {
         if input.key_pressed(&KeyCode::Escape) {
             event_handler.exit();
         }

@@ -11,7 +11,7 @@ use crate::{
     rendering::render_containers::{
         event_loop_container::EventLoopContainer, render_container::RenderContainer,
     },
-    Figure,
+    Figure, Input,
 };
 
 use super::objects::obj_2d::text::Text;
@@ -91,8 +91,11 @@ impl Context {
         self.render_container.background(background);
     }
 
-    pub fn event_loop(&mut self) -> EventLoopContainer {
-        self.render_container.event_loop()
+    pub fn run<F>(mut self, mut event_fn: F)
+    where
+        F: 'static + FnMut(&Input, &mut FijiEventHandler, &mut Context),
+    {
+        self.render_container.event_loop().run(self, event_fn);
     }
 
     pub fn fps(&self) -> f32 {

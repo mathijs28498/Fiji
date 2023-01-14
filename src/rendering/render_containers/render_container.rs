@@ -19,7 +19,7 @@ use crate::{
         ro_3d::block_ro::BlockRenderObject,
         RenderObject2D, RenderObject3D,
     },
-    Figure,
+    Context, Figure, Input,
 };
 
 use super::{
@@ -134,13 +134,21 @@ impl RenderContainer {
 
     pub(crate) fn text(&mut self, text: Text) {
         self.render_objects_2d
-            .add(RenderObject2D::TextObject(TextRenderObject::new(text)))
+            .add(RenderObject2D::TextObject(TextRenderObject::new(
+                text,
+                &mut self.pipeline_container.text_pipeline,
+                &mut self.device_container,
+            )))
             .unwrap();
     }
 
     pub(crate) fn ui_text(&mut self, text: Text) {
         self.render_objects_ui
-            .add(RenderObject2D::TextObject(TextRenderObject::new(text)))
+            .add(RenderObject2D::TextObject(TextRenderObject::new(
+                text,
+                &mut self.pipeline_container.text_pipeline,
+                &mut self.device_container,
+            )))
             .unwrap();
     }
 
@@ -194,10 +202,7 @@ impl RenderContainer {
             fiji_event_handler.recreate_pipelines = false;
         }
 
-        self.device_container.begin_draw();
-
-        self.pipeline_container
-            .render_background(&mut self.device_container, &self.background);
+        self.device_container.begin_draw(&self.background);
 
         self.pipeline_container.render_3d(
             &mut self.device_container,

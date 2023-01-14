@@ -60,9 +60,7 @@ pub(crate) mod text_fs {
 pub(crate) struct TextPipeline {
     vs: Arc<ShaderModule>,
     fs: Arc<ShaderModule>,
-    render_pass: Arc<RenderPass>,
     pipeline: Arc<GraphicsPipeline>,
-    framebuffers: Vec<Arc<Framebuffer>>,
     font_sets: HashMap<char, (Option<Arc<PersistentDescriptorSet>>, Metrics)>,
     font_image_sampler: Arc<Sampler>,
     comic_sans_font: Font,
@@ -74,25 +72,7 @@ impl TextPipeline {
         let vs = text_vs::load(device_container.device().clone()).unwrap();
         let fs = text_fs::load(device_container.device().clone()).unwrap();
 
-        let render_pass = vulkano::single_pass_renderpass!(
-            device_container.device().clone(),
-            attachments: {
-                color: {
-                    load: Load,
-                    store: Store,
-                    format: device_container.image_format(),
-                    samples: 1,
-                }
-            },
-            pass: {
-                color: [color],
-                depth_stencil: {}
-            }
-        )
-        .unwrap();
-
-        let (pipeline, framebuffers) =
-            Self::create_pipeline(device_container, &vs, &fs, &render_pass);
+        let pipeline = Self::create_pipeline(device_container, &vs, &fs);
 
         let font_image_sampler = Sampler::new(
             device_container.device().clone(),
@@ -122,9 +102,7 @@ impl TextPipeline {
         Self {
             vs,
             fs,
-            render_pass,
             pipeline,
-            framebuffers,
             font_sets: HashMap::new(),
             font_image_sampler,
             comic_sans_font,
@@ -136,12 +114,11 @@ impl TextPipeline {
         device_container: &DeviceContainer,
         vs: &Arc<ShaderModule>,
         fs: &Arc<ShaderModule>,
-        render_pass: &Arc<RenderPass>,
-    ) -> (Arc<GraphicsPipeline>, Vec<Arc<Framebuffer>>) {
-        let pipeline = GraphicsPipeline::start()
+    ) -> Arc<GraphicsPipeline> {
+        GraphicsPipeline::start()
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
             .input_assembly_state(InputAssemblyState::new())
-            .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
+            .render_pass(Subpass::from(device_container.render_pass().clone(), 0).unwrap())
             .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2DUv>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
             .viewport_state(ViewportState::viewport_fixed_scissor_irrelevant([
@@ -153,36 +130,16 @@ impl TextPipeline {
             ]))
             .fragment_shader(fs.entry_point("main").unwrap(), ())
             .build(device_container.device().clone())
-            .unwrap();
-
-        let framebuffers = device_container
-            .images()
-            .iter()
-            .map(|image| {
-                let view = ImageView::new_default(image.clone()).unwrap();
-                Framebuffer::new(
-                    render_pass.clone(),
-                    FramebufferCreateInfo {
-                        attachments: vec![view],
-                        ..Default::default()
-                    },
-                )
-                .unwrap()
-            })
-            .collect::<Vec<_>>();
-
-        (pipeline, framebuffers)
+            .unwrap()
     }
 
     pub(crate) fn recreate_pipeline(&mut self, device_container: &DeviceContainer) {
-        (self.pipeline, self.framebuffers) =
-            Self::create_pipeline(device_container, &self.vs, &self.fs, &self.render_pass);
+        self.pipeline = Self::create_pipeline(device_container, &self.vs, &self.fs);
     }
 
-    // TODO: Only wait for builder once in stead for each char
     pub(crate) fn get_or_create_set(
         &mut self,
-        device_container: &DeviceContainer,
+        device_container: &mut DeviceContainer,
         c: char,
         font: &TextFont,
     ) -> (Option<Arc<PersistentDescriptorSet>>, Metrics) {
@@ -207,16 +164,12 @@ impl TextPipeline {
             return (None, metrics);
         }
 
-        let mut builder = AutoCommandBufferBuilder::primary(
-            device_container.command_buffer_allocator(),
-            device_container.queue_family_index(),
-            CommandBufferUsage::OneTimeSubmit,
-        )
-        .unwrap();
+        let memory_allocator = device_container.memory_allocator();
+        let builder = device_container.get_command_buffer_builder();
 
         let char_image_view = ImageView::new_default(
             ImmutableImage::from_iter(
-                device_container.memory_allocator(),
+                memory_allocator.as_ref(),
                 bitmap,
                 ImageDimensions::Dim2d {
                     width: metrics.width as u32,
@@ -225,14 +178,14 @@ impl TextPipeline {
                 },
                 1.into(),
                 Format::R8_UINT,
-                &mut builder,
+                builder,
             )
             .unwrap(),
         )
         .unwrap();
 
         let set = PersistentDescriptorSet::new(
-            device_container.descriptor_set_allocator(),
+            device_container.descriptor_set_allocator().as_ref(),
             self.pipeline.layout().set_layouts().get(0).unwrap().clone(),
             [WriteDescriptorSet::image_view_sampler(
                 0,
@@ -241,16 +194,6 @@ impl TextPipeline {
             )],
         )
         .unwrap();
-
-        builder
-            .build()
-            .unwrap()
-            .execute(device_container.queue().clone())
-            .unwrap()
-            .then_signal_fence_and_flush()
-            .unwrap()
-            .wait(None /* timeout */)
-            .unwrap();
 
         let res = (Some(set), metrics);
         self.font_sets.insert(c, res.clone());
@@ -261,38 +204,12 @@ impl TextPipeline {
         &mut self,
         device_container: &mut DeviceContainer,
         push_constants: text_fs::ty::Constants,
-        sets: Vec<(Option<Arc<PersistentDescriptorSet>>, Metrics)>,
+        sets_and_buffers: Vec<(Arc<PersistentDescriptorSet>, BufferContainer2DUv)>,
     ) {
-        let mut builder = AutoCommandBufferBuilder::primary(
-            device_container.command_buffer_allocator(),
-            device_container.queue_family_index(),
-            CommandBufferUsage::OneTimeSubmit,
-        )
-        .unwrap();
-
-        let mut x_offset = 0.;
-        for (set_option, metrics) in sets {
-            if let None = set_option {
-                x_offset += metrics.advance_width;
-                continue;
-            }
-
-            let set = set_option.unwrap();
-
-            let buffers = create_buffers(device_container, metrics, x_offset as i32);
-            x_offset += metrics.advance_width;
+        for (set, buffers) in sets_and_buffers {
+            let builder = device_container.get_command_buffer_builder();
 
             builder
-                .begin_render_pass(
-                    RenderPassBeginInfo {
-                        clear_values: vec![None],
-                        ..RenderPassBeginInfo::framebuffer(
-                            self.framebuffers[device_container.image_num()].clone(),
-                        )
-                    },
-                    SubpassContents::Inline,
-                )
-                .unwrap()
                 .bind_pipeline_graphics(self.pipeline.clone())
                 .push_constants(self.pipeline.layout().clone(), 0, push_constants)
                 .bind_descriptor_sets(
@@ -304,48 +221,7 @@ impl TextPipeline {
                 .bind_vertex_buffers(0, buffers.vertex_buffer.clone())
                 .bind_index_buffer(buffers.index_buffer.clone())
                 .draw_indexed(buffers.index_buffer.len() as u32, 1, 0, 0, 0)
-                .unwrap()
-                .end_render_pass()
                 .unwrap();
         }
-
-        device_container.execute_command_buffer(builder.build().unwrap());
     }
-}
-
-fn create_buffers(
-    device_container: &mut DeviceContainer,
-    metrics: Metrics,
-    x_offset: i32,
-) -> BufferContainer2DUv {
-    let x_min = x_offset as f32 + metrics.xmin as f32;
-    let x_max = x_min + metrics.width as f32;
-    let y_max = -metrics.ymin as f32;
-    let y_min = y_max - metrics.height as f32;
-    // let x_min = x_offset as f32 + metrics.bounds.xmin as f32;
-    // let x_max = x_min + metrics.bounds.width as f32;
-    // let y_max = -metrics.bounds.ymin as f32;
-    // let y_min = y_max - metrics.bounds.height as f32;
-    let vertices = vec![
-        Vertex2DUv {
-            position: [x_min, y_min],
-            uvCoord: [0., 0.],
-        },
-        Vertex2DUv {
-            position: [x_max, y_min],
-            uvCoord: [1., 0.],
-        },
-        Vertex2DUv {
-            position: [x_min, y_max],
-            uvCoord: [0., 1.],
-        },
-        Vertex2DUv {
-            position: [x_max, y_max],
-            uvCoord: [1., 1.],
-        },
-    ];
-
-    let indices = vec![0, 1, 2, 2, 1, 3];
-
-    create_buffers_2d_uv(device_container, vertices, indices)
 }

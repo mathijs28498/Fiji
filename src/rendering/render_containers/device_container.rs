@@ -1,16 +1,21 @@
-use std::sync::Arc;
+use std::{rc::Rc, sync::Arc};
 
 use vulkano::{
-    command_buffer::{allocator::StandardCommandBufferAllocator, PrimaryAutoCommandBuffer},
+    command_buffer::{
+        allocator::{StandardCommandBufferAlloc, StandardCommandBufferAllocator},
+        AutoCommandBufferBuilder, CommandBufferUsage, PrimaryAutoCommandBuffer,
+        RenderPassBeginInfo, SubpassContents,
+    },
     descriptor_set::allocator::StandardDescriptorSetAllocator,
     device::{
         physical::PhysicalDeviceType, Device, DeviceCreateInfo, DeviceExtensions, Queue,
         QueueCreateInfo,
     },
     format::Format,
-    image::{AttachmentImage, ImageAccess, ImageUsage, SwapchainImage},
+    image::{view::ImageView, AttachmentImage, ImageAccess, ImageUsage, SwapchainImage},
     instance::{Instance, InstanceCreateInfo},
     memory::allocator::{FreeListAllocator, GenericMemoryAllocator, StandardMemoryAllocator},
+    render_pass::{Framebuffer, FramebufferCreateInfo, RenderPass},
     swapchain::{
         acquire_next_image, Surface, Swapchain, SwapchainCreateInfo, SwapchainCreationError,
         SwapchainPresentInfo,
@@ -26,18 +31,30 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
+use crate::rendering::render_objects::background_ro::BackgroundRenderObject;
+
 pub(crate) struct DeviceContainer {
     surface: Arc<Surface>,
     queue: Arc<Queue>,
     swapchain: Arc<Swapchain>,
     images: Vec<Arc<SwapchainImage>>,
     depth_image: Arc<AttachmentImage>,
+    render_pass: Arc<RenderPass>,
+    framebuffers: Vec<Arc<Framebuffer>>,
+
     previous_frame_end: Option<Box<dyn GpuFuture>>,
     image_num: usize,
 
-    memory_allocator: GenericMemoryAllocator<Arc<FreeListAllocator>>,
-    command_buffer_allocator: StandardCommandBufferAllocator,
-    descriptor_set_allocator: StandardDescriptorSetAllocator,
+    command_buffer_builder: Option<
+        AutoCommandBufferBuilder<
+            PrimaryAutoCommandBuffer<StandardCommandBufferAlloc>,
+            StandardCommandBufferAllocator,
+        >,
+    >,
+
+    memory_allocator: Rc<GenericMemoryAllocator<Arc<FreeListAllocator>>>,
+    command_buffer_allocator: Rc<StandardCommandBufferAllocator>,
+    descriptor_set_allocator: Rc<StandardDescriptorSetAllocator>,
 }
 
 impl DeviceContainer {
@@ -113,10 +130,12 @@ impl DeviceContainer {
         )
         .unwrap();
 
-        let memory_allocator = StandardMemoryAllocator::new_default(device.clone());
-        let command_buffer_allocator =
-            StandardCommandBufferAllocator::new(device.clone(), Default::default());
-        let descriptor_set_allocator = StandardDescriptorSetAllocator::new(device.clone());
+        let memory_allocator = Rc::new(StandardMemoryAllocator::new_default(device.clone()));
+        let command_buffer_allocator = Rc::new(StandardCommandBufferAllocator::new(
+            device.clone(),
+            Default::default(),
+        ));
+        let descriptor_set_allocator = Rc::new(StandardDescriptorSetAllocator::new(device.clone()));
 
         let queue = queues.next().unwrap();
         let (swapchain, images) = {
@@ -160,7 +179,7 @@ impl DeviceContainer {
         };
 
         let depth_image = AttachmentImage::with_usage(
-            &memory_allocator,
+            memory_allocator.as_ref(),
             images[0].dimensions().width_height(),
             Format::D32_SFLOAT,
             ImageUsage {
@@ -170,6 +189,61 @@ impl DeviceContainer {
         )
         .unwrap();
 
+        // let render_pass = vulkano::single_pass_renderpass!(
+        //     device.clone(),
+        //     attachments: {
+        //         color: {
+        //             load: Clear,
+        //             store: Store,
+        //             format: swapchain.image_format(),
+        //             samples: 1,
+        //         }
+        //     },
+        //     pass: {
+        //         color: [color],
+        //         depth_stencil: {}
+        //     }
+        // )
+        // .unwrap();
+        let render_pass = vulkano::single_pass_renderpass!(
+            device.clone(),
+            attachments: {
+                color: {
+                    load: Load,
+                    store: Store,
+                    format: swapchain.image_format(),
+                    samples: 1,
+                },
+                depth: {
+                    load: Load,
+                    store: Store,
+                    format: depth_image.format(),
+                    samples: 1,
+                }
+            },
+            pass: {
+                color: [color],
+                depth_stencil: {depth}
+            }
+        )
+        .unwrap();
+
+        let depth_view = ImageView::new_default(depth_image.clone()).unwrap();
+        let framebuffers = images
+            .iter()
+            .map(|image| {
+                let view = ImageView::new_default(image.clone()).unwrap();
+                Framebuffer::new(
+                    render_pass.clone(),
+                    FramebufferCreateInfo {
+                        attachments: vec![view, depth_view.clone()],
+                        ..Default::default()
+                    },
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+
         let previous_frame_end = Some(sync::now(queue.device().clone()).boxed());
 
         Self {
@@ -178,7 +252,10 @@ impl DeviceContainer {
             swapchain,
             images,
             depth_image,
+            render_pass,
+            framebuffers,
             previous_frame_end,
+            command_buffer_builder: None,
             image_num: 0,
             memory_allocator,
             command_buffer_allocator,
@@ -201,8 +278,48 @@ impl DeviceContainer {
             Err(e) => panic!("Failed to recreate swapchain: {:?}", e),
         };
 
+        self.render_pass = vulkano::single_pass_renderpass!(
+            self.device().clone(),
+            attachments: {
+                color: {
+                    load: Clear,
+                    store: Store,
+                    format: self.image_format(),
+                    samples: 1,
+                },
+                depth: {
+                    load: Clear,
+                    store: Store,
+                    format: self.depth_image_format(),
+                    samples: 1,
+                }
+            },
+            pass: {
+                color: [color],
+                depth_stencil: {depth}
+            }
+        )
+        .unwrap();
+
+        let depth_view = ImageView::new_default(self.depth_image.clone()).unwrap();
+        self.framebuffers = self
+            .images
+            .iter()
+            .map(|image| {
+                let view = ImageView::new_default(image.clone()).unwrap();
+                Framebuffer::new(
+                    self.render_pass.clone(),
+                    FramebufferCreateInfo {
+                        attachments: vec![view, depth_view.clone()],
+                        ..Default::default()
+                    },
+                )
+                .unwrap()
+            })
+            .collect::<Vec<_>>();
+
         self.depth_image = AttachmentImage::with_usage(
-            self.memory_allocator(),
+            self.memory_allocator().as_ref(),
             self.resolution(),
             Format::D32_SFLOAT,
             ImageUsage {
@@ -215,7 +332,8 @@ impl DeviceContainer {
         return true;
     }
 
-    pub(super) fn begin_draw(&mut self) {
+    pub(super) fn begin_draw(&mut self, background: &BackgroundRenderObject) {
+        self.execute_command_buffer();
         self.previous_frame_end.as_mut().unwrap().cleanup_finished();
         let (image_num, _, acquire_future) =
             acquire_next_image(self.swapchain().clone(), None).unwrap();
@@ -228,9 +346,30 @@ impl DeviceContainer {
                 .boxed(),
         );
         self.image_num = image_num as usize;
+
+        let framebuffer = self.framebuffers[self.image_num()].clone();
+        let builder = self.get_command_buffer_builder();
+        builder
+            .begin_render_pass(
+                RenderPassBeginInfo {
+                    clear_values: vec![
+                        Some(background.background_color().into()),
+                        Some(1f32.into()),
+                    ],
+                    ..RenderPassBeginInfo::framebuffer(framebuffer)
+                },
+                SubpassContents::Inline,
+            )
+            .unwrap();
     }
 
     pub(super) fn end_draw(&mut self) {
+        let mut builder = self.get_command_buffer_builder();
+
+        builder.end_render_pass().unwrap();
+
+        self.execute_command_buffer();
+
         self.previous_frame_end = Some(
             self.previous_frame_end
                 .take()
@@ -248,15 +387,38 @@ impl DeviceContainer {
         );
     }
 
-    pub(crate) fn execute_command_buffer(&mut self, command_buffer: PrimaryAutoCommandBuffer) {
-        self.previous_frame_end = Some(
-            self.previous_frame_end
-                .take()
-                .unwrap()
-                .then_execute(self.queue().clone(), command_buffer)
-                .unwrap()
-                .boxed(),
-        )
+    pub(crate) fn get_command_buffer_builder(
+        &mut self,
+    ) -> &mut AutoCommandBufferBuilder<
+        PrimaryAutoCommandBuffer<StandardCommandBufferAlloc>,
+        StandardCommandBufferAllocator,
+    > {
+        let queue_family_index = self.queue_family_index();
+        self.command_buffer_builder.get_or_insert_with(|| {
+            AutoCommandBufferBuilder::primary(
+                self.command_buffer_allocator.as_ref(),
+                queue_family_index,
+                CommandBufferUsage::OneTimeSubmit,
+            )
+            .unwrap()
+        })
+    }
+
+    fn execute_command_buffer(&mut self) {
+        if let Some(builder) = self.command_buffer_builder.take() {
+            self.previous_frame_end = Some(
+                self.previous_frame_end
+                    .take()
+                    .unwrap()
+                    .then_execute(self.queue.clone(), builder.build().unwrap())
+                    .unwrap()
+                    .boxed(),
+            );
+        }
+    }
+
+    pub(crate) fn render_pass(&self) -> &Arc<RenderPass> {
+        &self.render_pass
     }
 
     pub(crate) fn device(&self) -> &Arc<Device> {
@@ -299,16 +461,12 @@ impl DeviceContainer {
         &self.images[self.image_num]
     }
 
-    pub(crate) fn memory_allocator(&self) -> &GenericMemoryAllocator<Arc<FreeListAllocator>> {
-        &self.memory_allocator
+    pub(crate) fn memory_allocator(&self) -> Rc<GenericMemoryAllocator<Arc<FreeListAllocator>>> {
+        self.memory_allocator.clone()
     }
 
-    pub(crate) fn command_buffer_allocator(&self) -> &StandardCommandBufferAllocator {
-        &self.command_buffer_allocator
-    }
-
-    pub(crate) fn descriptor_set_allocator(&self) -> &StandardDescriptorSetAllocator {
-        &self.descriptor_set_allocator
+    pub(crate) fn descriptor_set_allocator(&self) -> Rc<StandardDescriptorSetAllocator> {
+        self.descriptor_set_allocator.clone()
     }
 
     pub(crate) fn window(&self) -> &Window {

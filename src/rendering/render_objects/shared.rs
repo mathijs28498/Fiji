@@ -57,42 +57,30 @@ pub(crate) fn create_buffers_2d(
     vertices: Vec<Vertex2D>,
     indices: Vec<u32>,
 ) -> BufferContainer2D {
-    let mut cb_builder = AutoCommandBufferBuilder::primary(
-        device_container.command_buffer_allocator(),
-        device_container.queue_family_index(),
-        CommandBufferUsage::OneTimeSubmit,
-    )
-    .unwrap();
+    let memory_allocator = device_container.memory_allocator();
+    let mut builder = device_container.get_command_buffer_builder();
+
     let vertex_buffer = DeviceLocalBuffer::from_iter(
-        device_container.memory_allocator(),
+        memory_allocator.as_ref(),
         vertices,
         BufferUsage {
             vertex_buffer: true,
             ..Default::default()
         },
-        &mut cb_builder,
+        &mut builder,
     )
     .unwrap();
 
     let index_buffer = DeviceLocalBuffer::from_iter(
-        device_container.memory_allocator(),
+        memory_allocator.as_ref(),
         indices,
         BufferUsage {
             index_buffer: true,
             ..Default::default()
         },
-        &mut cb_builder,
+        &mut builder,
     )
     .unwrap();
-
-    let cb = cb_builder.build().unwrap();
-
-    cb.execute(device_container.queue().clone())
-        .unwrap()
-        .then_signal_fence_and_flush()
-        .unwrap()
-        .wait(None)
-        .unwrap();
 
     BufferContainer2D {
         vertex_buffer,
@@ -105,42 +93,29 @@ pub(crate) fn create_buffers_2d_uv(
     vertices: Vec<Vertex2DUv>,
     indices: Vec<u32>,
 ) -> BufferContainer2DUv {
-    let mut cb_builder = AutoCommandBufferBuilder::primary(
-        device_container.command_buffer_allocator(),
-        device_container.queue_family_index(),
-        CommandBufferUsage::OneTimeSubmit,
-    )
-    .unwrap();
+    let memory_allocator = device_container.memory_allocator();
+    let builder = device_container.get_command_buffer_builder();
     let vertex_buffer = DeviceLocalBuffer::from_iter(
-        device_container.memory_allocator(),
+        memory_allocator.as_ref(),
         vertices,
         BufferUsage {
             vertex_buffer: true,
             ..Default::default()
         },
-        &mut cb_builder,
+        builder,
     )
     .unwrap();
 
     let index_buffer = DeviceLocalBuffer::from_iter(
-        device_container.memory_allocator(),
+        memory_allocator.as_ref(),
         indices,
         BufferUsage {
             index_buffer: true,
             ..Default::default()
         },
-        &mut cb_builder,
+        builder,
     )
     .unwrap();
-
-    let cb = cb_builder.build().unwrap();
-
-    cb.execute(device_container.queue().clone())
-        .unwrap()
-        .then_signal_fence_and_flush()
-        .unwrap()
-        .wait(None)
-        .unwrap();
 
     BufferContainer2DUv {
         vertex_buffer,
@@ -153,43 +128,30 @@ pub(super) fn create_buffers_3d(
     vertices: Vec<Vertex3D>,
     indices: Vec<u32>,
 ) -> BufferContainer3D {
-    let mut cb_builder = AutoCommandBufferBuilder::primary(
-        device_container.command_buffer_allocator(),
-        device_container.queue_family_index(),
-        CommandBufferUsage::OneTimeSubmit,
-    )
-    .unwrap();
+    let memory_allocator = device_container.memory_allocator();
+    let mut builder = device_container.get_command_buffer_builder();
 
     let vertex_buffer = DeviceLocalBuffer::from_iter(
-        device_container.memory_allocator(),
+        memory_allocator.as_ref(),
         vertices,
         BufferUsage {
             vertex_buffer: true,
             ..Default::default()
         },
-        &mut cb_builder,
+        builder,
     )
     .unwrap();
 
     let index_buffer = DeviceLocalBuffer::from_iter(
-        device_container.memory_allocator(),
+        memory_allocator.as_ref(),
         indices,
         BufferUsage {
             index_buffer: true,
             ..Default::default()
         },
-        &mut cb_builder,
+        builder,
     )
     .unwrap();
-
-    let cb = cb_builder.build().unwrap();
-
-    cb.execute(device_container.queue().clone())
-        .unwrap()
-        .then_signal_fence_and_flush()
-        .unwrap()
-        .wait(None)
-        .unwrap();
 
     BufferContainer3D {
         vertex_buffer,

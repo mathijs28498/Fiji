@@ -1,3 +1,5 @@
+#![allow(unused)]
+
 mod input;
 mod public;
 mod rendering;

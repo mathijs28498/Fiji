@@ -15,6 +15,7 @@ use vulkano::{
         GraphicsPipeline, Pipeline,
     },
     render_pass::{Framebuffer, FramebufferCreateInfo, Subpass},
+    shader::ShaderModule,
 };
 
 use crate::rendering::{
@@ -49,8 +50,9 @@ pub(crate) mod line_fs {
 }
 
 pub(crate) struct LinePipeline {
+    vs: Arc<ShaderModule>,
+    fs: Arc<ShaderModule>,
     pipeline: Arc<GraphicsPipeline>,
-    framebuffers: Vec<Arc<Framebuffer>>,
 }
 
 impl LinePipeline {
@@ -58,26 +60,19 @@ impl LinePipeline {
         let vs = line_vs::load(device_container.device().clone()).unwrap();
         let fs = line_fs::load(device_container.device().clone()).unwrap();
 
-        let render_pass = vulkano::single_pass_renderpass!(
-            device_container.device().clone(),
-            attachments: {
-                color: {
-                    load: Load,
-                    store: Store,
-                    format: device_container.image_format(),
-                    samples: 1,
-                }
-            },
-            pass: {
-                color: [color],
-                depth_stencil: {}
-            }
-        )
-        .unwrap();
+        let pipeline = Self::create_pipeline(device_container, &vs, &fs);
 
-        let pipeline = GraphicsPipeline::start()
+        Self { vs, fs, pipeline }
+    }
+
+    fn create_pipeline(
+        device_container: &DeviceContainer,
+        vs: &Arc<ShaderModule>,
+        fs: &Arc<ShaderModule>,
+    ) -> Arc<GraphicsPipeline> {
+        GraphicsPipeline::start()
             .color_blend_state(ColorBlendState::blend_alpha(ColorBlendState::new(1)))
-            .render_pass(Subpass::from(render_pass.clone(), 0).unwrap())
+            .render_pass(Subpass::from(device_container.render_pass().clone(), 0).unwrap())
             .input_assembly_state(InputAssemblyState::new())
             .vertex_input_state(BuffersDefinition::new().vertex::<Vertex2D>())
             .vertex_shader(vs.entry_point("main").unwrap(), ())
@@ -90,28 +85,11 @@ impl LinePipeline {
             ]))
             .fragment_shader(fs.entry_point("main").unwrap(), ())
             .build(device_container.device().clone())
-            .unwrap();
+            .unwrap()
+    }
 
-        let framebuffers = device_container
-            .images()
-            .iter()
-            .map(|image| {
-                let view = ImageView::new_default(image.clone()).unwrap();
-                Framebuffer::new(
-                    render_pass.clone(),
-                    FramebufferCreateInfo {
-                        attachments: vec![view],
-                        ..Default::default()
-                    },
-                )
-                .unwrap()
-            })
-            .collect::<Vec<_>>();
-
-        Self {
-            pipeline,
-            framebuffers,
-        }
+    pub(crate) fn recreate_pipeline(&mut self, device_container: &DeviceContainer) {
+        self.pipeline = Self::create_pipeline(device_container, &self.vs, &self.fs)
     }
 
     pub(crate) fn draw(
@@ -120,33 +98,14 @@ impl LinePipeline {
         buffers: &BufferContainer2D,
         push_constants: line_fs::ty::Constants,
     ) {
-        let mut builder = AutoCommandBufferBuilder::primary(
-            device_container.command_buffer_allocator(),
-            device_container.queue_family_index(),
-            CommandBufferUsage::OneTimeSubmit,
-        )
-        .unwrap();
+        let mut builder = device_container.get_command_buffer_builder();
 
         builder
-            .begin_render_pass(
-                RenderPassBeginInfo {
-                    clear_values: vec![None],
-                    ..RenderPassBeginInfo::framebuffer(
-                        self.framebuffers[device_container.image_num()].clone(),
-                    )
-                },
-                SubpassContents::Inline,
-            )
-            .unwrap()
             .bind_pipeline_graphics(self.pipeline.clone())
             .bind_vertex_buffers(0, buffers.vertex_buffer.clone())
             .bind_index_buffer(buffers.index_buffer.clone())
             .push_constants(self.pipeline.layout().clone(), 0, push_constants)
             .draw_indexed(buffers.index_buffer.len() as u32, 1, 0, 0, 0)
-            .unwrap()
-            .end_render_pass()
             .unwrap();
-
-        device_container.execute_command_buffer(builder.build().unwrap());
     }
 }

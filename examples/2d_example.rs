@@ -11,7 +11,7 @@ fn main() {
     let mut polygon_points = Vec::new();
     let mut timer = 0.;
 
-    context.event_loop().run(move |input, fiji_event_handler| {
+    context.run(move |input, fiji_event_handler, context| {
         if input.key_pressed(&KeyCode::Escape) {
             fiji_event_handler.exit();
         }
