@@ -4,7 +4,8 @@ use crate::{
         pipelines::pipelines_2d::circle_pipeline::{circle_fs, CirclePipeline},
         render_containers::device_container::DeviceContainer,
         render_objects::shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
-    }, Camera2D,
+    },
+    Camera2D,
 };
 
 #[derive(Clone)]
@@ -33,7 +34,7 @@ impl CircleRenderObject {
         &mut self,
         pipeline: &mut CirclePipeline,
         device_container: &mut DeviceContainer,
-        camera_2d: Option<&Camera2D>
+        camera_2d: Option<&Camera2D>,
     ) {
         pipeline.draw(
             device_container,
@@ -46,7 +47,7 @@ impl CircleRenderObject {
     fn create_push_constants(
         &self,
         device_container: &DeviceContainer,
-        camera_2d: Option<&Camera2D>
+        camera_2d: Option<&Camera2D>,
     ) -> circle_fs::ty::Constants {
         let (borderColor, borderWidth) = match &self.circle.border {
             Some(border) => (border.color.as_ref().clone(), border.width),

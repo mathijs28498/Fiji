@@ -2,7 +2,7 @@ use fiji::{Background, Block, Border, Circle, Context, KeyCode, MouseButton, Pol
 use nalgebra_glm::{Vec3, Vec4};
 
 pub fn main() {
-    let mut context = Context::new(1280, 720);
+    let context = Context::new(1280, 720);
 
     context.run(move |input, event_handler, context| {
         if input.key_pressed(&KeyCode::Escape) {

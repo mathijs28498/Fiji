@@ -4,22 +4,12 @@ use queues::{IsQueue, Queue};
 use crate::{
     input::fiji_events::FijiEventHandler,
     public::objects::{
-        background::Background,
-        camera::{camera_2d::Camera2D, camera_3d::Camera3D},
-        obj_2d::{circle::Circle, line::Line, polygon::Polygon, rect::Rect, text::Text},
-        obj_3d::block::Block,
+        background::Background, camera::camera_2d::Camera2D, obj_2d::circle::Circle,
     },
     rendering::render_objects::{
-        background_ro::BackgroundRenderObject,
-        ro_2d::{
-            circle_ro::CircleRenderObject, figure_ro::FigureRenderObject,
-            line_ro::LineRenderObject, polygon_ro::PolygonRenderObject, rect_ro::RectRenderObject,
-            text_ro::TextRenderObject,
-        },
-        ro_3d::block_ro::BlockRenderObject,
-        RenderObject2D, RenderObject3D,
+        background_ro::BackgroundRenderObject, ro_2d::circle_ro::CircleRenderObject, RenderObject2D,
     },
-    Context, Figure, Input,
+    Context, Input,
 };
 
 use super::{
@@ -34,8 +24,6 @@ pub(crate) struct RenderContainer {
 
     background: BackgroundRenderObject,
     render_objects_2d: Queue<RenderObject2D>,
-    render_objects_ui: Queue<RenderObject2D>,
-    render_objects_3d: Queue<RenderObject3D>,
 }
 
 impl RenderContainer {
@@ -55,8 +43,6 @@ impl RenderContainer {
                 0., 0., 0.,
             ))),
             render_objects_2d: Queue::new(),
-            render_objects_ui: Queue::new(),
-            render_objects_3d: Queue::new(),
         }
     }
 
@@ -64,116 +50,6 @@ impl RenderContainer {
         self.render_objects_2d
             .add(RenderObject2D::CircleObject(CircleRenderObject::new(
                 circle,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn ui_circle(&mut self, circle: Circle) {
-        self.render_objects_ui
-            .add(RenderObject2D::CircleObject(CircleRenderObject::new(
-                circle,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn rect(&mut self, rect: Rect) {
-        self.render_objects_2d
-            .add(RenderObject2D::RectObject(RectRenderObject::new(
-                rect,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn ui_rect(&mut self, rect: Rect) {
-        self.render_objects_ui
-            .add(RenderObject2D::RectObject(RectRenderObject::new(
-                rect,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn polygon(&mut self, polygon: Polygon) {
-        self.render_objects_2d
-            .add(RenderObject2D::PolyObject(PolygonRenderObject::new(
-                polygon,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn ui_polygon(&mut self, polygon: Polygon) {
-        self.render_objects_ui
-            .add(RenderObject2D::PolyObject(PolygonRenderObject::new(
-                polygon,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn line(&mut self, line: Line) {
-        self.render_objects_2d
-            .add(RenderObject2D::LineObject(LineRenderObject::new(
-                line,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn ui_line(&mut self, line: Line) {
-        self.render_objects_ui
-            .add(RenderObject2D::LineObject(LineRenderObject::new(
-                line,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn text(&mut self, text: Text) {
-        self.render_objects_2d
-            .add(RenderObject2D::TextObject(TextRenderObject::new(
-                text,
-                &mut self.pipeline_container.text_pipeline,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn ui_text(&mut self, text: Text) {
-        self.render_objects_ui
-            .add(RenderObject2D::TextObject(TextRenderObject::new(
-                text,
-                &mut self.pipeline_container.text_pipeline,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn figure(&mut self, figure: Figure) {
-        self.render_objects_2d
-            .add(RenderObject2D::FigureObject(FigureRenderObject::new(
-                figure,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn ui_figure(&mut self, figure: Figure) {
-        self.render_objects_ui
-            .add(RenderObject2D::FigureObject(FigureRenderObject::new(
-                figure,
-                &mut self.device_container,
-            )))
-            .unwrap();
-    }
-
-    pub(crate) fn block(&mut self, block: Block) {
-        self.render_objects_3d
-            .add(RenderObject3D::BlockObject(BlockRenderObject::new(
-                block,
                 &mut self.device_container,
             )))
             .unwrap();
@@ -191,7 +67,6 @@ impl RenderContainer {
         &mut self,
         fiji_event_handler: &mut FijiEventHandler,
         camera_2d: &Camera2D,
-        camera_3d: &Camera3D,
     ) {
         if fiji_event_handler.recreate_pipelines {
             if !self.device_container.recreate_swapchain_images() {
@@ -199,25 +74,18 @@ impl RenderContainer {
             }
             self.pipeline_container
                 .recreate_pipelines(&self.device_container);
+
+            // TODO: Check if this is necessary
             fiji_event_handler.recreate_pipelines = false;
         }
 
         self.device_container.begin_draw(&self.background);
-
-        self.pipeline_container.render_3d(
-            &mut self.device_container,
-            &mut self.render_objects_3d,
-            camera_3d,
-        );
 
         self.pipeline_container.render_2d(
             &mut self.device_container,
             &mut self.render_objects_2d,
             camera_2d,
         );
-
-        self.pipeline_container
-            .render_ui(&mut self.device_container, &mut self.render_objects_ui);
 
         self.device_container.end_draw();
     }

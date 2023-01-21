@@ -8,13 +8,7 @@ pub use crate::{
     input::{fiji_events::*, input_enums::*, *},
     public::{
         context::*,
-        objects::{
-            background::*,
-            camera::{camera_2d::*, camera_3d::*},
-            obj_2d::{circle::*, figure::*, line::*, polygon::*, rect::*, text::*},
-            obj_3d::block::*,
-            *,
-        },
+        objects::{background::*, camera::camera_2d::*, obj_2d::circle::*, *},
     },
 };
 

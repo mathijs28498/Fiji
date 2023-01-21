@@ -3,25 +3,19 @@ use std::time::SystemTime;
 use crate::{
     input::fiji_events::FijiEventHandler,
     public::objects::{
-        background::Background,
-        camera::{camera_2d::Camera2D, camera_3d::Camera3D},
-        obj_2d::{circle::Circle, line::Line, polygon::Polygon, rect::Rect},
-        obj_3d::block::Block,
+        background::Background, camera::camera_2d::Camera2D, obj_2d::circle::Circle,
     },
     rendering::render_containers::{
         event_loop_container::EventLoopContainer, render_container::RenderContainer,
     },
-    Figure, Input,
+    Input,
 };
-
-use super::objects::obj_2d::text::Text;
 
 pub struct Context {
     render_container: RenderContainer,
     prev_time: SystemTime,
     dt_nano: u128,
     pub camera_2d: Camera2D,
-    pub camera_3d: Camera3D,
 }
 
 impl Context {
@@ -31,60 +25,11 @@ impl Context {
             prev_time: SystemTime::now(),
             dt_nano: 0,
             camera_2d: Camera2D::new_default(),
-            camera_3d: Camera3D::new_default(),
         }
     }
 
     pub fn circle(&mut self, circle: Circle) {
         self.render_container.circle(circle);
-    }
-
-    pub fn ui_circle(&mut self, circle: Circle) {
-        self.render_container.ui_circle(circle);
-    }
-
-    pub fn rect(&mut self, rect: Rect) {
-        self.render_container.rect(rect);
-    }
-
-    pub fn ui_rect(&mut self, rect: Rect) {
-        self.render_container.ui_rect(rect);
-    }
-
-    pub fn polygon(&mut self, polygon: Polygon) {
-        self.render_container.polygon(polygon);
-    }
-
-    pub fn ui_polygon(&mut self, polygon: Polygon) {
-        self.render_container.ui_polygon(polygon);
-    }
-
-    pub fn line(&mut self, line: Line) {
-        self.render_container.line(line);
-    }
-
-    pub fn ui_line(&mut self, line: Line) {
-        self.render_container.ui_line(line);
-    }
-
-    pub fn text(&mut self, text: Text) {
-        self.render_container.text(text);
-    }
-
-    pub fn ui_text(&mut self, text: Text) {
-        self.render_container.ui_text(text);
-    }
-
-    pub fn figure(&mut self, figure: Figure) {
-        self.render_container.figure(figure);
-    }
-
-    pub fn ui_figure(&mut self, figure: Figure) {
-        self.render_container.ui_figure(figure);
-    }
-
-    pub fn block(&mut self, block: Block) {
-        self.render_container.block(block);
     }
 
     pub fn background(&mut self, background: Background) {
@@ -120,7 +65,7 @@ impl Context {
 
     pub fn render(&mut self, fiji_event_handler: &mut FijiEventHandler) {
         self.render_container
-            .render(fiji_event_handler, &self.camera_2d, &self.camera_3d);
+            .render(fiji_event_handler, &self.camera_2d);
 
         let now = SystemTime::now();
         if let Ok(duration) = now.duration_since(self.prev_time) {

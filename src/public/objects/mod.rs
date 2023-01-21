@@ -1,7 +1,6 @@
 pub mod background;
 pub mod camera;
 pub mod obj_2d;
-pub mod obj_3d;
 
 use nalgebra_glm::Vec4;
 
