@@ -1,3 +1,8 @@
+use std::{
+    rc::Rc,
+    sync::{Arc, Mutex, RwLock},
+};
+
 use nalgebra_glm::Vec3;
 use queues::{IsQueue, Queue};
 
@@ -6,8 +11,12 @@ use crate::{
     public::objects::{
         background::Background, camera::camera_2d::Camera2D, obj_2d::circle::Circle,
     },
-    rendering::render_objects::{
-        background_ro::BackgroundRenderObject, ro_2d::circle_ro::CircleRenderObject, RenderObject2D,
+    rendering::{
+        pipelines::pipelines_2d::circle_pipeline::{CirclePipeline, CIRCLE_PIPELINE},
+        render_objects::{
+            background_ro::BackgroundRenderObject, ro_2d::circle_ro::CircleRenderObject,
+            RenderObject2D,
+        },
     },
     Context, Input,
 };
@@ -17,11 +26,16 @@ use super::{
     pipeline_container::PipelineContainer,
 };
 
+pub trait RecreateOnResize {
+    fn recreate(&mut self, device_container: &mut DeviceContainer);
+}
+
 pub(crate) struct RenderContainer {
     event_loop_container: Option<EventLoopContainer>,
     device_container: DeviceContainer,
     pipeline_container: PipelineContainer,
 
+    recreatables: Vec<Arc<RwLock<dyn RecreateOnResize>>>,
     background: BackgroundRenderObject,
     render_objects_2d: Queue<RenderObject2D>,
 }
@@ -33,17 +47,26 @@ impl RenderContainer {
             DeviceContainer::new(&event_loop_container.event_loop, width, height);
 
         let pipeline_container = PipelineContainer::new(&device_container);
-
+        let recreatables = Self::init_recreatables(&device_container);
         Self {
             event_loop_container: Some(event_loop_container),
             device_container,
             pipeline_container,
 
+            recreatables,
             background: BackgroundRenderObject::new(Background::new_with_color(Vec3::new(
                 0., 0., 0.,
             ))),
             render_objects_2d: Queue::new(),
         }
+    }
+
+    fn init_recreatables(
+        device_container: &DeviceContainer,
+    ) -> Vec<Arc<RwLock<dyn RecreateOnResize>>> {
+        vec![CIRCLE_PIPELINE
+            .get_or_init(|| Arc::new(RwLock::new(CirclePipeline::new(device_container))))
+            .clone()]
     }
 
     pub(crate) fn circle(&mut self, circle: Circle) {
@@ -71,6 +94,12 @@ impl RenderContainer {
         if fiji_event_handler.recreate_pipelines {
             if !self.device_container.recreate_swapchain_images() {
                 return;
+            }
+
+            for recreatable in &self.recreatables {
+                // TODO: write while loop until can unwrap
+                let mut recreatable_lock = recreatable.write().unwrap();
+                recreatable_lock.recreate(&mut self.device_container);
             }
             self.pipeline_container
                 .recreate_pipelines(&self.device_container);

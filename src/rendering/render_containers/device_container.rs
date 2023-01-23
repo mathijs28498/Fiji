@@ -33,7 +33,7 @@ use winit::{
 
 use crate::rendering::render_objects::background_ro::BackgroundRenderObject;
 
-pub(crate) struct DeviceContainer {
+pub struct DeviceContainer {
     surface: Arc<Surface>,
     queue: Arc<Queue>,
     swapchain: Arc<Swapchain>,

@@ -1,5 +1,7 @@
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 
+use lazy_static::lazy_static;
+use once_cell::sync::OnceCell;
 use vulkano::{
     buffer::TypedBufferAccess,
     command_buffer::{
@@ -19,8 +21,10 @@ use vulkano::{
     shader::ShaderModule,
 };
 
+use std::sync::Mutex;
+
 use crate::rendering::{
-    render_containers::device_container::DeviceContainer,
+    render_containers::{device_container::DeviceContainer, render_container::RecreateOnResize},
     render_objects::shared::{BufferContainer2D, Vertex2D},
 };
 
@@ -48,14 +52,18 @@ pub(crate) mod circle_fs {
     );
 }
 
-pub(crate) struct CirclePipeline {
+lazy_static! {
+    pub static ref CIRCLE_PIPELINE: OnceCell<Arc<RwLock<CirclePipeline>>> = OnceCell::new();
+}
+
+pub struct CirclePipeline {
     vs: Arc<ShaderModule>,
     fs: Arc<ShaderModule>,
     pipeline: Arc<GraphicsPipeline>,
 }
 
 impl CirclePipeline {
-    pub(crate) fn new(device_container: &DeviceContainer) -> CirclePipeline {
+    pub fn new(device_container: &DeviceContainer) -> CirclePipeline {
         let vs = circle_vs::load(device_container.device().clone()).unwrap();
         let fs = circle_fs::load(device_container.device().clone()).unwrap();
 
@@ -106,5 +114,11 @@ impl CirclePipeline {
             .push_constants(self.pipeline.layout().clone(), 0, push_constants)
             .draw_indexed(buffers.index_buffer.len() as u32, 1, 0, 0, 0)
             .unwrap();
+    }
+}
+
+impl RecreateOnResize for CirclePipeline {
+    fn recreate(&mut self, device_container: &mut DeviceContainer) {
+        self.pipeline = Self::create_pipeline(device_container, &self.vs, &self.fs);
     }
 }

@@ -16,7 +16,5 @@ fn main() {
                 .with_radius(50.)
                 .with_color(Vec4::new(0., 1., 1., 1.)),
         );
-
-        context.render(event_handler);
     });
 }

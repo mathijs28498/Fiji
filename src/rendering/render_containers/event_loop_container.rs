@@ -88,6 +88,8 @@ impl EventLoopContainer {
 
                         event_fn(&self.input, &mut self.fiji_event_handler, &mut context);
 
+                        context.render(&mut self.fiji_event_handler);
+
                         self.fiji_event_handler.handle_events(control_flow);
                     }
                     _ => (),
