@@ -1,4 +1,4 @@
-use fiji::{Background, Circle, Context, KeyCode};
+use fiji::{Background, Circle, Context, KeyCode, Color};
 use nalgebra_glm::{Vec3, Vec4};
 
 fn main() {
@@ -14,7 +14,7 @@ fn main() {
             Circle::new_default()
                 .with_position([300., 300.].into())
                 .with_radius(50.)
-                .with_color(Vec4::new(0., 1., 1., 1.)),
+                .with_color(Color::Rgb(0., 1., 1.)),
         );
     });
 }

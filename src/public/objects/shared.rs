@@ -12,18 +12,18 @@ use crate::rendering::render_containers::device_container::DeviceContainer;
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, Zeroable, Pod)]
-pub(crate) struct Vertex2D {
+pub struct Vertex2D {
     pub(crate) position: [f32; 2],
 }
 impl_vertex!(Vertex2D, position);
 
 #[derive(Clone, Debug)]
-pub(crate) struct BufferContainer2D {
+pub struct BufferContainer2D {
     pub(crate) vertex_buffer: Arc<DeviceLocalBuffer<[Vertex2D]>>,
     pub(crate) index_buffer: Arc<DeviceLocalBuffer<[u32]>>,
 }
 
-pub(crate) fn create_buffers_2d(
+pub fn create_buffers_2d(
     device_container: &mut DeviceContainer,
     vertices: Vec<Vertex2D>,
     indices: Vec<u32>,

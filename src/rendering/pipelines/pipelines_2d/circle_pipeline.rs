@@ -23,10 +23,9 @@ use vulkano::{
 
 use std::sync::Mutex;
 
-use crate::rendering::{
+use crate::{rendering::{
     render_containers::{device_container::DeviceContainer, render_container::RecreateOnResize},
-    render_objects::shared::{BufferContainer2D, Vertex2D},
-};
+}, shared::{BufferContainer2D, Vertex2D}};
 
 pub(crate) mod circle_vs {
     vulkano_shaders::shader!(

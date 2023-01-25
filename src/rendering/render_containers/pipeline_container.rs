@@ -4,7 +4,6 @@ use crate::{
     public::objects::camera::camera_2d::Camera2D,
     rendering::{
         pipelines::pipelines_2d::circle_pipeline::CirclePipeline,
-        render_objects::{background_ro::BackgroundRenderObject, RenderObject2D},
     },
 };
 
@@ -24,20 +23,5 @@ impl PipelineContainer {
     // TODO: Add line pipeline recreation
     pub(super) fn recreate_pipelines(&mut self, device_container: &DeviceContainer) {
         self.circle_pipeline.recreate_pipeline(device_container);
-    }
-
-    pub(super) fn render_2d(
-        &mut self,
-        device_container: &mut DeviceContainer,
-        render_objects: &mut Queue<RenderObject2D>,
-        camera_2d: &Camera2D,
-    ) {
-        while let Ok(object) = render_objects.remove() {
-            match object {
-                RenderObject2D::CircleObject(mut circle) => {
-                    circle.draw(&mut self.circle_pipeline, device_container, Some(camera_2d))
-                }
-            }
-        }
     }
 }

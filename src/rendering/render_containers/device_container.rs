@@ -31,7 +31,8 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
-use crate::rendering::render_objects::background_ro::BackgroundRenderObject;
+use crate::Background;
+
 
 pub struct DeviceContainer {
     surface: Arc<Surface>,
@@ -332,7 +333,7 @@ impl DeviceContainer {
         return true;
     }
 
-    pub(super) fn begin_draw(&mut self, background: &BackgroundRenderObject) {
+    pub(super) fn begin_draw(&mut self, background: &Background) {
         self.execute_command_buffer();
         self.previous_frame_end.as_mut().unwrap().cleanup_finished();
         let (image_num, _, acquire_future) =

@@ -11,13 +11,7 @@ use crate::{
     public::objects::{
         background::Background, camera::camera_2d::Camera2D, obj_2d::circle::Circle,
     },
-    rendering::{
-        pipelines::pipelines_2d::circle_pipeline::{CirclePipeline, CIRCLE_PIPELINE},
-        render_objects::{
-            background_ro::BackgroundRenderObject, ro_2d::circle_ro::CircleRenderObject,
-            RenderObject2D,
-        },
-    },
+    rendering::pipelines::pipelines_2d::circle_pipeline::{CirclePipeline, CIRCLE_PIPELINE},
     Context, Input,
 };
 
@@ -30,14 +24,20 @@ pub trait RecreateOnResize {
     fn recreate(&mut self, device_container: &mut DeviceContainer);
 }
 
+pub trait Drawable2D {
+    fn draw(&mut self, device_container: &mut DeviceContainer, camera_2d: Option<&Camera2D>);
+    // TODO: Remove this at some point
+    fn set_buffers(&mut self, device_container: &mut DeviceContainer);
+}
+
 pub(crate) struct RenderContainer {
     event_loop_container: Option<EventLoopContainer>,
     device_container: DeviceContainer,
     pipeline_container: PipelineContainer,
 
     recreatables: Vec<Arc<RwLock<dyn RecreateOnResize>>>,
-    background: BackgroundRenderObject,
-    render_objects_2d: Queue<RenderObject2D>,
+    background: Background,
+    drawables_2d: Vec<Box<dyn Drawable2D>>,
 }
 
 impl RenderContainer {
@@ -54,10 +54,8 @@ impl RenderContainer {
             pipeline_container,
 
             recreatables,
-            background: BackgroundRenderObject::new(Background::new_with_color(Vec3::new(
-                0., 0., 0.,
-            ))),
-            render_objects_2d: Queue::new(),
+            background: Background::new_with_color(Vec3::new(0., 0., 0.)),
+            drawables_2d: Vec::new(),
         }
     }
 
@@ -69,17 +67,13 @@ impl RenderContainer {
             .clone()]
     }
 
-    pub(crate) fn circle(&mut self, circle: Circle) {
-        self.render_objects_2d
-            .add(RenderObject2D::CircleObject(CircleRenderObject::new(
-                circle,
-                &mut self.device_container,
-            )))
-            .unwrap();
+    pub(crate) fn circle(&mut self, mut circle: Circle) {
+        circle.set_buffers(&mut self.device_container);
+        self.drawables_2d.push(Box::new(circle));
     }
 
     pub(crate) fn background(&mut self, background: Background) {
-        self.background = BackgroundRenderObject::new(background);
+        self.background = background;
     }
 
     pub(crate) fn event_loop(&mut self) -> EventLoopContainer {
@@ -110,11 +104,17 @@ impl RenderContainer {
 
         self.device_container.begin_draw(&self.background);
 
-        self.pipeline_container.render_2d(
-            &mut self.device_container,
-            &mut self.render_objects_2d,
-            camera_2d,
-        );
+        // while let Some(drawable) = self.drawables_2d.remove() {
+        //     drawable.draw(&mut self.device_container, Some(camera_2d))
+        // }
+        for drawable in self.drawables_2d.iter_mut() {
+            drawable.draw(&mut self.device_container, Some(camera_2d))
+        }
+        // self.pipeline_container.render_2d(
+        //     &mut self.device_container,
+        //     &mut self.render_objects_2d,
+        //     camera_2d,
+        // );
 
         self.device_container.end_draw();
     }
