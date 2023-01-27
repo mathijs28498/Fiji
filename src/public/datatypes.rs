@@ -4,6 +4,12 @@ pub enum Color {
     Rgba(f32, f32, f32, f32),
 }
 
+impl Default for Color {
+    fn default() -> Self {
+        Self::Rgb(1., 1., 1.)
+    }
+}
+
 impl Into<[f32; 3]> for Color {
     fn into(self) -> [f32; 3] {
         match self {

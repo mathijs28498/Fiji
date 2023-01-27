@@ -15,10 +15,7 @@ use crate::{
     Context, Input,
 };
 
-use super::{
-    device_container::DeviceContainer, event_loop_container::EventLoopContainer,
-    pipeline_container::PipelineContainer,
-};
+use super::{device_container::DeviceContainer, event_loop_container::EventLoopContainer};
 
 pub trait RecreateOnResize {
     fn recreate(&mut self, device_container: &mut DeviceContainer);
@@ -33,7 +30,6 @@ pub trait Drawable2D {
 pub(crate) struct RenderContainer {
     event_loop_container: Option<EventLoopContainer>,
     device_container: DeviceContainer,
-    pipeline_container: PipelineContainer,
 
     recreatables: Vec<Arc<RwLock<dyn RecreateOnResize>>>,
     background: Background,
@@ -46,12 +42,10 @@ impl RenderContainer {
         let device_container =
             DeviceContainer::new(&event_loop_container.event_loop, width, height);
 
-        let pipeline_container = PipelineContainer::new(&device_container);
         let recreatables = Self::init_recreatables(&device_container);
         Self {
             event_loop_container: Some(event_loop_container),
             device_container,
-            pipeline_container,
 
             recreatables,
             background: Background::new_with_color(Vec3::new(0., 0., 0.)),
@@ -67,9 +61,13 @@ impl RenderContainer {
             .clone()]
     }
 
-    pub(crate) fn circle(&mut self, mut circle: Circle) {
-        circle.set_buffers(&mut self.device_container);
-        self.drawables_2d.push(Box::new(circle));
+    pub(crate) fn register_recreatable(&mut self, recreatable: Arc<RwLock<dyn RecreateOnResize>>) {
+        self.recreatables.push(recreatable)
+    }
+
+    pub(crate) fn draw_2d(&mut self, mut drawable: impl Drawable2D + 'static) {
+        drawable.set_buffers(&mut self.device_container);
+        self.drawables_2d.push(Box::new(drawable));
     }
 
     pub(crate) fn background(&mut self, background: Background) {
@@ -95,11 +93,6 @@ impl RenderContainer {
                 let mut recreatable_lock = recreatable.write().unwrap();
                 recreatable_lock.recreate(&mut self.device_container);
             }
-            self.pipeline_container
-                .recreate_pipelines(&self.device_container);
-
-            // TODO: Check if this is necessary
-            fiji_event_handler.recreate_pipelines = false;
         }
 
         self.device_container.begin_draw(&self.background);

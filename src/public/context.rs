@@ -1,4 +1,4 @@
-use std::time::SystemTime;
+use std::{time::SystemTime, sync::{Arc, RwLock}};
 
 use crate::{
     input::fiji_events::FijiEventHandler,
@@ -6,7 +6,7 @@ use crate::{
         background::Background, camera::camera_2d::Camera2D, obj_2d::circle::Circle,
     },
     rendering::render_containers::{
-        event_loop_container::EventLoopContainer, render_container::RenderContainer,
+        event_loop_container::EventLoopContainer, render_container::{RenderContainer, Drawable2D, RecreateOnResize},
     },
     Input,
 };
@@ -28,8 +28,12 @@ impl Context {
         }
     }
 
-    pub fn circle(&mut self, circle: Circle) {
-        self.render_container.circle(circle);
+    pub fn register_recreatable(&mut self, recreatable: Arc<RwLock<dyn RecreateOnResize>>) {
+        self.render_container.register_recreatable(recreatable);
+    }
+
+    pub fn draw_2d(&mut self, mut drawable: impl Drawable2D + 'static) {
+        self.render_container.draw_2d(drawable);
     }
 
     pub fn background(&mut self, background: Background) {

@@ -1,4 +1,8 @@
+use std::sync::Arc;
+
+use lazy_static::lazy_static;
 use nalgebra_glm::{Vec2, Vec4};
+use once_cell::sync::OnceCell;
 
 use crate::{
     public::objects::{Border, DEFAULT_COLOR},
@@ -6,7 +10,7 @@ use crate::{
         pipelines::pipelines_2d::circle_pipeline::{circle_fs, CIRCLE_PIPELINE},
         render_containers::{device_container::DeviceContainer, render_container::Drawable2D},
     },
-    shared::{BufferContainer2D, create_buffers_2d, Vertex2D},
+    shared::{create_buffers_2d, BufferContainer2D, Vertex2D},
     Camera2D, Color,
 };
 
@@ -18,40 +22,11 @@ pub struct Circle {
     pub position: Vec2,
     pub radius: f32,
     pub border: Option<Border>,
-    buffers: Option<BufferContainer2D>,
+    // TODO: create a way to have this in a different struct only being used created once
+    pub buffers: Option<Arc<BufferContainer2D>>,
 }
 
 impl Circle {
-    pub fn new_default() -> Self {
-        Self {
-            color: DEFAULT_COLOR,
-            position: DEFAULT_POSITION_2D,
-            radius: 10.,
-            border: None,
-            buffers: None,
-        }
-    }
-
-    pub fn with_color(mut self, color: Color) -> Self {
-        self.color = color;
-        self
-    }
-
-    pub fn with_position(mut self, position: Vec2) -> Self {
-        self.position = position;
-        self
-    }
-
-    pub fn with_radius(mut self, radius: f32) -> Self {
-        self.radius = radius;
-        self
-    }
-
-    pub fn with_border(mut self, border: Border) -> Self {
-        self.border = Some(border);
-        self
-    }
-
     #[allow(non_snake_case)]
     fn create_push_constants(
         &self,
@@ -78,6 +53,7 @@ impl Circle {
             cameraPos,
         }
     }
+
     fn create_buffers(device_container: &mut DeviceContainer) -> BufferContainer2D {
         let vertices = vec![
             Vertex2D {
@@ -98,19 +74,40 @@ impl Circle {
     }
 }
 
+impl Default for Circle {
+    fn default() -> Self {
+        Self {
+            color: Color::default(),
+            position: DEFAULT_POSITION_2D,
+            radius: 10.,
+            border: None,
+            buffers: None,
+        }
+    }
+}
+
 impl Drawable2D for Circle {
     fn set_buffers(&mut self, device_container: &mut DeviceContainer) {
-        if let None = self.buffers {
-            static mut BUFFERS: Option<BufferContainer2D> = None;
+        lazy_static! {
+            pub static ref BUFFERS: OnceCell<Arc<BufferContainer2D>> = OnceCell::new();
+        }
 
-            // Unsafe is used to change these static values.
-            // This is definitely safe, even thought the compiler can't verify.
-            unsafe {
-                if let None = BUFFERS {
-                    BUFFERS = Some(Self::create_buffers(device_container));
-                }
-                self.buffers = Some(BUFFERS.as_ref().unwrap().clone());
-            };
+        if let None = self.buffers {
+            // static mut BUFFERS: Option<BufferContainer2D> = None;
+
+            // // Unsafe is used to change these static values.
+            // // This is definitely safe, even thought the compiler can't verify.
+            // unsafe {
+            //     if let None = BUFFERS {
+            //         BUFFERS = Some(Self::create_buffers(device_container));
+            //     }
+            //     self.buffers = Some(BUFFERS.as_ref().unwrap().clone());
+            // };
+            self.buffers = Some(
+                BUFFERS
+                    .get_or_init(|| Arc::new(Self::create_buffers(device_container)))
+                    .clone(),
+            );
         };
     }
 
