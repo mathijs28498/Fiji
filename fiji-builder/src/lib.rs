@@ -104,7 +104,6 @@ pub fn derive(input: TokenStream) -> TokenStream {
                 }
             }
 
-
         )
         .into()
     } else {
