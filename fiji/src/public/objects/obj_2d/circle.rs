@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use fiji_builder::Builder;
 use lazy_static::lazy_static;
 use nalgebra_glm::{Vec2, Vec4};
 use once_cell::sync::OnceCell;
@@ -16,14 +17,18 @@ use crate::{
 
 use super::DEFAULT_POSITION_2D;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Builder)]
 pub struct Circle {
-    pub color: Color,
-    pub position: Vec2,
-    pub radius: f32,
-    pub border: Option<Border>,
+    #[buildable]
+    color: Color,
+    #[buildable]
+    position: Vec2,
+    #[buildable]
+    radius: f32,
+    #[buildable]
+    border: Option<Border>,
     // TODO: create a way to have this in a different struct only being used created once
-    pub buffers: Option<Arc<BufferContainer2D>>,
+    buffers: Option<Arc<BufferContainer2D>>,
 }
 
 impl Circle {
@@ -93,16 +98,6 @@ impl Drawable2D for Circle {
         }
 
         if let None = self.buffers {
-            // static mut BUFFERS: Option<BufferContainer2D> = None;
-
-            // // Unsafe is used to change these static values.
-            // // This is definitely safe, even thought the compiler can't verify.
-            // unsafe {
-            //     if let None = BUFFERS {
-            //         BUFFERS = Some(Self::create_buffers(device_container));
-            //     }
-            //     self.buffers = Some(BUFFERS.as_ref().unwrap().clone());
-            // };
             self.buffers = Some(
                 BUFFERS
                     .get_or_init(|| Arc::new(Self::create_buffers(device_container)))
