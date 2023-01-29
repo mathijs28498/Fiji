@@ -6,21 +6,6 @@ use syn::{
     ext::IdentExt, parse_macro_input, DataStruct, DeriveInput, PathArguments::AngleBracketed, Type,
 };
 
-fn is_option(ty: &Type) -> bool {
-    if let syn::Type::Path(tp) = ty {
-        if let Some(segment) = tp.path.segments.first() {
-            if let AngleBracketed(args) = &segment.arguments {
-                if !args.args.is_empty() {
-                    if segment.ident == "Option" {
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    false
-}
-
 // TODO: Add required option to buildable
 #[proc_macro_derive(Builder, attributes(buildable))]
 pub fn derive_builder(input: TokenStream) -> TokenStream {
@@ -42,7 +27,7 @@ pub fn derive_builder(input: TokenStream) -> TokenStream {
             let name = f.ident.clone().unwrap();
             let ty = f.ty.clone();
             quote!(
-                pub #name: Option<#ty>,
+                #name: Option<#ty>,
             )
         });
 
@@ -64,22 +49,12 @@ pub fn derive_builder(input: TokenStream) -> TokenStream {
             )
         });
 
-        let build_fields = fields.iter().filter_map(|f| {
+        let build_fields = filtered_fields.map(|f| {
             let name = f.ident.clone().unwrap();
-            let ty = f.ty.clone();
-            if f.attrs.iter().any(|attr| attr.path.is_ident("buildable")) {
-                // Check for other generic possibilities
-                if is_option(&ty) {
-                    return Some(quote!(
-                        #name: self.#name.unwrap_or(None),
-                    ));
-                }
-                // TODO: Look for required parameter
-                return Some(quote!(
-                    #name: self.#name.unwrap_or(#ty::default()),
-                ));
-            }
-            None
+            // TODO: Look for required parameter
+            quote!(
+                #name: self.#name.unwrap_or_default(),
+            )
         });
 
         quote!(
