@@ -23,7 +23,7 @@ fn is_option(ty: &Type) -> bool {
 
 // TODO: Add required option to buildable
 #[proc_macro_derive(Builder, attributes(buildable))]
-pub fn derive(input: TokenStream) -> TokenStream {
+pub fn derive_builder(input: TokenStream) -> TokenStream {
     let DeriveInput {
         ident,
         data,
