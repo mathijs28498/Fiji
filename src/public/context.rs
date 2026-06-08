@@ -25,9 +25,12 @@ pub struct Context {
 }
 
 impl Context {
-    pub fn new(width: u32, height: u32) -> Self {
+    pub fn new<T>(width: u32, height: u32, window_title: T) -> Self
+    where
+        T: Into<String>,
+    {
         Self {
-            render_container: RenderContainer::new(width, height),
+            render_container: RenderContainer::new(width, height, window_title),
             prev_time: SystemTime::now(),
             dt_nano: 0,
             camera_2d: Camera2D::new_default(),

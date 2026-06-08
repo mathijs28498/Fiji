@@ -58,7 +58,15 @@ pub(crate) struct DeviceContainer {
 }
 
 impl DeviceContainer {
-    pub(crate) fn new(event_loop: &EventLoop<()>, width: u32, height: u32) -> Self {
+    pub(crate) fn new<T>(
+        event_loop: &EventLoop<()>,
+        width: u32,
+        height: u32,
+        window_title: T,
+    ) -> Self
+    where
+        T: Into<String>,
+    {
         let library = VulkanLibrary::new().unwrap();
         let required_extensions = vulkano_win::required_extensions(&library);
 
@@ -74,6 +82,7 @@ impl DeviceContainer {
 
         let surface = {
             let surface = WindowBuilder::new()
+                .with_title(window_title)
                 .build_vk_surface(&event_loop, instance.clone())
                 .unwrap();
             let window = surface.object().unwrap().downcast_ref::<Window>().unwrap();

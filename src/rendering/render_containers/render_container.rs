@@ -39,10 +39,13 @@ pub(crate) struct RenderContainer {
 }
 
 impl RenderContainer {
-    pub(crate) fn new(width: u32, height: u32) -> Self {
+    pub(crate) fn new<T>(width: u32, height: u32, window_title: T) -> Self
+    where
+        T: Into<String>,
+    {
         let event_loop_container = EventLoopContainer::new();
         let device_container =
-            DeviceContainer::new(&event_loop_container.event_loop, width, height);
+            DeviceContainer::new(&event_loop_container.event_loop, width, height, window_title);
 
         let pipeline_container = PipelineContainer::new(&device_container);
 

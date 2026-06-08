@@ -5,7 +5,7 @@ use nalgebra_glm::{Vec2, Vec3, Vec4};
 use fiji::{Background, Block, Context, KeyCode, Rect, Text};
 
 fn main() {
-    let mut context = Context::new(1280, 720);
+    let mut context = Context::new(1280, 720, "Fiji 3D Example");
 
     let mut block_0 = Block::new_default()
         .with_color(Vec4::new(0.9, 0.57, 0.28, 1.))
@@ -105,8 +105,8 @@ fn main() {
 
         context.ui_rect(
             Rect::new_default()
-                .with_size(Vec2::new(450., 80.))
-                .with_position(Vec2::new(225., 40.))
+                .with_size(Vec2::new(200., 80.))
+                .with_position(Vec2::new(100., 40.))
                 .with_color(Vec4::new(0., 0., 0., 0.7)),
         );
 
@@ -115,18 +115,18 @@ fn main() {
                 "test: {:.2} {:.2} {:.2}",
                 block_0.rotation.x, block_0.rotation.y, block_0.rotation.z
             ))
-            .with_position(Vec2::new(10., 50.))
+            .with_position(Vec2::new(10., 25.))
             .with_color(Vec4::new(1., 1., 1., 0.6)),
         );
 
-        context.text(
+        context.ui_text(
             Text::new_with_text(&format!(
                 "fps: {:.3} ({:.3}ms)",
                 context.fps(),
                 context.dt_micros() as f64 / 1000.
             ))
-            .with_position(Vec2::new(200., 100.))
-            .with_color(Vec4::new(0.9, 0.7, 0.2, 1.)),
+            .with_position(Vec2::new(10., 50.))
+            .with_color(Vec4::new(0.9, 0.7, 1.0, 1.)),
         );
 
         context.render(event_handler);
