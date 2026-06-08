@@ -86,14 +86,14 @@ impl TextPipeline {
         .unwrap();
 
         let comic_sans_font = Font::from_bytes(
-            include_bytes!("C:/Users/mathi/OneDrive/Documents/Fonts/comic-sans-ms/comicz.ttf")
+            include_bytes!("../../../../assets/fonts/comic-sans-ms/comicz.ttf")
                 as &[u8],
             FontSettings::default(),
         )
         .unwrap();
 
         let roboto_font = Font::from_bytes(
-            include_bytes!("C:/Users/mathi/OneDrive/Documents/Fonts/Roboto/roboto-regular.ttf")
+            include_bytes!("../../../../assets/fonts/Roboto/Roboto-Regular.ttf")
                 as &[u8],
             FontSettings::default(),
         )
