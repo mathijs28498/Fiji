@@ -1,5 +1,5 @@
 <p align="center">
-<img src="assets/images/fiji_3d_demo.gif" alt="Fiji 3D Example" width="100%"/>
+<img src="assets/images/demo_fiji_3d.gif" alt="Fiji 3D Example" width="100%"/>
 </p>
 
 # Fiji: Declarative Vulkan Renderer
@@ -14,10 +14,8 @@ Fiji is a Vulkan-backed, high-performance 2D/3D rendering library written in Rus
 * **CPU Text Rasterization:** Implements fast, high-quality text rendering using `fontdue` for CPU rasterization, backed by automatic per-glyph GPU texture caching.
 * **Unified UI & World Spaces:** Supports rendering objects in both 3D world space and 2D screen space, automatically handling projection matrices.
 * **Dynamic Geometry Generation:** The 2D pipeline supports dynamic, user-drawn polygons at runtime, actively pushing new vertex data to the GPU buffers without stalling the render loop.
-
-## 2D example
 <p align="center">
-<img src="assets/images/fiji_2d_polygon_demo.gif" alt="Fiji 3D Example" width="100%"/>
+<img src="assets/images/demo_fiji_2d.gif" alt="Fiji 2D Example" width="100%"/>
 </p>
 
 ## Code Example
@@ -28,7 +26,7 @@ use fiji::{Context, Rect, KeyCode};
 use nalgebra_glm::{Vec2, Vec4};
 
 fn main() {
-    let mut context = Context::new(1280, 720);
+    let mut context = Context::new(1280, 720, "Simple Example");
     
     context.run(move |input, event_handler, ctx| {
         if input.key_pressed(&KeyCode::Escape) {
